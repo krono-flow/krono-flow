@@ -1159,27 +1159,27 @@ class Node extends Event {
     });
     if (standard) {
       if (this.isMounted) {
-        res.fill = computedStyle.fill.map(item => getCssFillStroke(item, this.width, this.height, true));
+        res.fill = style.fill.map(item => getCssFillStroke(item.v, this.width, this.height, true));
       }
       else {
         inject.error('Can not get CSS standard fill unmounted');
       }
     }
     else {
-      res.fill = calComputedFill(style.fill).map(item => getCssFillStroke(item));
+      res.fill = style.fill.map(item => getCssFillStroke(item.v));
     }
     res.fillRule = ['nonzero', 'evenodd'][style.fillRule.v];
     res.fillMode = style.fillMode.map(item => getCssMbm(item.v));
     if (standard) {
       if (this.isMounted) {
-        res.stroke = computedStyle.stroke.map(item => getCssFillStroke(item, this.width, this.height, true));
+        res.stroke = style.stroke.map(item => getCssFillStroke(item.v, this.width, this.height, true));
       }
       else {
         inject.error('Can not get CSS standard stroke unmounted');
       }
     }
     else {
-      res.stroke = calComputedStroke(style.stroke).map(item => getCssFillStroke(item, this.width, this.height));
+      res.stroke = style.stroke.map(item => getCssFillStroke(item.v));
     }
     res.strokeLinecap = ['butt', 'round', 'square'][style.strokeLinecap.v];
     res.strokeLinejoin = ['miter', 'round', 'bevel'][style.strokeLinejoin.v];

@@ -23,6 +23,7 @@ import {
   calSize,
   getBaseline,
   getContentArea,
+  getPropsRich,
   normalize,
   normalizeRich,
   setFontStyle,
@@ -3112,7 +3113,7 @@ class Text extends Node {
 
   override cloneProps() {
     const props = super.cloneProps() as TextProps;
-    // props.rich = this.computedRich.map(item => getPropsRich(item));
+    props.rich = this.rich.map(item => getPropsRich(item));
     if (this.isMounted) {
       const textBehaviour = props.textBehaviour = this.getTextBehaviour();
       const style = props.style!;

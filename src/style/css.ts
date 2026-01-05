@@ -4,11 +4,11 @@ import { clone, isNil, isString } from '../util/type';
 import {
   calUnit,
   ComputedFilter,
-  ComputedGradient,
   ComputedStyle,
   CURVE_MODE,
   FILL_RULE,
   FONT_STYLE,
+  Gradient,
   MASK,
   MIX_BLEND_MODE,
   OBJECT_FIT,
@@ -25,6 +25,7 @@ import {
   TEXT_ALIGN,
   TEXT_DECORATION,
   TEXT_VERTICAL_ALIGN,
+  TextShadow,
   VISIBILITY,
 } from './define';
 import reg from './reg';
@@ -1107,11 +1108,11 @@ export function getCssFilter(filter: ComputedFilter) {
   }
 }
 
-export function getCssFillStroke(item: number[] | ComputedGradient, width?: number, height?: number, standard = false) {
+export function getCssFillStroke(item: number[] | Gradient, width?: number, height?: number, standard = false) {
   if (Array.isArray(item)) {
     return color2rgbaStr(item);
   }
-  return convert2Css(item as ComputedGradient, width, height, standard);
+  return convert2Css(item as Gradient, width, height, standard);
 }
 
 export function getCssStrokePosition(o: STROKE_POSITION) {
@@ -1151,15 +1152,34 @@ export function normalizePoints(item: JPoint) {
   };
 }
 
-export function getPropsRich(rich: ComputedRich) {
+export function getCssTextShadow(item?: TextShadow) {
+  if (!item) {
+    return 'none';
+  }
+  return item.x + 'px ' + item.y + 'px ' + item.blur + ' px ' + color2rgbaStr(item.color);
+}
+
+export function getPropsRich(rich: Rich) {
   return {
-    ...rich,
-    textAlign: (['left', 'right', 'center', 'justify'][rich.textAlign] || 'left') as JRich['textAlign'],
-    textDecoration: rich.textDecoration.map(o => {
-      return ['none', 'underline', 'lineThrough'][o] || 'none';
-    }) as JRich['textDecoration'],
-    color: color2rgbaStr(rich.color),
-  };
+    fontFamily: rich.fontFamily.v,
+    fontSize: rich.fontSize.v,
+    fontWeight: rich.fontWeight.v,
+    lineHeight: rich.lineHeight.v,
+    letterSpacing: rich.letterSpacing.v,
+    paragraphSpacing: rich.paragraphSpacing.v,
+    fontStyle: ['normal', 'italic', 'oblique'][rich.fontStyle.v] || 'normal',
+    color: color2rgbaStr(rich.color.v),
+    textAlign: (['left', 'right', 'center', 'justify'][rich.textAlign.v] || 'left') as JRich['textAlign'],
+    textDecoration: rich.textDecoration.map(item => {
+      return ['none', 'underline', 'lineThrough'][item.v] || 'none';
+    }),
+    textShadow: getCssTextShadow(rich.textShadow.v),
+    stroke: rich.stroke.map(item => {
+      return getCssFillStroke(item.v, 1, 1, true);
+    }),
+    strokeWidth: rich.strokeWidth.map(item => item.v),
+    strokeEnable: rich.strokeEnable.map(item => item.v),
+  } as JRich;
 }
 
 export default {

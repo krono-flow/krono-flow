@@ -2,7 +2,7 @@ import { angleBySides, d2r, r2d } from '../math/geom';
 import { identity, multiplyRotateZ, multiplyScaleY } from '../math/matrix';
 import { clone } from '../util/type';
 import { color2rgbaInt, color2rgbaStr } from './color';
-import { calUnit, ColorStop, ComputedColorStop, ComputedGradient, GRADIENT, StyleNumValue, StyleUnit } from './define';
+import { calUnit, ColorStop, ComputedColorStop, Gradient, GRADIENT, StyleNumValue, StyleUnit } from './define';
 import reg from './reg';
 import { calMatrixByOrigin } from './transform';
 import { toPrecision } from '../math';
@@ -536,7 +536,7 @@ export function getConic(
   };
 }
 
-export function convert2Css(g: ComputedGradient, width = 100, height = 100, standard = false) {
+export function convert2Css(g: Gradient, width = 100, height = 100, standard = false) {
   const { t, d, stops } = g;
   let [x1, y1, x2, y2] = d;
   x1 *= width;
@@ -575,7 +575,7 @@ export function convert2Css(g: ComputedGradient, width = 100, height = 100, stan
   }
   const newStops = stops.slice(0);
   // panel新增可能出现顺序不对
-  newStops.sort((a, b) => a.offset - b.offset);
+  newStops.sort((a, b) => a.offset.v - b.offset.v);
   if (t === GRADIENT.LINEAR) {
     let start: { x: number, y: number },
       end: { x: number, y: number };
@@ -725,7 +725,7 @@ export function convert2Css(g: ComputedGradient, width = 100, height = 100, stan
       if (i) {
         s += ', ';
       }
-      const color = item.color.map((c, i) => {
+      const color = item.color.v.map((c, i) => {
         if (i === 3) {
           return toPrecision(c);
         }
@@ -733,7 +733,7 @@ export function convert2Css(g: ComputedGradient, width = 100, height = 100, stan
           return Math.min(255, Math.floor(c * ratio));
         }
       });
-      s += color2rgbaStr(color) + ' ' + toPrecision(item.offset * 100) + '%';
+      s += color2rgbaStr(color) + ' ' + toPrecision(item.offset.v * 100) + '%';
     });
     return s + ')';
   }
@@ -746,38 +746,50 @@ export function convert2Css(g: ComputedGradient, width = 100, height = 100, stan
     // 当首尾offset不为[0,1]时，标准尾首间会断渐变需要手动补齐
     const first = newStops[0];
     const last = newStops[newStops.length - 1];
-    if (standard && (first.offset > 0 || last.offset < 1)) {
-      const fa = first.color[3] ?? 1;
-      const la = last.color[3] ?? 1;
+    if (standard && (first.offset.v > 0 || last.offset.v < 1)) {
+      const fa = first.color.v[3] ?? 1;
+      const la = last.color.v[3] ?? 1;
       const dc = [
-        first.color[0] - last.color[0],
-        first.color[1] - last.color[1],
-        first.color[2] - last.color[2],
+        first.color.v[0] - last.color.v[0],
+        first.color.v[1] - last.color.v[1],
+        first.color.v[2] - last.color.v[2],
         fa - la,
       ];
-      const dl = 1 - last.offset + first.offset;
-      if (first.offset > 0) {
-        const p = first.offset / dl;
+      const dl = 1 - last.offset.v + first.offset.v;
+      if (first.offset.v > 0) {
+        const p = first.offset.v / dl;
         newStops.unshift({
-          color: [
-            Math.min(255, Math.max(0, Math.round(first.color[0] - dc[0] * p))),
-            Math.min(255, Math.max(0, Math.round(first.color[1] - dc[1] * p))),
-            Math.min(255, Math.max(0, Math.round(first.color[2] - dc[2] * p))),
-            Math.min(1, Math.max(0, first.color[3] ?? 1 - dc[3] * p)),
-          ],
-          offset: 0,
+          color: {
+            v: [
+              Math.min(255, Math.max(0, Math.round(first.color.v[0] - dc[0] * p))),
+              Math.min(255, Math.max(0, Math.round(first.color.v[1] - dc[1] * p))),
+              Math.min(255, Math.max(0, Math.round(first.color.v[2] - dc[2] * p))),
+              Math.min(1, Math.max(0, first.color.v[3] ?? 1 - dc[3] * p)),
+            ],
+            u: StyleUnit.RGBA,
+          },
+          offset: {
+            v: 0,
+            u: StyleUnit.PERCENT,
+          },
         });
       }
-      if (last.offset < 1) {
-        const p = (1 - last.offset) / dl;
+      if (last.offset.v < 1) {
+        const p = (1 - last.offset.v) / dl;
         newStops.push({
-          color: [
-            Math.min(255, Math.max(0, Math.round(last.color[0] + dc[0] * p))),
-            Math.min(255, Math.max(0, Math.round(last.color[1] + dc[1] * p))),
-            Math.min(255, Math.max(0, Math.round(last.color[2] + dc[2] * p))),
-            Math.min(1, Math.max(0, last.color[3] ?? 1 + dc[3] * p)),
-          ],
-          offset: 1,
+          color: {
+            v: [
+              Math.min(255, Math.max(0, Math.round(last.color.v[0] + dc[0] * p))),
+              Math.min(255, Math.max(0, Math.round(last.color.v[1] + dc[1] * p))),
+              Math.min(255, Math.max(0, Math.round(last.color.v[2] + dc[2] * p))),
+              Math.min(1, Math.max(0, last.color.v[3] ?? 1 + dc[3] * p)),
+            ],
+            u: StyleUnit.RGBA,
+          },
+          offset: {
+            v: 100,
+            u: StyleUnit.PERCENT,
+          },
         });
       }
     }
@@ -785,8 +797,8 @@ export function convert2Css(g: ComputedGradient, width = 100, height = 100, stan
       if (i) {
         s += ', ';
       }
-      item.color[3] = toPrecision(item.color[3]);
-      s += color2rgbaStr(item.color) + ' ' + toPrecision(item.offset * 100) + '%';
+      item.color.v[3] = toPrecision(item.color.v[3]);
+      s += color2rgbaStr(item.color.v) + ' ' + toPrecision(item.offset.v * 100) + '%';
     });
     return s + ')';
   }
