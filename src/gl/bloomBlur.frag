@@ -21,5 +21,5 @@ void main() {
   float factor = max(soft, brightness - u_threshold) / max(brightness, 0.0001);
   // 4. 提取出的亮部
   vec3 brightPart = linearColor * factor;
-  gl_FragColor = vec4(brightPart, 1.0);
+  gl_FragColor = vec4(brightPart, color.a);
 }

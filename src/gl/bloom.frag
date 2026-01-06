@@ -18,11 +18,13 @@ vec3 ACESFilm(vec3 x) {
 }
 
 void main() {
+  vec4 color1 = texture2D(u_texture1, v_texCoords);
   // 1. 获取原图颜色并转入线性空间
-  vec3 sceneColor = texture2D(u_texture1, v_texCoords).rgb;
+  vec3 sceneColor = color1.rgb;
   sceneColor = pow(sceneColor, vec3(2.2));
   // 2. 获取辉光颜色 (它本身就是在线性空间处理的)
-  vec3 bloomColor = texture2D(u_texture2, v_texCoords).rgb;
+  vec4 color2 = texture2D(u_texture2, v_texCoords);
+  vec3 bloomColor = color2.rgb;
   // 3. 加法合成，这一步之后，像素值可能会超 1.0
   vec3 result = sceneColor + bloomColor;
   // 4. 色调映射 (Tone Mapping)
@@ -31,5 +33,6 @@ void main() {
   result = ACESFilm(result);
   // 5. 伽马校正回 sRGB 空间
   result = pow(result, vec3(1.0 / 2.2));
-  gl_FragColor = vec4(result, 1.0);
+  // 如果是半透明叠加一点点辉光的透明更柔和
+  gl_FragColor = vec4(result, (color1.a + color2.a * color2.a) * 0.5);
 }

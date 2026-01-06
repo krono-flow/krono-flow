@@ -33,14 +33,21 @@ void main() {
     else {
       reduce = texture2D(u_texture, bias2).a - 1.0;
     }
+    float b = 0.0;
+    // 防止亮的越亮暗的越暗，反过来亮的增加的少暗的增加的多，暗的减少的少亮的减少的多
+    if (add > 0.0 || reduce < 0.0) {
+      vec3 linearColor = pow(color.rgb, vec3(2.2));
+      float bn = dot(linearColor, vec3(0.299, 0.587, 0.114));
+      b = 1.0 - bn * bn;
+    }
     if (add > 0.0) {
-      float f = (total - float(i)) / total / total;
+      float f = (total - float(i)) / total / total * b;
       color.r += add * f;
       color.g += add * f;
       color.b += add * f;
     }
     if (reduce < 0.0) {
-      float f = (total - float(i)) / total / total;
+      float f = (total - float(i)) / total / total * b;
       color.r += reduce * f;
       color.g += reduce * f;
       color.b += reduce * f;
