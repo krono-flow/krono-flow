@@ -15,7 +15,7 @@ export function createInOverlay(
   y: number,
   w: number,
   h: number,
-  spread: number, // 不考虑scale
+  spread = 0, // 不考虑scale
 ) {
   const UNIT = config.maxTextureSize;
   const unit = UNIT - spread * 2; // 去除spread的单位

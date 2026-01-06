@@ -32,7 +32,6 @@ export function genGaussBlur(
   W: number,
   H: number,
   willSpread = false,
-  willLimit = false,
 ) {
   const d = gaussKernel(sigma);
   const spread = willSpread ? gaussSizeByD(d) : 0;

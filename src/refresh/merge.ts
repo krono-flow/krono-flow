@@ -564,7 +564,7 @@ function genFilter(
   filter.forEach(item => {
     if (item.u === StyleUnit.GAUSS_BLUR) {
       if (item.radius >= 1) {
-        const t = genGaussBlur(gl, root, node, res || source, item.radius, W, H);
+        const t = genGaussBlur(gl, root, node, res || source, item.radius, W, H, true);
         if (res) {
           res.release();
         }
@@ -867,8 +867,8 @@ export function genMask(
                   matrix,
                   bbox: bbox2,
                   t: t2,
-                  dx: -x1,
-                  dy: -y1,
+                  // dx: -x1,
+                  // dy: -y1,
                 },
               );
               // 这里才是真正生成mbm
