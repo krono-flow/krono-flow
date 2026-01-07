@@ -41,13 +41,13 @@ void main() {
       b = 1.0 - bn * bn;
     }
     if (add > 0.0) {
-      float f = (total - float(i)) / total / total * b;
+      float f = (total - float(i)) / total / total * b * 0.8;
       color.r += add * f;
       color.g += add * f;
       color.b += add * f;
     }
     if (reduce < 0.0) {
-      float f = (total - float(i)) / total / total * b;
+      float f = (total - float(i)) / total / total * b * 0.8;
       color.r += reduce * f;
       color.g += reduce * f;
       color.b += reduce * f;
