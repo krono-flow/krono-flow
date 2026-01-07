@@ -1,4 +1,4 @@
-import { ComputedGradient, ComputedTextShadow, TEXT_DECORATION } from '../style/define';
+import { ComputedGradient, ComputedTextShadow, TEXT_DECORATION, VISIBILITY } from '../style/define';
 
 class TextBox {
   x: number;
@@ -19,6 +19,8 @@ class TextBox {
   stroke: (number[] | ComputedGradient)[];
   strokeWidth: number[];
   strokeEnable: boolean[];
+  opacity: number;
+  visibility: VISIBILITY;
 
   constructor(
     x: number,
@@ -39,6 +41,8 @@ class TextBox {
     stroke: (number[] | ComputedGradient)[],
     strokeWidth: number[],
     strokeEnable: boolean[],
+    opacity: number,
+    visibility: VISIBILITY,
   ) {
     this.x = x;
     this.y = y;
@@ -58,6 +62,8 @@ class TextBox {
     this.stroke = stroke;
     this.strokeWidth = strokeWidth;
     this.strokeEnable = strokeEnable;
+    this.opacity = opacity;
+    this.visibility = visibility;
   }
 }
 

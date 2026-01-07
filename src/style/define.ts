@@ -567,6 +567,8 @@ export const RICH_KEYS = [
   'stroke',
   'strokeWidth',
   'strokeEnable',
+  'opacity',
+  'visibility',
 ];
 
 export enum CURVE_MODE {

@@ -14,13 +14,15 @@ import {
   StyleUnit,
   TEXT_ALIGN,
   TEXT_DECORATION,
-  TEXT_VERTICAL_ALIGN, VISIBILITY,
+  TEXT_VERTICAL_ALIGN,
+  VISIBILITY,
 } from '../style/define';
 import inject from '../util/inject';
 import { color2rgbaStr } from '../style/color';
 import {
   calNormalLineHeight,
   calSize,
+  cloneStyle,
   getBaseline,
   getContentArea,
   getPropsRich,
@@ -179,7 +181,7 @@ function measure(
   return { hypotheticalNum, rw, newLine };
 }
 
-function setFontAndLetterSpacing(ctx: CanvasRenderingContext2D, textBox: TextBox, scale = 1) {
+function setCtxPre(ctx: CanvasRenderingContext2D, textBox: TextBox, scale = 1) {
   // 缩放影响字号
   if (scale !== 1) {
     ctx.font = textBox.font.replace(
@@ -194,6 +196,7 @@ function setFontAndLetterSpacing(ctx: CanvasRenderingContext2D, textBox: TextBox
     // @ts-ignore
     ctx.letterSpacing = textBox.letterSpacing + 'px';
   }
+  ctx.globalAlpha = textBox.opacity;
 }
 
 const EPS = 1e-4;
@@ -365,6 +368,8 @@ class Text extends Node {
     let stroke: (number[] | ComputedGradient)[];
     let strokeWidth: number[];
     let strokeEnable: boolean[];
+    let opacity: number;
+    let visibility: VISIBILITY;
     let maxW = 0;
     let x = 0;
     let y = 0;
@@ -405,6 +410,8 @@ class Text extends Node {
       stroke = first.stroke;
       strokeWidth = first.strokeWidth;
       strokeEnable = first.strokeEnable;
+      opacity = first.opacity;
+      visibility = first.visibility;
       ctx.font = setFontStyle(first);
       // @ts-ignore
       ctx.letterSpacing = letterSpacing + 'px';
@@ -418,12 +425,15 @@ class Text extends Node {
       contentArea = getContentArea(computedStyle, lineHeight);
       fontFamily = computedStyle.fontFamily;
       fontSize = computedStyle.fontSize;
+      // 非reflow样式此时还没有computedStyle
       color = color2rgbaStr(this.style.color.v);
       textDecoration = this.style.textDecoration.map(item => item.v);
       textShadow = this.style.textShadow.v;
       stroke = calComputedStroke(this.style.stroke);
       strokeWidth = this.style.strokeWidth.map(item => item.v);
       strokeEnable = this.style.strokeEnable.map(item => item.v);
+      opacity = this.style.opacity.v;
+      visibility = this.style.visibility.v;
       ctx.font = setFontStyle(computedStyle);
       // @ts-ignore
       ctx.letterSpacing = letterSpacing + 'px';
@@ -452,6 +462,8 @@ class Text extends Node {
         stroke = cur.stroke;
         strokeWidth = cur.strokeWidth;
         strokeEnable = cur.strokeEnable;
+        opacity = cur.opacity;
+        visibility = cur.visibility;
         ctx.font = setFontStyle(cur);
         // @ts-ignore
         ctx.letterSpacing = letterSpacing + 'px';
@@ -515,6 +527,8 @@ class Text extends Node {
         stroke,
         strokeWidth,
         strokeEnable,
+        opacity,
+        visibility,
       );
       // console.log(i, num, content.slice(i, i + num), letterSpacing, rw, textBox);
       lineBox.add(textBox);
@@ -709,21 +723,24 @@ class Text extends Node {
       const first = {
         location: start,
         length,
-        fontFamily: style.fontFamily,
-        fontSize: style.fontSize,
-        fontWeight: style.fontWeight,
-        fontStyle: style.fontStyle,
-        letterSpacing: style.letterSpacing,
-        lineHeight: style.lineHeight,
-        paragraphSpacing: style.paragraphSpacing,
-        textAlign: style.textAlign,
-        textDecoration: style.textDecoration,
-        textShadow: style.textShadow,
-        color: style.color,
-        stroke: style.stroke.slice(0),
-        strokeEnable: style.strokeEnable.slice(0),
-        strokeWidth: style.strokeWidth.slice(0),
-      };
+        ...cloneStyle(style, RICH_KEYS),
+        // fontFamily: style.fontFamily,
+        // fontSize: style.fontSize,
+        // fontWeight: style.fontWeight,
+        // fontStyle: style.fontStyle,
+        // letterSpacing: style.letterSpacing,
+        // lineHeight: style.lineHeight,
+        // paragraphSpacing: style.paragraphSpacing,
+        // textAlign: style.textAlign,
+        // textDecoration: style.textDecoration,
+        // textShadow: style.textShadow,
+        // color: style.color,
+        // stroke: style.stroke.slice(0),
+        // strokeEnable: style.strokeEnable.slice(0),
+        // strokeWidth: style.strokeWidth.slice(0),
+        // opacity: style.opacity,
+        // visibility: style.visibility,
+      } as Rich;
       rich.push(first);
       computedRich.push(this.calComputedRich(first));
       return;
@@ -771,6 +788,8 @@ class Text extends Node {
         stroke: style.stroke,
         strokeEnable: style.strokeEnable,
         strokeWidth: style.strokeWidth,
+        opacity: style.opacity,
+        visibility: style.visibility,
       },
       modify,
     );
@@ -933,6 +952,8 @@ class Text extends Node {
         'stroke',
         'strokeEnable',
         'strokeWidth',
+        'opacity',
+        'visibility',
       ])) {
         if (a.textAlign.v === b.textAlign.v || isEnter(content.charAt(b.location - 1))) {
           a.length += b.length;
@@ -972,6 +993,8 @@ class Text extends Node {
       stroke: calComputedStroke(rich.stroke),
       strokeWidth: rich.strokeWidth.map(item => item.v),
       strokeEnable: rich.strokeEnable.map(item => item.v),
+      opacity: rich.opacity.v,
+      visibility: rich.visibility.v,
     };
   }
 
@@ -985,6 +1008,7 @@ class Text extends Node {
   override calRepaintStyle(lv: RefreshLevel) {
     super.calRepaintStyle(lv);
     const rich = this.rich;
+    // 非reflow的样式需更新，这里和layout不同有computedStyle了
     if (rich.length) {
       this.computedRich.forEach((item, i) => {
         item.textDecoration = rich[i].textDecoration.map(item => item.v);
@@ -993,6 +1017,8 @@ class Text extends Node {
         item.stroke = calComputedStroke(rich[i].stroke);
         item.strokeWidth = rich[i].strokeWidth.map(item => item.v);
         item.strokeEnable = rich[i].strokeEnable.map(item => item.v);
+        item.opacity = rich[i].opacity.v;
+        item.visibility = rich[i].visibility.v;
       });
     }
     else {
@@ -1003,6 +1029,8 @@ class Text extends Node {
           textBox.stroke = computedStyle.stroke;
           textBox.strokeWidth = computedStyle.strokeWidth;
           textBox.strokeEnable = computedStyle.strokeEnable;
+          textBox.opacity = computedStyle.opacity;
+          textBox.visibility = computedStyle.visibility;
         });
       });
     }
@@ -1155,8 +1183,11 @@ class Text extends Node {
         const len = list.length;
         for (let i = 0; i < len; i++) {
           const textBox = list[i];
+          if (textBox.visibility === VISIBILITY.HIDDEN) {
+            continue;
+          }
           const { textDecoration, textShadow, stroke, strokeWidth, strokeEnable } = textBox;
-          setFontAndLetterSpacing(ctx, textBox);
+          setCtxPre(ctx, textBox);
           for (let i = 0, len = stroke.length; i < len; i++) {
             if (!strokeEnable[i] || !strokeWidth[i]) {
               continue;
@@ -1233,7 +1264,7 @@ class Text extends Node {
               (textBox.y + textBox.baseline) + dy2,
             );
           }
-          // setFontAndLetterSpacing(ctx, textBox);
+          // setCtxPre(ctx, textBox);
           ctx.fillStyle = textBox.color;
           // 仅普通绘制有，fill/stroke没有
           if (textShadow) {

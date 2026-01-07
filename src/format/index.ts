@@ -120,7 +120,10 @@ export type JRich = Pick<JStyle,
   | 'stroke'
   | 'strokeWidth'
   | 'strokeEnable'
-> & {
+> & Partial<Pick<JStyle,
+  'opacity'
+  | 'visibility'
+>> & {
   location: number,
   length: number,
 };
@@ -140,6 +143,8 @@ export type Rich = Pick<Style,
   | 'stroke'
   | 'strokeWidth'
   | 'strokeEnable'
+  | 'opacity'
+  | 'visibility'
 > & {
   location: number;
   length: number;
@@ -160,6 +165,8 @@ export type ComputedRich = Pick<ComputedStyle,
   | 'stroke'
   | 'strokeWidth'
   | 'strokeEnable'
+  | 'opacity'
+  | 'visibility'
 > & {
   location: number;
   length: number;
