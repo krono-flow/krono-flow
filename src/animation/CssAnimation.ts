@@ -105,7 +105,10 @@ export class CssAnimation extends AbstractAnimation {
 
   onRunning(delta: number, old?: number) {
     super.onRunning(delta, old);
-    const { duration, delay, iterations, time } = this;
+    const { duration, delay, iterations, time, skipFrame } = this;
+    if (skipFrame) {
+      return;
+    }
     const currentTime = this._currentTime;
     // 如有delay则这段时间等待状态，根据fill设置是否是初始帧样式
     if (currentTime < delay) {

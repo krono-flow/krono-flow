@@ -105,7 +105,7 @@ export type TextProps = Props & {
   textBehaviour?: 'auto' | 'autoH' | 'fixed'; // sketch中特有，考虑字体的不确定性，记录原始文本框的大小位置对齐以便初始化
 }
 
-export type JRich = Pick<JStyle,
+export type JRich = Partial<Pick<JStyle,
   'fontFamily'
   | 'fontSize'
   | 'fontWeight'
@@ -120,8 +120,7 @@ export type JRich = Pick<JStyle,
   | 'stroke'
   | 'strokeWidth'
   | 'strokeEnable'
-> & Partial<Pick<JStyle,
-  'opacity'
+  | 'opacity'
   | 'visibility'
 >> & {
   location: number,

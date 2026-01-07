@@ -62,7 +62,10 @@ class FrameAnimation extends AbstractAnimation {
 
   onRunning(delta: number) {
     super.onRunning(delta);
-    const { node, duration, delay, iterations, currentFrameArea, time } = this;
+    const { node, duration, delay, iterations, currentFrameArea, time, skipFrame } = this;
+    if (skipFrame) {
+      return;
+    }
     const currentTime = this._currentTime;
     // 如有delay则这段时间等待状态
     if (currentTime < delay) {

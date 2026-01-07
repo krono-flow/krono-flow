@@ -15,7 +15,7 @@ export type Options = {
   iterationStart?: number;
   playbackRate?: number;
   autoPlay?: boolean;
-  spf?: number;
+  fps?: number;
 };
 
 abstract class AbstractAnimation extends Event {
@@ -28,6 +28,10 @@ abstract class AbstractAnimation extends Event {
   easing?: (v: number) => number;
   iterations: number;
   playbackRate: number;
+  fps: number;
+  spf: number;
+  protected skipFrame: boolean;
+  protected lastCurrentTime: number;
   protected _currentTime: number;
   protected time: number; // 去除delay和playCount的时间
   protected _playCount: number;
@@ -57,6 +61,10 @@ abstract class AbstractAnimation extends Event {
     }
     this.iterations = options.iterations || 1;
     this.playbackRate = options.playbackRate || 1;
+    this.fps = options.fps || Infinity;
+    this.spf = 1000 / this.fps; // 默认0
+    this.skipFrame = false;
+    this.lastCurrentTime = 0;
     this._currentTime = 0;
     this.time = 0;
     this._playCount = options.iterationStart || 0;
@@ -74,7 +82,9 @@ abstract class AbstractAnimation extends Event {
     // 每次重新播放需重置，第一次进入delay标识
     if (playState === 'finished' || playState === 'idle') {
       this._playCount = 0;
+      this.lastCurrentTime = 0;
       this._currentTime = 0;
+      this.skipFrame = false;
       this.time = 0;
       this.isBegin = !this.delay;
       this.isEnd = false;
@@ -160,6 +170,12 @@ abstract class AbstractAnimation extends Event {
     }
     old = old ?? this._currentTime;
     let time = this._currentTime += delta;
+    if (this.spf && time - this.lastCurrentTime < this.spf) {
+      this.skipFrame = true;
+      return;
+    }
+    this.skipFrame = false;
+    this.lastCurrentTime = time;
     if (delay && time < delay) {
       if (this.isFirstInDelay) {
         this.onFirstInDelay();
@@ -228,7 +244,7 @@ abstract class AbstractAnimation extends Event {
     const old = this._currentTime;
     if (v !== old) {
       const delay = this.delay;
-      this._currentTime = v;
+      this.lastCurrentTime = this._currentTime = v;
       const t = old - delay;
       this.time = t % this.duration;
       if (v <= delay) {
