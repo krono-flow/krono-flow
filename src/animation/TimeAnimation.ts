@@ -73,7 +73,7 @@ class TimeAnimation extends AbstractAnimation {
     }
   }
 
-  onRunning(delta: number, old?: number) {
+  override onRunning(delta: number, old?: number) {
     super.onRunning(delta, old);
     const { node, duration, delay, iterations, currentTimeArea, time, skipFrame } = this;
     if (skipFrame) {

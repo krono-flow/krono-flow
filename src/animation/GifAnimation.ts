@@ -60,7 +60,7 @@ class FrameAnimation extends AbstractAnimation {
     this.node.frameIndex = this.originFrameIndex;
   }
 
-  onRunning(delta: number) {
+  override onRunning(delta: number) {
     super.onRunning(delta);
     const { node, duration, delay, iterations, currentFrameArea, time, skipFrame } = this;
     if (skipFrame) {

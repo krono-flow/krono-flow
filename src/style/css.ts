@@ -1046,14 +1046,16 @@ export function calSize(v: StyleNumValue, p: number): number {
   return 0;
 }
 
-export function normalizeRich(rich: Partial<JRich>, style: Style) {
+export function normalizeRich(rich: Partial<JRich>, style: Style, complete = true) {
   const res: any = {};
-  RICH_KEYS.forEach((k) => {
-    const v = style[k as keyof Style];
-    if (v !== undefined) {
-      res[k] = v;
-    }
-  });
+  if (complete) {
+    RICH_KEYS.forEach((k) => {
+      const v = style[k as keyof Style];
+      if (v !== undefined) {
+        res[k] = v;
+      }
+    });
+  }
   return {
     location: rich.location,
     length: rich.length,

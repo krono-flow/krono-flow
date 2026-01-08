@@ -88,31 +88,10 @@ export class CssAnimation extends AbstractAnimation {
   // 根据播放方向和初始轮次确定当前帧序列是正向还是反向
   private setCurrentFrames() {
     const { direction, keyFrames, keyFramesR, _playCount } = this;
-    if (direction === 'backwards') {
-      this.currentKeyFrames = keyFramesR;
-    }
-    else if (direction === 'alternate') {
-      if (_playCount % 2 === 0) {
-        this.currentKeyFrames = keyFrames;
-      }
-      else {
-        this.currentKeyFrames = keyFramesR;
-      }
-    }
-    else if (direction === 'alternateReverse') {
-      if (_playCount % 2 === 0) {
-        this.currentKeyFrames = keyFramesR;
-      }
-      else {
-        this.currentKeyFrames = keyFrames;
-      }
-    }
-    else {
-      this.currentKeyFrames = keyFrames;
-    }
+    this.currentKeyFrames = getCurrentFrames<KeyFrame>(direction, _playCount, keyFrames ,keyFramesR);
   }
 
-  onRunning(delta: number, old?: number) {
+  override onRunning(delta: number, old?: number) {
     super.onRunning(delta, old);
     const { duration, delay, iterations, time, skipFrame } = this;
     if (skipFrame) {
@@ -132,25 +111,12 @@ export class CssAnimation extends AbstractAnimation {
       i = time < duration ? 0 : 1;
     }
     else {
-      i = binarySearchFrame(0, length - 1, time, currentKeyFrames);
+      i = binarySearchFrame<KeyFrame>(0, length - 1, time, currentKeyFrames);
     }
     const currentKeyFrame = currentKeyFrames[i];
     // 最后一帧结束动画，仅最后一轮才会进入
     const isLastKeyFrame = isLastCount && i === length - 1;
-    // 当前帧和下一帧之间的进度百分比
-    let percent = 0;
-    if (isLastKeyFrame) {
-      // 无需任何处理
-    }
-    // 否则根据目前到下一帧的时间差，计算百分比，再反馈到变化数值上
-    else if (length === 2) {
-      percent = time / duration;
-    }
-    else {
-      const time0 = currentKeyFrame.time;
-      const total = currentKeyFrames[i + 1].time - time0;
-      percent = (time - time0) / total;
-    }
+    let percent = isLastKeyFrame ? 0 : getPercent(currentKeyFrame.time, currentKeyFrames[i + 1].time, time, duration);
     // 最后结束特殊处理，根据endDelay/fill决定是否还原还是停留最后一帧
     if (isLastKeyFrame) {
     }
@@ -178,6 +144,11 @@ export class CssAnimation extends AbstractAnimation {
           || key === 'rotateZ'
           || key === 'perspective'
           || key === 'perspectiveSelf'
+          || key === 'fontSize'
+          || key === 'fontWeight'
+          || key === 'lineHeight'
+          || key === 'letterSpacing'
+          || key === 'paragraphSpacing'
         ) {
           const o = Object.assign({}, style[key]) as StyleNumValue;
           o.v += (diff as number) * percent;
@@ -188,6 +159,13 @@ export class CssAnimation extends AbstractAnimation {
           const o = [Object.assign({}, v[0]), Object.assign({}, v[1])] as [StyleNumValue, StyleNumValue];
           o[0].v += (diff as [number, number])[0] * percent;
           o[1].v += (diff as [number, number])[1] * percent;
+          update[key] = o;
+        }
+        else if (key === 'color') {
+          const o = Object.assign({}, style[key]) as StyleColorValue;
+          for (let i = 0; i < 4; i++) {
+            o.v[i] += (diff as [number, number, number, number])[i] * percent
+          }
           update[key] = o;
         }
         else if (key === 'filter') {
@@ -413,6 +391,31 @@ export function normalizeEasing(ea: string | number[] | ((v: number) => number))
   }
 }
 
+export function getCurrentFrames<KF>(direction: string, playCount: number, keyFrames: KF[], keyFramesR: KF[]) {
+  if (direction === 'backwards') {
+    return keyFramesR;
+  }
+  else if (direction === 'alternate') {
+    if (playCount % 2 === 0) {
+      return keyFrames;
+    }
+    else {
+      return keyFramesR;
+    }
+  }
+  else if (direction === 'alternateReverse') {
+    if (playCount % 2 === 0) {
+      return keyFramesR;
+    }
+    else {
+      return keyFrames;
+    }
+  }
+  else {
+    return keyFrames;
+  }
+}
+
 function calTransition(node: Node, keyFrames: KeyFrame[], keys: (keyof Style)[]) {
   for (let i = 1, len = keyFrames.length; i < len; i++) {
     const prev = keyFrames[i - 1];
@@ -585,7 +588,7 @@ function calLengthByUnit(p: StyleNumValue, n: StyleNumValue, unit: number) {
   return 0;
 }
 
-function binarySearchFrame(i: number, j: number, currentTime: number, keyFrames: KeyFrame[]) {
+export function binarySearchFrame<KF extends  { time: number }>(i: number, j: number, currentTime: number, keyFrames: KF[]) {
   while (i < j) {
     if (i === j - 1) {
       if (keyFrames[j].time <= currentTime) {
@@ -606,6 +609,20 @@ function binarySearchFrame(i: number, j: number, currentTime: number, keyFrames:
     }
   }
   return i;
+}
+
+export function getPercent(time0: number, time1: number, time: number, duration: number) {
+  // 当前帧和下一帧之间的进度百分比
+  let percent = 0;
+  // 根据目前到下一帧的时间差，计算百分比，再反馈到变化数值上
+  if (length === 2) {
+    percent = time / duration;
+  }
+  else {
+    const total = time1 - time0;
+    percent = (time - time0) / total;
+  }
+  return percent;
 }
 
 export default CssAnimation;
