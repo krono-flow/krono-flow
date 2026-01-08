@@ -105,6 +105,11 @@ export type TextProps = Props & {
   textBehaviour?: 'auto' | 'autoH' | 'fixed'; // sketch中特有，考虑字体的不确定性，记录原始文本框的大小位置对齐以便初始化
 }
 
+export type RichIndex = {
+  location: number;
+  length: number;
+};
+
 export type JRich = Partial<Pick<JStyle,
   'fontFamily'
   | 'fontSize'
@@ -122,10 +127,7 @@ export type JRich = Partial<Pick<JStyle,
   | 'strokeEnable'
   | 'opacity'
   | 'visibility'
->> & {
-  location: number,
-  length: number,
-};
+>> & RichIndex;
 
 export type Rich = Pick<Style,
   'fontFamily'
@@ -144,10 +146,7 @@ export type Rich = Pick<Style,
   | 'strokeEnable'
   | 'opacity'
   | 'visibility'
-> & {
-  location: number;
-  length: number;
-};
+> & RichIndex;
 
 export type ComputedRich = Pick<ComputedStyle,
   'fontFamily'
@@ -166,10 +165,7 @@ export type ComputedRich = Pick<ComputedStyle,
   | 'strokeEnable'
   | 'opacity'
   | 'visibility'
-> & {
-  location: number;
-  length: number;
-};
+> & RichIndex;
 
 type Origin = number | 'left' | 'right' | 'top' | 'bottom' | 'center';
 

@@ -11,51 +11,60 @@ import {
   MotionBlur,
   RadialBlur,
   Style,
+  StyleColorValue,
   StyleFilter,
   StyleNumValue,
   StyleUnit,
 } from '../style/define';
 import css, { cloneStyle } from '../style/css';
 
-export type JKeyFrame = Partial<JStyle> & {
+export type JOsEs = {
   offset?: number;
   easing?: string | number[] | ((v: number) => number);
 };
+
+export type JKeyFrame = Partial<JStyle> & JOsEs;
 
 type FilterTransition = {
   radius?: number, angle?: number, offset?: number, center?: [number, number], threshold?: number, knee?: number,
 };
 
-export type KeyFrame = {
-  style: Partial<Style>;
+export type OsEs = {
   time: number;
   easing?: (v: number) => number;
-  transition: { key: keyof Style, diff: number | [number, number] | FilterTransition[] }[]; // 到下帧有变化的key和差值
-  fixed: (keyof Style)[]; // 固定不变化的key
 };
 
+export type KeyFrame = {
+  style: Partial<Style>;
+  transition: { key: keyof Style, diff: number | number[] | FilterTransition[] }[]; // 到下帧有变化的key和差值
+  fixed: (keyof Style)[]; // 固定不变化的key
+} & OsEs;
+
 export class CssAnimation extends AbstractAnimation {
-  private _keyFrames: KeyFrame[];
-  private _keyFramesR: KeyFrame[];
+  protected keyFrames: KeyFrame[];
+  protected keyFramesR: KeyFrame[];
   currentKeyFrames: KeyFrame[];
   originStyle: Partial<Style>;
 
   constructor(node: Node, jKeyFrames: JKeyFrame[], options: Options) {
     super(node, options);
-    this._keyFrames = [];
-    this._keyFramesR = [];
-    this.currentKeyFrames = this._keyFrames;
+    this.keyFrames = [];
+    this.keyFramesR = [];
+    this.currentKeyFrames = this.keyFrames;
     this.originStyle = {};
     this.initKeyFrames(jKeyFrames);
     this.setCurrentFrames();
   }
 
   private initKeyFrames(jKeyFrames: JKeyFrame[]) {
+    if (!jKeyFrames.length) {
+      return;
+    }
     const { keys, keyFrames, keyFramesR, originStyle } = parseKeyFrames(this.node, jKeyFrames, this.duration, this.easing);
-    this._keyFrames = keyFrames;
-    this._keyFramesR = keyFramesR;
-    calTransition(this.node, this._keyFrames, keys);
-    calTransition(this.node, this._keyFramesR, keys);
+    this.keyFrames = keyFrames;
+    this.keyFramesR = keyFramesR;
+    calTransition(this.node, this.keyFrames, keys);
+    calTransition(this.node, this.keyFramesR, keys);
     this.originStyle = originStyle;
   }
 
@@ -78,28 +87,28 @@ export class CssAnimation extends AbstractAnimation {
 
   // 根据播放方向和初始轮次确定当前帧序列是正向还是反向
   private setCurrentFrames() {
-    const { direction, _keyFrames, _keyFramesR, _playCount } = this;
+    const { direction, keyFrames, keyFramesR, _playCount } = this;
     if (direction === 'backwards') {
-      this.currentKeyFrames = _keyFramesR;
+      this.currentKeyFrames = keyFramesR;
     }
     else if (direction === 'alternate') {
       if (_playCount % 2 === 0) {
-        this.currentKeyFrames = _keyFrames;
+        this.currentKeyFrames = keyFrames;
       }
       else {
-        this.currentKeyFrames = _keyFramesR;
+        this.currentKeyFrames = keyFramesR;
       }
     }
     else if (direction === 'alternateReverse') {
       if (_playCount % 2 === 0) {
-        this.currentKeyFrames = _keyFramesR;
+        this.currentKeyFrames = keyFramesR;
       }
       else {
-        this.currentKeyFrames = _keyFrames;
+        this.currentKeyFrames = keyFrames;
       }
     }
     else {
-      this.currentKeyFrames = _keyFrames;
+      this.currentKeyFrames = keyFrames;
     }
   }
 
@@ -259,7 +268,66 @@ export class CssAnimation extends AbstractAnimation {
 
 // 将关键帧序列标准化样式结构
 function parseKeyFrames(node: Node, jKeyFrames: JKeyFrame[], duration: number, ea?: (v: number) => number) {
-  const list: JKeyFrame[] = [];
+  const list = normalizeKeyFramesOsEs(jKeyFrames) as JKeyFrame[];
+  // 标准化关键帧的样式，并统计有哪些样式出现
+  const keyFrames: KeyFrame[] = [];
+  const hash: Record<string, boolean> = {};
+  const keys: (keyof Style)[] = [];
+  for(let i = 0, len = list.length; i < len; i++) {
+    const item = list[i];
+    const style = css.normalize(item);
+    Object.keys(style).forEach(k => {
+      if (!hash.hasOwnProperty(k)) {
+        hash[k] = true;
+        keys.push(k as keyof Style);
+      }
+    });
+    const o = {
+      style,
+      time: item.offset! * duration,
+      easing: ea,
+      transition: [],
+      fixed: [],
+    };
+    if (item.easing) {
+      o.easing = normalizeEasing(item.easing);
+    }
+    keyFrames.push(o);
+  }
+  // 添补没有声明完全的关键帧属性为节点当前值
+  keyFrames.forEach(item => {
+    const style = item.style;
+    keys.forEach(k => {
+      if (!style.hasOwnProperty(k)) {
+        Object.assign(style, cloneStyle(node.style, [k]));
+      }
+    });
+  });
+  // 反向播放的
+  const keyFramesR = keyFrames.map(item => {
+    return Object.assign({}, item, {
+      transition: [],
+      fixed: [],
+    });
+  }).reverse();
+  keyFramesR.forEach(item => {
+    item.time = duration - item.time;
+  });
+  // 记录原始样式，动画结束可能需要还原
+  const originStyle: Partial<Style> = cloneStyle(node.style, keys);
+  return {
+    keys,
+    keyFrames,
+    keyFramesR,
+    originStyle,
+  };
+}
+
+export function normalizeKeyFramesOsEs(jKeyFrames: JOsEs[]) {
+  if (!jKeyFrames.length) {
+    return [];
+  }
+  const list: JOsEs[] = [];
   // 过滤时间非法的，过滤后续offset<=前面的
   let prevOffset = 0;
   for (let i = 0, len = jKeyFrames.length; i < len; i++) {
@@ -330,66 +398,19 @@ function parseKeyFrames(node: Node, jKeyFrames: JKeyFrame[], duration: number, e
       i = j;
     }
   }
-  // 标准化关键帧的样式，并统计有哪些样式出现
-  const keyFrames: KeyFrame[] = [];
-  const hash: Record<string, boolean> = {};
-  const keys: (keyof Style)[] = [];
-  for(let i = 0, len = list.length; i < len; i++) {
-    const item = list[i];
-    const style = css.normalize(item);
-    Object.keys(style).forEach(k => {
-      if (!hash.hasOwnProperty(k)) {
-        hash[k] = true;
-        keys.push(k as keyof Style);
-      }
-    });
-    const o = {
-      style,
-      time: item.offset! * duration,
-      easing: ea,
-      transition: [],
-      fixed: [],
-    };
-    if (item.easing) {
-      if (isFunction(item.easing)) {
-        o.easing = item.easing as (v :number) => number;
-      }
-      else if (Array.isArray(item.easing)) {
-        o.easing = easing.getEasing(item.easing as number[]);
-      }
-      else if (isString(item.easing)) {
-        o.easing = easing[item.easing as 'linear' | 'easeIn' | 'easeOut' | 'easeInOut'];
-      }
-    }
-    keyFrames.push(o);
+  return list;
+}
+
+export function normalizeEasing(ea: string | number[] | ((v: number) => number)) {
+  if (isFunction(ea)) {
+    return ea as (v :number) => number;
   }
-  // 添补没有声明完全的关键帧属性为节点当前值
-  keyFrames.forEach(item => {
-    const style = item.style;
-    keys.forEach(k => {
-      if (!style.hasOwnProperty(k)) {
-        Object.assign(style, cloneStyle(node.style, [k]));
-      }
-    });
-  });
-  // 反向播放的
-  const keyFramesR = keyFrames.map(item => {
-    return Object.assign({}, item, {
-      transition: [],
-      fixed: [],
-    });
-  }).reverse();
-  keyFramesR.forEach(item => {
-    item.time = duration - item.time;
-  });
-  // 记录原始样式，动画结束可能需要还原
-  const originStyle: Partial<Style> = cloneStyle(node.style, keys);
-  return {
-    keys,
-    keyFrames,
-    keyFramesR,
-    originStyle,
-  };
+  else if (Array.isArray(ea)) {
+    return easing.getEasing(ea as number[]);
+  }
+  else if (isString(ea)) {
+    return easing[ea as 'linear' | 'easeIn' | 'easeOut' | 'easeInOut'];
+  }
 }
 
 function calTransition(node: Node, keyFrames: KeyFrame[], keys: (keyof Style)[]) {
@@ -401,12 +422,18 @@ function calTransition(node: Node, keyFrames: KeyFrame[], keys: (keyof Style)[])
     keys.forEach(key => {
       const p = prevStyle[key];
       const n = nextStyle[key];
+      // 无单位变化数值
       if (key === 'opacity'
         || key === 'scaleX'
         || key === 'scaleY'
         || key === 'rotateX'
         || key === 'rotateY'
         || key === 'rotateZ'
+        || key === 'fontSize'
+        || key === 'fontWeight'
+        || key === 'lineHeight'
+        || key === 'letterSpacing'
+        || key === 'paragraphSpacing'
       ) {
         prev.transition.push({
           key,
@@ -439,6 +466,16 @@ function calTransition(node: Node, keyFrames: KeyFrame[], keys: (keyof Style)[])
             diff: calLengthByUnit((p as StyleNumValue), (n as StyleNumValue), unit),
           });
         }
+      }
+      else if (key === 'color') {
+        const diff: [number, number, number, number] = [0, 0, 0, 0];
+        for (let i = 0; i < 4; i++) {
+          diff[i] = (n as StyleColorValue).v[i] - (p as StyleColorValue).v[i];
+        }
+        prev.transition.push({
+          key,
+          diff,
+        });
       }
       else if (key === 'transformOrigin' || key === 'perspectiveOrigin') {
         const pv = p as [StyleNumValue, StyleNumValue];
