@@ -39,6 +39,8 @@ import { clone, equal } from '../util/type';
 import { RefreshLevel } from '../refresh/level';
 import { calComputedStroke } from '../style/compute';
 import { calPoint, inverse4 } from '../math/matrix';
+import { JKeyFrameRich, RichAnimation } from '../animation/RichAnimation';
+import { Options } from '../animation/AbstractAnimation';
 
 export type EditStyle = {
   isLeft: boolean;
@@ -2950,18 +2952,19 @@ class Text extends Node {
 
   updateRangeStyle(location: number, length: number, style: ModifyJRichStyle, cb?: (sync: boolean) => void) {
     const formatStyle = normalize(style);
-    const lv = this.updateRangeStyleData(location, length, formatStyle);
+    return this.updateFormatRangeStyle(location, length, formatStyle, cb);
+  }
+
+  updateFormatRangeStyle(location: number, length: number, modify: ModifyRichStyle, cb?: (sync: boolean) => void) {
+    const lv = this.updateFormatRangeStyleData(location, length, modify);
     if (lv) {
       this.refresh(lv, cb);
-    }
-    if (lv & RefreshLevel.REFLOW_REPAINT) {
-      this.reLocateCursor();
     }
     return lv;
   }
 
   // 传入location/length，修改范围内的Rich的样式，一般来源是TextPanel中改如颜色
-  updateRangeStyleData(location: number, length: number, modify: ModifyRichStyle) {
+  updateFormatRangeStyleData(location: number, length: number, modify: ModifyRichStyle) {
     let lv = RefreshLevel.NONE;
     const { rich, computedRich, style } = this;
     if (rich.length) {
@@ -3056,6 +3059,9 @@ class Text extends Node {
     if (location === 0) {
       this.updateFormatStyleData(modify);
     }
+    if (lv & RefreshLevel.REFLOW_REPAINT) {
+      this.reLocateCursor();
+    }
     return lv;
   }
 
@@ -3114,6 +3120,14 @@ class Text extends Node {
       item.textShadow = style.textShadow;
       lv |= RefreshLevel.REFLOW;
     }
+    if (style.opacity && style.opacity.v !== item.opacity.v) {
+      item.opacity = style.opacity;
+      lv |= RefreshLevel.REFLOW;
+    }
+    if (style.visibility && style.visibility.v !== item.visibility.v) {
+      item.visibility = style.visibility;
+      lv |= RefreshLevel.REFLOW;
+    }
     Object.assign(c, this.calComputedRich(item));
     return lv;
   }
@@ -3140,6 +3154,11 @@ class Text extends Node {
     else {
       return 'fixed';
     }
+  }
+
+  richAnimate(keyFrames: JKeyFrameRich[], options: Options) {
+    const animation =  new RichAnimation(this, keyFrames, options);
+    return this.initAnimate(animation, options);
   }
 
   override cloneProps() {

@@ -164,7 +164,7 @@ export class CssAnimation extends AbstractAnimation {
         else if (key === 'color') {
           const o = Object.assign({}, style[key]) as StyleColorValue;
           for (let i = 0; i < 4; i++) {
-            o.v[i] += (diff as [number, number, number, number])[i] * percent
+            o.v[i] += (diff as [number, number, number, number])[i] * percent;
           }
           update[key] = o;
         }
@@ -501,13 +501,6 @@ function calTransition(node: Node, keyFrames: KeyFrame[], keys: (keyof Style)[])
           diff,
         });
       }
-      else if (key === 'visibility' || key === 'overflow') {
-        next.fixed.push(key);
-        // fixed很特殊首帧渲染需要
-        if (i === 1) {
-          prev.fixed.push(key);
-        }
-      }
       else if (key === 'filter') {
         const ps = (p as StyleFilter[]);
         const ns = (n as StyleFilter[]);
@@ -562,12 +555,12 @@ function calTransition(node: Node, keyFrames: KeyFrame[], keys: (keyof Style)[])
             diff,
           });
         }
-        else {
-          next.fixed.push(key);
-          // fixed很特殊首帧渲染需要
-          if (i === 1) {
-            prev.fixed.push(key);
-          }
+      }
+      else {
+        next.fixed.push(key);
+        // fixed很特殊首帧渲染需要
+        if (i === 1) {
+          prev.fixed.push(key);
         }
       }
     });
