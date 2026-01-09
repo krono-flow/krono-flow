@@ -1,11 +1,14 @@
 import Node from './Node';
 import LineBox from './LineBox';
-import { ComputedRich, JStyle, ModifyJRichStyle, ModifyRichStyle, Rich, TextProps } from '../format';
+import { JStyle, ModifyJRichStyle, TextProps } from '../format';
 import { LayoutData } from '../refresh/layout';
 import {
   ComputedGradient,
   ComputedTextShadow,
+  ComputedRich,
   GRADIENT,
+  ModifyRichStyle,
+  Rich,
   RICH_KEYS,
   STROKE_LINE_CAP,
   STROKE_LINE_JOIN,
@@ -726,22 +729,6 @@ class Text extends Node {
         location: start,
         length,
         ...cloneStyle(style, RICH_KEYS),
-        // fontFamily: style.fontFamily,
-        // fontSize: style.fontSize,
-        // fontWeight: style.fontWeight,
-        // fontStyle: style.fontStyle,
-        // letterSpacing: style.letterSpacing,
-        // lineHeight: style.lineHeight,
-        // paragraphSpacing: style.paragraphSpacing,
-        // textAlign: style.textAlign,
-        // textDecoration: style.textDecoration,
-        // textShadow: style.textShadow,
-        // color: style.color,
-        // stroke: style.stroke.slice(0),
-        // strokeEnable: style.strokeEnable.slice(0),
-        // strokeWidth: style.strokeWidth.slice(0),
-        // opacity: style.opacity,
-        // visibility: style.visibility,
       } as Rich;
       rich.push(first);
       computedRich.push(this.calComputedRich(first));

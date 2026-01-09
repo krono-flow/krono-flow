@@ -4,11 +4,12 @@ import {
   getCurrentFrames,
   getPercent,
   normalizeEasing,
-  normalizeKeyFramesOsEs
+  normalizeKeyFramesOsEs,
+  TextShadowTransition,
 } from './CssAnimation';
 import Text from '../node/Text';
-import { JRich, ModifyRichStyle, Rich, RichIndex } from '../format';
-import { StyleColorValue, StyleNumValue } from '../style/define';
+import { JRich, RichIndex } from '../format';
+import { ModifyRichStyle, Rich, StyleColorValue, StyleNumValue, StyleTextShadowValue } from '../style/define';
 import { cloneStyle, normalizeRich } from '../style/css';
 
 export type JKeyFrameRich = {
@@ -21,7 +22,7 @@ export type KeyFrameRich = {
   rich: (Partial<Rich> & RichIndex)[];
   time: number;
   easing?: (v: number) => number;
-  transition: { key: keyof Rich, diff: number | number[] }[][];
+  transition: { key: keyof Rich, diff: number | number[] | TextShadowTransition }[][];
   fixed: (keyof Rich)[][];
 };
 
@@ -133,9 +134,36 @@ export class RichAnimation extends AbstractAnimation {
             update[key] = o;
           }
           else if (key === 'color') {
-            const o = Object.assign({}, rich[i][key]) as StyleColorValue;for (let i = 0; i < 4; i++) {
+            const o = Object.assign({}, rich[i][key]) as StyleColorValue;
+            for (let i = 0; i < 4; i++) {
               o.v[i] += (diff as [number, number, number, number])[i] * percent;
             }
+            update[key] = o;
+          }
+          else if (key === 'textShadow') {
+            const v = rich[i][key] as StyleTextShadowValue;
+            const o = {
+              v: Object.assign({}, v.v),
+              u: v.u,
+            };
+            o.v.color = o.v.color.slice(0);
+            o.v.x += (diff as TextShadowTransition).x * percent;
+            o.v.y += (diff as TextShadowTransition).y * percent;
+            o.v.blur += (diff as TextShadowTransition).blur * percent;
+            for (let i = 0; i < 4; i++) {
+              o.v.color[i] += ((diff as TextShadowTransition).color)[i] * percent;
+            }
+            update[key] = o;
+          }
+          else if (key === 'stroke') {}
+          else if (key === 'strokeWidth') {
+            const v = rich[i][key] as StyleNumValue[];
+            const o = v.map(item => {
+              return Object.assign({}, item);
+            });
+            o.forEach((item, i) => {
+              item.v += (diff as number[])[i] * percent;
+            });
             update[key] = o;
           }
           else if (key === 'location' || key === 'length') {
@@ -144,8 +172,14 @@ export class RichAnimation extends AbstractAnimation {
         });
         // 固定部分
         fixed[i].forEach(key => {
-          // @ts-ignore
-          update[key] = Object.assign({}, rich[i][key]);
+          if (key === 'textDecoration' || key === 'strokeEnable') {
+            // @ts-ignore
+            update[key] = rich[i][key].map(item => Object.assign({}, item));
+          }
+          else {
+            // @ts-ignore
+            update[key] = Object.assign({}, rich[i][key]);
+          }
         });
         this.node.updateFormatRangeStyle(ri.location, ri.length, update);
       });
@@ -201,9 +235,9 @@ function parseKeyFrames(node: Text, jKeyFrames: JKeyFrameRich[], duration: numbe
       o.rich[j] = res;
       if (j < length) {
         Object.keys(res).forEach(k => {
-          if (k !== 'location' && k !== 'length' && !hash[i].hasOwnProperty(k)) {
-            hash[i][k] = true;
-            keys[i].push(k as keyof Rich);
+          if (k !== 'location' && k !== 'length' && !hash[j].hasOwnProperty(k)) {
+            hash[j][k] = true;
+            keys[j].push(k as keyof Rich);
           }
         });
       }
@@ -278,6 +312,37 @@ function calTransition(node: Text, keyFrames: KeyFrameRich[], keys: (keyof Rich)
           const diff: [number, number, number, number] = [0, 0, 0, 0];
           for (let i = 0; i < 4; i++) {
             diff[i] = (n as StyleColorValue).v[i] - (p as StyleColorValue).v[i];
+          }
+          prev.transition[j].push({
+            key,
+            diff,
+          });
+        }
+        else if (key === 'textShadow') {
+          const pv = (p as StyleTextShadowValue).v;
+          const nv = (n as StyleTextShadowValue).v;
+          prev.transition[j].push({
+            key,
+            diff: {
+              x: nv.x - pv.x,
+              y: nv.y - pv.y,
+              blur: nv.blur - pv.blur,
+              color: [
+                nv.color[0] - pv.color[0],
+                nv.color[1] - pv.color[1],
+                nv.color[2] - pv.color[2],
+                nv.color[3] - pv.color[3],
+              ],
+            },
+          });
+        }
+        else if (key === 'stroke') {}
+        else if (key === 'strokeWidth') {
+          const pv = p as StyleNumValue[];
+          const nv = n as StyleNumValue[];
+          const diff: number[] = [];
+          for (let i = 0; i < Math.min(pv.length, nv.length); i++) {
+            diff.push(nv[i].v - pv[i].v);
           }
           prev.transition[j].push({
             key,

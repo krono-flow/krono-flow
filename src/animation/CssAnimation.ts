@@ -14,6 +14,7 @@ import {
   StyleColorValue,
   StyleFilter,
   StyleNumValue,
+  StyleTextShadowValue,
   StyleUnit,
 } from '../style/define';
 import css, { cloneStyle } from '../style/css';
@@ -26,7 +27,19 @@ export type JOsEs = {
 export type JKeyFrame = Partial<JStyle> & JOsEs;
 
 type FilterTransition = {
-  radius?: number, angle?: number, offset?: number, center?: [number, number], threshold?: number, knee?: number,
+  radius?: number;
+  angle?: number;
+  offset?: number;
+  center?: [number, number];
+  threshold?: number;
+  knee?: number;
+};
+
+export type TextShadowTransition = {
+  x: number;
+  y: number;
+  blur: number;
+  color: number[];
 };
 
 export type OsEs = {
@@ -36,7 +49,13 @@ export type OsEs = {
 
 export type KeyFrame = {
   style: Partial<Style>;
-  transition: { key: keyof Style, diff: number | number[] | FilterTransition[] }[]; // 到下帧有变化的key和差值
+  transition: {
+    key: keyof Style,
+    diff: number
+      | number[]
+      | FilterTransition[]
+      | TextShadowTransition
+  }[]; // 到下帧有变化的key和差值
   fixed: (keyof Style)[]; // 固定不变化的key
 } & OsEs;
 
@@ -154,18 +173,43 @@ export class CssAnimation extends AbstractAnimation {
           o.v += (diff as number) * percent;
           update[key] = o;
         }
-        else if (key === 'transformOrigin' || key === 'perspectiveOrigin') {
-          const v = style[key] as [StyleNumValue, StyleNumValue];
-          const o = [Object.assign({}, v[0]), Object.assign({}, v[1])] as [StyleNumValue, StyleNumValue];
-          o[0].v += (diff as [number, number])[0] * percent;
-          o[1].v += (diff as [number, number])[1] * percent;
-          update[key] = o;
-        }
         else if (key === 'color') {
           const o = Object.assign({}, style[key]) as StyleColorValue;
           for (let i = 0; i < 4; i++) {
             o.v[i] += (diff as [number, number, number, number])[i] * percent;
           }
+          update[key] = o;
+        }
+        else if (key === 'textShadow') {
+          const v = style[key] as StyleTextShadowValue;
+          const o = {
+            v: Object.assign({}, v.v),
+            u: v.u,
+          };
+          o.v.color = o.v.color.slice(0);
+          o.v.x += (diff as TextShadowTransition).x * percent;
+          o.v.y += (diff as TextShadowTransition).y * percent;
+          o.v.blur += (diff as TextShadowTransition).blur * percent;
+          for (let i = 0; i < 4; i++) {
+            o.v.color[i] += ((diff as TextShadowTransition).color)[i] * percent;
+          }
+          update[key] = o;
+        }
+        else if (key === 'strokeWidth') {
+          const v = style[key] as StyleNumValue[];
+          const o = v.map(item => {
+            return Object.assign({}, item);
+          });
+          o.forEach((item, i) => {
+            item.v += (diff as number[])[i] * percent;
+          });
+          update[key] = o;
+        }
+        else if (key === 'transformOrigin' || key === 'perspectiveOrigin') {
+          const v = style[key] as [StyleNumValue, StyleNumValue];
+          const o = [Object.assign({}, v[0]), Object.assign({}, v[1])] as [StyleNumValue, StyleNumValue];
+          o[0].v += (diff as [number, number])[0] * percent;
+          o[1].v += (diff as [number, number])[1] * percent;
           update[key] = o;
         }
         else if (key === 'filter') {
@@ -211,8 +255,14 @@ export class CssAnimation extends AbstractAnimation {
       });
       // 固定部分
       fixed.forEach(key => {
-        // @ts-ignore
-        update[key] = Object.assign({}, style[key]);
+        if (key === 'textDecoration' || key === 'strokeEnable') {
+          // @ts-ignore
+          update[key] = style[key].map(item => Object.assign({}, item));
+        }
+        else {
+          // @ts-ignore
+          update[key] = Object.assign({}, style[key]);
+        }
       });
       this.node.updateFormatStyle(update);
     }
@@ -474,6 +524,37 @@ function calTransition(node: Node, keyFrames: KeyFrame[], keys: (keyof Style)[])
         const diff: [number, number, number, number] = [0, 0, 0, 0];
         for (let i = 0; i < 4; i++) {
           diff[i] = (n as StyleColorValue).v[i] - (p as StyleColorValue).v[i];
+        }
+        prev.transition.push({
+          key,
+          diff,
+        });
+      }
+      else if (key === 'textShadow') {
+        const pv = (p as StyleTextShadowValue).v;
+        const nv = (n as StyleTextShadowValue).v;
+        prev.transition.push({
+          key,
+          diff: {
+            x: nv.x - pv.x,
+            y: nv.y - pv.y,
+            blur: nv.blur - pv.blur,
+            color: [
+              nv.color[0] - pv.color[0],
+              nv.color[1] - pv.color[1],
+              nv.color[2] - pv.color[2],
+              nv.color[3] - pv.color[3],
+            ],
+          },
+        });
+      }
+      else if (key === 'stroke' || key === 'fill') {}
+      else if (key === 'strokeWidth') {
+        const pv = p as StyleNumValue[];
+        const nv = n as StyleNumValue[];
+        const diff: number[] = [];
+        for (let i = 0; i < Math.min(pv.length, nv.length); i++) {
+          diff.push(nv[i].v - pv[i].v);
         }
         prev.transition.push({
           key,

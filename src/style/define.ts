@@ -1,3 +1,5 @@
+import { RichIndex } from '../format';
+
 export enum StyleUnit {
   AUTO = 0,
   PX = 1,
@@ -234,7 +236,7 @@ export type ComputedStyle = {
   textAlign: TEXT_ALIGN;
   textVerticalAlign: TEXT_VERTICAL_ALIGN;
   textDecoration: TEXT_DECORATION[];
-  textShadow?: ComputedTextShadow;
+  textShadow: ComputedTextShadow;
   color: number[];
   visibility: VISIBILITY;
   opacity: number;
@@ -512,6 +514,46 @@ export type ComputedSepia = {
   radius: number;
   u: StyleUnit.SEPIA;
 };
+
+export type Rich = Pick<Style,
+  'fontFamily'
+  | 'fontSize'
+  | 'fontWeight'
+  | 'lineHeight'
+  | 'letterSpacing'
+  | 'paragraphSpacing'
+  | 'fontStyle'
+  | 'textAlign'
+  | 'textDecoration'
+  | 'color'
+  | 'textShadow'
+  | 'stroke'
+  | 'strokeWidth'
+  | 'strokeEnable'
+  | 'opacity'
+  | 'visibility'
+> & RichIndex;
+
+export type ComputedRich = Pick<ComputedStyle,
+  'fontFamily'
+  | 'fontSize'
+  | 'fontWeight'
+  | 'lineHeight'
+  | 'letterSpacing'
+  | 'paragraphSpacing'
+  | 'fontStyle'
+  | 'textAlign'
+  | 'textDecoration'
+  | 'color'
+  | 'textShadow'
+  | 'stroke'
+  | 'strokeWidth'
+  | 'strokeEnable'
+  | 'opacity'
+  | 'visibility'
+> & RichIndex;
+
+export type ModifyRichStyle = Partial<Omit<Rich, 'location' | 'length'>>;
 
 export type StyleFilter = GaussBlur | RadialBlur | MotionBlur | Bloom | LightDark
   | HueRotate | Saturate | Brightness | Contrast | Sepia;

@@ -1,10 +1,11 @@
-import { ComputedRich, JPoint, JRich, JStyle, Point, Rich, } from '../format';
+import { JPoint, JRich, JStyle, Point } from '../format';
 import inject from '../util/inject';
 import { clone, isNil, isString } from '../util/type';
 import {
   calUnit,
   ComputedFilter,
   ComputedStyle,
+  ComputedRich,
   CURVE_MODE,
   FILL_RULE,
   FONT_STYLE,
@@ -14,6 +15,7 @@ import {
   OBJECT_FIT,
   OVERFLOW,
   PATTERN_FILL_TYPE,
+  Rich,
   RICH_KEYS,
   STROKE_LINE_CAP,
   STROKE_LINE_JOIN,
@@ -989,6 +991,17 @@ export function cloneStyle(style: Partial<Style>, keys?: string | string[]) {
     else if (k === 'color' || k === 'backgroundColor') {
       res[k] = {
         v: v.v.slice(0),
+        u: v.u,
+      };
+    }
+    else if (k === 'textShadow') {
+      res[k] = {
+        v: {
+          x: v.v.x,
+          y: v.v.y,
+          blur: v.v.blur,
+          color: v.v.color.slice(0),
+        },
         u: v.u,
       };
     }

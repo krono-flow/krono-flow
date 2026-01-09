@@ -1,8 +1,6 @@
 import { DEFAULT_STYLE } from './dft';
 import {
-  ComputedStyle,
   CURVE_MODE,
-  Style,
 } from '../style/define';
 import { VideoAudioMeta } from '../decoder';
 
@@ -129,44 +127,6 @@ export type JRich = Partial<Pick<JStyle,
   | 'visibility'
 >> & RichIndex;
 
-export type Rich = Pick<Style,
-  'fontFamily'
-  | 'fontSize'
-  | 'fontWeight'
-  | 'lineHeight'
-  | 'letterSpacing'
-  | 'paragraphSpacing'
-  | 'fontStyle'
-  | 'textAlign'
-  | 'textDecoration'
-  | 'color'
-  | 'textShadow'
-  | 'stroke'
-  | 'strokeWidth'
-  | 'strokeEnable'
-  | 'opacity'
-  | 'visibility'
-> & RichIndex;
-
-export type ComputedRich = Pick<ComputedStyle,
-  'fontFamily'
-  | 'fontSize'
-  | 'fontWeight'
-  | 'lineHeight'
-  | 'letterSpacing'
-  | 'paragraphSpacing'
-  | 'fontStyle'
-  | 'textAlign'
-  | 'textDecoration'
-  | 'color'
-  | 'textShadow'
-  | 'stroke'
-  | 'strokeWidth'
-  | 'strokeEnable'
-  | 'opacity'
-  | 'visibility'
-> & RichIndex;
-
 type Origin = number | 'left' | 'right' | 'top' | 'bottom' | 'center';
 
 export type JStyle = {
@@ -257,8 +217,6 @@ export type ResizeStyle = Partial<Pick<JStyle, 'left' | 'right' | 'top' | 'botto
 export type RotateZStyle = Pick<JStyle, 'rotateZ'>;
 
 export type ModifyJRichStyle = Partial<Omit<JRich, 'location' | 'length'>>;
-
-export type ModifyRichStyle = Partial<Omit<Rich, 'location' | 'length'>>;
 
 export function getDefaultStyle(v?: Partial<JStyle>): JStyle {
   const dft = Object.assign({}, DEFAULT_STYLE);
