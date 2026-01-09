@@ -15,7 +15,7 @@ export const DEFAULT_STYLE = {
   textAlign: 'left',
   textVerticalAlign: 'top',
   textDecoration: [],
-  textShadow: 'none',
+  textShadow: '0px 0px 0px transparent',
   color: [0, 0, 0, 1],
   visibility: 'visible',
   opacity: 1,

@@ -141,7 +141,7 @@ export type StyleStrokePositionValue = {
 };
 
 export type StyleTextShadowValue = {
-  v?: TextShadow;
+  v: TextShadow;
   u: StyleUnit.SHADOW;
 };
 

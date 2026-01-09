@@ -1149,9 +1149,20 @@ class Node extends Event {
     res.visibility = style.visibility.v === VISIBILITY.VISIBLE ? 'visible' : 'hidden';
     res.color = color2rgbaStr(style.color.v);
     res.backgroundColor = color2rgbaStr(style.backgroundColor.v);
+    res.fontFamily = style.fontFamily.v;
     res.fontStyle = ['normal', 'italic', 'oblique'][style.fontStyle.v];
     res.textAlign = ['left', 'right', 'center', 'justify'][style.textAlign.v];
     res.textVerticalAlign = ['top', 'middle', 'bottom'][style.textVerticalAlign.v];
+    res.textDecoration = style.textDecoration.map(item => {
+      return ['none', 'underline', 'lineThrough'][item.v] || 'none';
+    });
+    if (standard) {
+      res.textDecoration = res.textDecoration.join(', ');
+    }
+    res.textShadow = style.textShadow.v.x + 'px '
+      + style.textShadow.v.y + 'px '
+      + style.textShadow.v.blur + 'px '
+      + color2rgbaStr(style.textShadow.v.color);
     res.mixBlendMode = getCssMbm(style.mixBlendMode.v);
     res.objectFit = getCssObjectFit(style.objectFit.v);
     ['strokeEnable', 'fillEnable', 'fillOpacity', 'strokeWidth'].forEach((k) => {
