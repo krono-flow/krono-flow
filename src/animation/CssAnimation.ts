@@ -13,11 +13,12 @@ import {
   Style,
   StyleColorValue,
   StyleFilter,
+  StyleGradientValue,
   StyleNumValue,
   StyleTextShadowValue,
   StyleUnit,
 } from '../style/define';
-import css, { cloneStyle } from '../style/css';
+import css, { cloneStyle, cloneStyleItem } from '../style/css';
 
 export type JOsEs = {
   offset?: number;
@@ -42,6 +43,14 @@ export type TextShadowTransition = {
   color: number[];
 };
 
+export type GradientTransition = {
+  d: number[];
+  stops: {
+    color: number[];
+    offset: number;
+  }[];
+};
+
 export type OsEs = {
   time: number;
   easing?: (v: number) => number;
@@ -55,6 +64,7 @@ export type KeyFrame = {
       | number[]
       | FilterTransition[]
       | TextShadowTransition
+      | (number[] | GradientTransition | undefined)[]
   }[]; // 到下帧有变化的key和差值
   fixed: (keyof Style)[]; // 固定不变化的key
 } & OsEs;
@@ -169,24 +179,19 @@ export class CssAnimation extends AbstractAnimation {
           || key === 'letterSpacing'
           || key === 'paragraphSpacing'
         ) {
-          const o = Object.assign({}, style[key]) as StyleNumValue;
+          const o = cloneStyleItem(key, style[key]!) as StyleNumValue;
           o.v += (diff as number) * percent;
           update[key] = o;
         }
         else if (key === 'color') {
-          const o = Object.assign({}, style[key]) as StyleColorValue;
+          const o = cloneStyleItem(key, style[key]!) as StyleColorValue;
           for (let i = 0; i < 4; i++) {
             o.v[i] += (diff as [number, number, number, number])[i] * percent;
           }
           update[key] = o;
         }
         else if (key === 'textShadow') {
-          const v = style[key] as StyleTextShadowValue;
-          const o = {
-            v: Object.assign({}, v.v),
-            u: v.u,
-          };
-          o.v.color = o.v.color.slice(0);
+          const o = cloneStyleItem(key, style[key]!) as StyleTextShadowValue;
           o.v.x += (diff as TextShadowTransition).x * percent;
           o.v.y += (diff as TextShadowTransition).y * percent;
           o.v.blur += (diff as TextShadowTransition).blur * percent;
@@ -195,25 +200,49 @@ export class CssAnimation extends AbstractAnimation {
           }
           update[key] = o;
         }
+        else if (key === 'fill' || key === 'stroke') {
+          const o = cloneStyleItem(key, style[key]!) as (StyleColorValue | StyleGradientValue)[];
+          for (let i = 0; i < Math.min(o.length, (diff as (number[] | GradientTransition | undefined)[]).length); i++) {
+            const item = o[i];
+            const df = (diff as (number[] | GradientTransition | undefined)[])[i];
+            if (df) {
+              if (item.u === StyleUnit.RGBA) {
+                item.v[0] += (df as number[])[0] * percent;
+                item.v[1] += (df as number[])[0] * percent;
+                item.v[2] += (df as number[])[0] * percent;
+                item.v[3] += (df as number[])[0] * percent;
+              }
+              else if (item.u === StyleUnit.GRADIENT) {
+                for (let j = 0; j < (df as GradientTransition).d.length; j++) {
+                  item.v.d[j] += (df as GradientTransition).d[j] * percent;
+                }
+                for (let j = 0; j < (df as GradientTransition).stops.length; j++) {
+                  item.v.stops[j].color.v[0] += (df as GradientTransition).stops[j].color[0] * percent;
+                  item.v.stops[j].color.v[1] += (df as GradientTransition).stops[j].color[1] * percent;
+                  item.v.stops[j].color.v[2] += (df as GradientTransition).stops[j].color[2] * percent;
+                  item.v.stops[j].color.v[3] += (df as GradientTransition).stops[j].color[3] * percent;
+                  item.v.stops[j].offset.v += (df as GradientTransition).stops[j].offset * percent;
+                }
+              }
+            }
+          }
+          update[key] = o;
+        }
         else if (key === 'strokeWidth') {
-          const v = style[key] as StyleNumValue[];
-          const o = v.map(item => {
-            return Object.assign({}, item);
-          });
+          const o = cloneStyleItem(key, style[key]!) as StyleNumValue[];
           o.forEach((item, i) => {
             item.v += (diff as number[])[i] * percent;
           });
           update[key] = o;
         }
         else if (key === 'transformOrigin' || key === 'perspectiveOrigin') {
-          const v = style[key] as [StyleNumValue, StyleNumValue];
-          const o = [Object.assign({}, v[0]), Object.assign({}, v[1])] as [StyleNumValue, StyleNumValue];
+          const o = cloneStyleItem(key, style[key]!) as [StyleNumValue, StyleNumValue];
           o[0].v += (diff as [number, number])[0] * percent;
           o[1].v += (diff as [number, number])[1] * percent;
           update[key] = o;
         }
         else if (key === 'filter') {
-          const o = cloneStyle(style, key).filter as StyleFilter[];
+          const o = cloneStyleItem(key, style[key]!) as StyleFilter[];
           o.forEach((item, i) => {
             const d = (diff as FilterTransition[])[i];
             // 可能数量对不上，只对得上的部分做动画
@@ -255,14 +284,8 @@ export class CssAnimation extends AbstractAnimation {
       });
       // 固定部分
       fixed.forEach(key => {
-        if (key === 'textDecoration' || key === 'strokeEnable') {
-          // @ts-ignore
-          update[key] = style[key].map(item => Object.assign({}, item));
-        }
-        else {
-          // @ts-ignore
-          update[key] = Object.assign({}, style[key]);
-        }
+        // @ts-ignore
+        update[key] = cloneStyleItem(key, style[key]!);
       });
       this.node.updateFormatStyle(update);
     }
@@ -548,7 +571,59 @@ function calTransition(node: Node, keyFrames: KeyFrame[], keys: (keyof Style)[])
           },
         });
       }
-      else if (key === 'stroke' || key === 'fill') {}
+      else if (key === 'stroke' || key === 'fill') {
+        const pv = p as (StyleColorValue | StyleGradientValue)[];
+        const nv = n as (StyleColorValue | StyleGradientValue)[];
+        const diff: (number[] | GradientTransition | undefined)[] = [];
+        for (let i = 0; i < Math.min(pv.length, nv.length); i++) {
+          const pi = pv[i];
+          const ni = nv[i];
+          if (pi.u === StyleUnit.RGBA && ni.u === StyleUnit.RGBA) {
+            diff.push([
+              ni.v[0] - pi.v[0],
+              ni.v[1] - pi.v[1],
+              ni.v[2] - pi.v[2],
+              ni.v[3] - pi.v[3],
+            ]);
+          }
+          else if (pi.u === StyleUnit.GRADIENT && ni.u === StyleUnit.GRADIENT) {
+            if (pi.v.t === ni.v.t) {
+              const d: number[] = [];
+              for (let j = 0; j < Math.min(ni.v.d.length, pi.v.d.length); j++) {
+                d.push(ni.v.d[j] - pi.v.d[j]);
+              }
+              const stops: { color: number[], offset: number }[] = [];
+              for (let j = 0; j < Math.min(ni.v.stops.length, pi.v.stops.length); j++) {
+                const p = ni.v.stops[j];
+                const n = pi.v.stops[j];
+                stops.push({
+                  color: [
+                    n.color.v[0] - p.color.v[0],
+                    n.color.v[1] - p.color.v[1],
+                    n.color.v[2] - p.color.v[2],
+                    n.color.v[3] - p.color.v[3],
+                  ],
+                  offset: n.offset.v - p.offset.v,
+                });
+              }
+              diff.push({
+                d,
+                stops,
+              });
+            }
+            else {
+              diff.push(undefined);
+            }
+          }
+          else {
+            diff.push(undefined);
+          }
+        }
+        prev.transition.push({
+          key,
+          diff,
+        });
+      }
       else if (key === 'strokeWidth') {
         const pv = p as StyleNumValue[];
         const nv = n as StyleNumValue[];

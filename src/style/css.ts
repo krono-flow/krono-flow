@@ -1,11 +1,11 @@
 import { JPoint, JRich, JStyle, Point } from '../format';
 import inject from '../util/inject';
-import { clone, isNil, isString } from '../util/type';
+import { isNil, isString } from '../util/type';
 import {
   calUnit,
   ComputedFilter,
-  ComputedStyle,
   ComputedRich,
+  ComputedStyle,
   CURVE_MODE,
   FILL_RULE,
   FONT_STYLE,
@@ -21,8 +21,15 @@ import {
   STROKE_LINE_JOIN,
   STROKE_POSITION,
   Style,
+  StyleBoolValue,
+  StyleColorValue,
   StyleFilter,
+  StyleGradientValue,
+  StyleMbmValue,
   StyleNumValue,
+  StyleStrokePositionValue,
+  StyleTdValue,
+  StyleTextShadowValue,
   StyleUnit,
   TEXT_ALIGN,
   TEXT_DECORATION,
@@ -979,74 +986,121 @@ export function cloneStyle(style: Partial<Style>, keys?: string | string[]) {
   }
   const res: Partial<Style> = {};
   for (let i = 0, len = keys.length; i < len; i++) {
-    const k = keys[i];
-    // @ts-ignore
+    const k = keys[i] as keyof Style;
     const v = style[k];
     if (!v) {
       continue;
     }
-    if (k === 'transformOrigin' || k === 'perspectiveOrigin') {
-      res[k] = [Object.assign({}, v[0]), Object.assign({}, v[1])];
-    }
-    else if (k === 'color' || k === 'backgroundColor') {
-      res[k] = {
-        v: v.v.slice(0),
-        u: v.u,
-      };
-    }
-    else if (k === 'textShadow') {
-      res[k] = {
-        v: {
-          x: v.v.x,
-          y: v.v.y,
-          blur: v.v.blur,
-          color: v.v.color.slice(0),
-        },
-        u: v.u,
-      };
-    }
-    else if (k === 'fill' || k === 'stroke' || k === 'filter') {
-      res[k] = v.map((item: any) => clone(item));
-    }
-    else if (k === 'filter') {
-      res[k] = v.map((item: StyleFilter) => {
-        const o: any = {};
-        if (item.u === StyleUnit.RADIAL_BLUR) {
-          o.radius = Object.assign({}, item.v.radius);
-          o.center = item.v.center.map(item => Object.assign({}, item));
-        }
-        else if (item.u === StyleUnit.MOTION_BLUR) {
-          o.radius = Object.assign({}, item.v.radius);
-          o.angle = Object.assign({}, item.v.angle);
-          o.offset = Object.assign({}, item.v.offset);
-        }
-        else if (item.u === StyleUnit.BLOOM) {
-          o.threshold = Object.assign({}, item.v.threshold);
-          o.knee = Object.assign({}, item.v.knee);
-        }
-        return {
-          v: o,
-          u: item.u,
-        };
-      });
-    }
-    else if (
-      k === 'fillEnable' ||
-      k === 'fillRule' ||
-      k === 'fillOpacity' ||
-      k === 'strokeEnable' ||
-      k === 'strokeWidth' ||
-      k === 'strokePosition' ||
-      k === 'strokeDasharray'
-    ) {
-      res[k] = v.map((item: any) => Object.assign({}, item));
-    }
-    else {
-      // @ts-ignore
-      res[k] = Object.assign({}, v);
-    }
+    // @ts-ignore
+    res[k] = cloneStyleItem(k, v);
   }
   return res;
+}
+
+export function cloneStyleItem(k: keyof Style, v: Style[keyof Style]) {
+  if (k === 'transformOrigin' || k === 'perspectiveOrigin') {
+    return [Object.assign({}, (v as StyleNumValue[])[0]), Object.assign({}, (v as StyleNumValue[])[1])];
+  }
+  else if (k === 'color' || k === 'backgroundColor') {
+    return {
+      v: (v as StyleColorValue).v.slice(0),
+      u: (v as StyleColorValue).u,
+    };
+  }
+  else if (k === 'textShadow') {
+    return {
+      v: {
+        x: (v as StyleTextShadowValue).v.x,
+        y: (v as StyleTextShadowValue).v.y,
+        blur: (v as StyleTextShadowValue).v.blur,
+        color: (v as StyleTextShadowValue).v.color.slice(0),
+      },
+      u: (v as any).u,
+    };
+  }
+  else if (k === 'fill' || k === 'stroke') {
+    return (v as (StyleColorValue | StyleGradientValue)[]).map(item => {
+      if (item.u === StyleUnit.RGBA) {
+        return {
+          v: item.v.slice(0),
+          u: item.u,
+        };
+      }
+      else if (item.u === StyleUnit.GRADIENT) {
+        return {
+          v: {
+            t: item.v.t,
+            d: item.v.d.slice(0),
+            stops: item.v.stops.map(cs => {
+              return {
+                color: {
+                  v: cs.color.v.slice(0),
+                  u: cs.color.u,
+                },
+                offset: {
+                  v: cs.offset.v,
+                  u: cs.offset.u,
+                },
+              };
+            }),
+          },
+          u: item.u,
+        };
+      }
+    });
+  }
+  else if (k === 'fillMode' || k === 'strokeMode' || k === 'textDecoration') {
+    return (v as (StyleMbmValue | StyleTdValue)[]).map(item => Object.assign({}, item));
+  }
+  else if (
+    k === 'fillEnable' ||
+    k === 'fillOpacity' ||
+    k === 'strokeEnable' ||
+    k === 'strokeWidth' ||
+    k === 'strokePosition' ||
+    k === 'strokeDasharray'
+  ) {
+    return (v as (StyleBoolValue | StyleNumValue | StyleStrokePositionValue)[]).map(item => Object.assign({}, item));
+  }
+  else if (k === 'filter') {
+    return (v as StyleFilter[]).map(item => {
+      const o: any = {};
+      if (item.u === StyleUnit.GAUSS_BLUR) {
+        o.radius = Object.assign({}, item.v.radius);
+      }
+      else if (item.u === StyleUnit.RADIAL_BLUR) {
+        o.radius = Object.assign({}, item.v.radius);
+        o.center = item.v.center.map(item => Object.assign({}, item));
+      }
+      else if (item.u === StyleUnit.MOTION_BLUR) {
+        o.radius = Object.assign({}, item.v.radius);
+        o.angle = Object.assign({}, item.v.angle);
+        o.offset = Object.assign({}, item.v.offset);
+      }
+      else if (item.u === StyleUnit.BLOOM) {
+        o.threshold = Object.assign({}, item.v.threshold);
+        o.knee = Object.assign({}, item.v.knee);
+      }
+      else if (item.u === StyleUnit.LIGHT_DARK) {
+        o.radius = Object.assign({}, item.v.radius);
+        o.angle = Object.assign({}, item.v.angle);
+      }
+      else if (item.u === StyleUnit.HUE_ROTATE
+        || item.u === StyleUnit.SATURATE
+        || item.u === StyleUnit.BRIGHTNESS
+        || item.u === StyleUnit.CONTRAST
+        || item.u === StyleUnit.SEPIA) {
+        o.radius = Object.assign({}, item.v.radius);
+      }
+      return {
+        v: o,
+        u: item.u,
+      };
+    });
+  }
+  else {
+    return Object.assign({}, v);
+  }
 }
 
 export function calSize(v: StyleNumValue, p: number): number {

@@ -3,14 +3,23 @@ import {
   binarySearchFrame,
   getCurrentFrames,
   getPercent,
+  GradientTransition,
   normalizeEasing,
   normalizeKeyFramesOsEs,
   TextShadowTransition,
 } from './CssAnimation';
 import Text from '../node/Text';
 import { JRich, RichIndex } from '../format';
-import { ModifyRichStyle, Rich, StyleColorValue, StyleNumValue, StyleTextShadowValue } from '../style/define';
-import { cloneStyle, normalizeRich } from '../style/css';
+import {
+  ModifyRichStyle,
+  Rich,
+  StyleColorValue,
+  StyleGradientValue,
+  StyleNumValue,
+  StyleTextShadowValue,
+  StyleUnit,
+} from '../style/define';
+import { cloneStyle, cloneStyleItem, normalizeRich } from '../style/css';
 
 export type JKeyFrameRich = {
   rich: JRich[],
@@ -22,7 +31,13 @@ export type KeyFrameRich = {
   rich: (Partial<Rich> & RichIndex)[];
   time: number;
   easing?: (v: number) => number;
-  transition: { key: keyof Rich, diff: number | number[] | TextShadowTransition }[][];
+  transition: {
+    key: keyof Rich,
+    diff: number
+      | number[]
+      | TextShadowTransition
+      | (number[] | GradientTransition | undefined)[]
+  }[][];
   fixed: (keyof Rich)[][];
 };
 
@@ -129,24 +144,19 @@ export class RichAnimation extends AbstractAnimation {
             || key === 'letterSpacing'
             || key === 'paragraphSpacing'
           ) {
-            const o = Object.assign({}, rich[i][key]) as StyleNumValue;
+            const o = cloneStyleItem(key, rich[i][key]!) as StyleNumValue;
             o.v += (diff as number) * percent;
             update[key] = o;
           }
           else if (key === 'color') {
-            const o = Object.assign({}, rich[i][key]) as StyleColorValue;
+            const o = cloneStyleItem(key, rich[i][key]!) as StyleColorValue;
             for (let i = 0; i < 4; i++) {
               o.v[i] += (diff as [number, number, number, number])[i] * percent;
             }
             update[key] = o;
           }
           else if (key === 'textShadow') {
-            const v = rich[i][key] as StyleTextShadowValue;
-            const o = {
-              v: Object.assign({}, v.v),
-              u: v.u,
-            };
-            o.v.color = o.v.color.slice(0);
+            const o = cloneStyleItem(key, rich[i][key]!) as StyleTextShadowValue;
             o.v.x += (diff as TextShadowTransition).x * percent;
             o.v.y += (diff as TextShadowTransition).y * percent;
             o.v.blur += (diff as TextShadowTransition).blur * percent;
@@ -157,10 +167,7 @@ export class RichAnimation extends AbstractAnimation {
           }
           else if (key === 'stroke') {}
           else if (key === 'strokeWidth') {
-            const v = rich[i][key] as StyleNumValue[];
-            const o = v.map(item => {
-              return Object.assign({}, item);
-            });
+            const o = cloneStyleItem(key, rich[i][key]!) as StyleNumValue[];
             o.forEach((item, i) => {
               item.v += (diff as number[])[i] * percent;
             });
@@ -172,14 +179,8 @@ export class RichAnimation extends AbstractAnimation {
         });
         // 固定部分
         fixed[i].forEach(key => {
-          if (key === 'textDecoration' || key === 'strokeEnable') {
-            // @ts-ignore
-            update[key] = rich[i][key].map(item => Object.assign({}, item));
-          }
-          else {
-            // @ts-ignore
-            update[key] = Object.assign({}, rich[i][key]);
-          }
+          // @ts-ignore
+          update[key] = Object.assign({}, rich[i][key]);
         });
         this.node.updateFormatRangeStyle(ri.location, ri.length, update);
       });
@@ -336,7 +337,59 @@ function calTransition(node: Text, keyFrames: KeyFrameRich[], keys: (keyof Rich)
             },
           });
         }
-        else if (key === 'stroke') {}
+        else if (key === 'stroke') {
+          const pv = p as (StyleColorValue | StyleGradientValue)[];
+          const nv = n as (StyleColorValue | StyleGradientValue)[];
+          const diff: (number[] | GradientTransition | undefined)[] = [];
+          for (let i = 0; i < Math.min(pv.length, nv.length); i++) {
+            const pi = pv[i];
+            const ni = nv[i];
+            if (pi.u === StyleUnit.RGBA && ni.u === StyleUnit.RGBA) {
+              diff.push([
+                ni.v[0] - pi.v[0],
+                ni.v[1] - pi.v[1],
+                ni.v[2] - pi.v[2],
+                ni.v[3] - pi.v[3],
+              ]);
+            }
+            else if (pi.u === StyleUnit.GRADIENT && ni.u === StyleUnit.GRADIENT) {
+              if (pi.v.t === ni.v.t) {
+                const d: number[] = [];
+                for (let j = 0; j < Math.min(ni.v.d.length, pi.v.d.length); j++) {
+                  d.push(ni.v.d[j] - pi.v.d[j]);
+                }
+                const stops: { color: number[], offset: number }[] = [];
+                for (let j = 0; j < Math.min(ni.v.stops.length, pi.v.stops.length); j++) {
+                  const p = ni.v.stops[j];
+                  const n = pi.v.stops[j];
+                  stops.push({
+                    color: [
+                      n.color.v[0] - p.color.v[0],
+                      n.color.v[1] - p.color.v[1],
+                      n.color.v[2] - p.color.v[2],
+                      n.color.v[3] - p.color.v[3],
+                    ],
+                    offset: n.offset.v - p.offset.v,
+                  });
+                }
+                diff.push({
+                  d,
+                  stops,
+                });
+              }
+              else {
+                diff.push(undefined);
+              }
+            }
+            else {
+              diff.push(undefined);
+            }
+          }
+          prev.transition[j].push({
+            key,
+            diff,
+          });
+        }
         else if (key === 'strokeWidth') {
           const pv = p as StyleNumValue[];
           const nv = n as StyleNumValue[];
