@@ -1,6 +1,6 @@
 import AbstractCommand from './AbstractCommand';
 import Text, { Cursor } from '../node/Text';
-import { Rich } from '../format';
+import { Rich } from '../style/define';
 
 export type TextData = {
   prev: {
