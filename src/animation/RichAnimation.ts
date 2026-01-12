@@ -216,9 +216,35 @@ export class RichAnimation extends AbstractAnimation {
     }
   }
 
-  onFirstInDelay() {}
+  onFirstInDelay() {
+    const { fill, node, originRich } = this;
+    if (fill === 'backwards' || fill === 'both') {
+      this.currentKeyFrames[0].rich.forEach(item => {
+        node.updateFormatRangeStyle(item.location, item.length, item);
+      });
+    }
+    else {
+      originRich.forEach(item => {
+        node.updateFormatRangeStyle(item.location, item.length, item);
+      });
+    }
+  }
 
-  onFirstInEndDelay() {}
+  onFirstInEndDelay() {
+    const { fill, node, originRich } = this;
+    if (fill === 'forwards' || fill === 'both') {
+      const currentKeyFrames = this.currentKeyFrames;
+      const last = currentKeyFrames[currentKeyFrames.length - 1];
+      last.rich.forEach(item => {
+        node.updateFormatRangeStyle(item.location, item.length, item);
+      });
+    }
+    else {
+      originRich.forEach(item => {
+        node.updateFormatRangeStyle(item.location, item.length, item);
+      });
+    }
+  }
 
   onChangePlayCount() {
     this.setCurrentFrames();
