@@ -84,8 +84,10 @@ export class RichAnimation extends AbstractAnimation {
       return;
     }
     super.cancel();
-    const { node } = this;
-    // node.updateFormatStyle(this.originStyle);
+    const { node, originRich } = this;
+    originRich.forEach(item => {
+      node.updateFormatRangeStyle(item.location, item.length, item);
+    });
   }
 
   private setCurrentFrames() {
