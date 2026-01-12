@@ -3053,7 +3053,7 @@ class Text extends Node {
   }
 
   // 颜色等改变本是REPAINT，但富文本影响连字测量，所以都是REFLOW
-  updateRichItem(item: Rich, c: ComputedRich, style: ModifyRichStyle) {
+  updateRichItem(item: Rich, cr: ComputedRich, style: ModifyRichStyle) {
     let lv = RefreshLevel.NONE;
     if (style.fontFamily && style.fontFamily.v !== item.fontFamily.v) {
       item.fontFamily = style.fontFamily;
@@ -3115,7 +3115,70 @@ class Text extends Node {
       item.visibility = style.visibility;
       lv |= RefreshLevel.REFLOW;
     }
-    Object.assign(c, this.calComputedRich(item));
+    if (style.stroke) {
+      let isDiff = false;
+      if (style.stroke.length !== item.stroke.length) {
+        isDiff = true;
+      }
+      else {
+        for (let i = 0, len = style.stroke.length; i < len; i++) {
+          const a = style.stroke[i];
+          const b = item.stroke[i];
+          if (a.u === StyleUnit.RGBA && b.u === StyleUnit.RGBA) {
+            if (a.v[0] !== b.v[0] || a.v[1] !== b.v[1] || a.v[2] !== b.v[2] || a.v[3] !== b.v[3]) {
+              isDiff = true;
+              break;
+            }
+          }
+          else if (a.u === StyleUnit.GRADIENT && b.u === StyleUnit.GRADIENT) {}
+          else {
+            isDiff = true;
+            break;
+          }
+        }
+      }
+      if (isDiff) {
+        item.stroke = style.stroke;
+        lv |= RefreshLevel.REFLOW;
+      }
+    }
+    if (style.strokeWidth) {
+      let isDiff = false;
+      if (style.strokeWidth.length !== item.strokeWidth.length) {
+        isDiff = true;
+      }
+      else {
+        for (let i = 0, len = style.strokeWidth.length; i < len; i++) {
+          if (style.strokeWidth[i].v !== item.strokeWidth[i].v || style.strokeWidth[i].u !== item.strokeWidth[i].u) {
+            isDiff = true;
+            break;
+          }
+        }
+      }
+      if (isDiff) {
+        item.strokeWidth = style.strokeWidth;
+        lv |= RefreshLevel.REFLOW;
+      }
+    }
+    if (style.strokeEnable) {
+      let isDiff = false;
+      if (style.strokeEnable.length !== item.strokeEnable.length) {
+        isDiff = true;
+      }
+      else {
+        for (let i = 0, len = style.strokeEnable.length; i < len; i++) {
+          if (style.strokeEnable[i].v !== item.strokeEnable[i].v || style.strokeEnable[i].u !== item.strokeEnable[i].u) {
+            isDiff = true;
+            break;
+          }
+        }
+      }
+      if (isDiff) {
+        item.strokeEnable = style.strokeEnable;
+        lv |= RefreshLevel.REFLOW;
+      }
+    }
+    Object.assign(cr, this.calComputedRich(item));
     return lv;
   }
 

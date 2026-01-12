@@ -165,7 +165,34 @@ export class RichAnimation extends AbstractAnimation {
             }
             update[key] = o;
           }
-          else if (key === 'stroke') {}
+          else if (key === 'stroke') {
+            const o = cloneStyleItem(key, rich[i][key]!) as (StyleColorValue | StyleGradientValue)[];
+            for (let i = 0; i < Math.min(o.length, (diff as (number[] | GradientTransition | undefined)[]).length); i++) {
+              const item = o[i];
+              const df = (diff as (number[] | GradientTransition | undefined)[])[i];
+              if (df) {
+                if (item.u === StyleUnit.RGBA) {
+                  item.v[0] += (df as number[])[0] * percent;
+                  item.v[1] += (df as number[])[1] * percent;
+                  item.v[2] += (df as number[])[2] * percent;
+                  item.v[3] += (df as number[])[3] * percent;
+                }
+                else if (item.u === StyleUnit.GRADIENT) {
+                  for (let j = 0; j < (df as GradientTransition).d.length; j++) {
+                    item.v.d[j] += (df as GradientTransition).d[j] * percent;
+                  }
+                  for (let j = 0; j < (df as GradientTransition).stops.length; j++) {
+                    item.v.stops[j].color.v[0] += (df as GradientTransition).stops[j].color[0] * percent;
+                    item.v.stops[j].color.v[1] += (df as GradientTransition).stops[j].color[1] * percent;
+                    item.v.stops[j].color.v[2] += (df as GradientTransition).stops[j].color[2] * percent;
+                    item.v.stops[j].color.v[3] += (df as GradientTransition).stops[j].color[3] * percent;
+                    item.v.stops[j].offset.v += (df as GradientTransition).stops[j].offset * percent;
+                  }
+                }
+              }
+            }
+            update[key] = o;
+          }
           else if (key === 'strokeWidth') {
             const o = cloneStyleItem(key, rich[i][key]!) as StyleNumValue[];
             o.forEach((item, i) => {
