@@ -2946,6 +2946,13 @@ class Text extends Node {
     const lv = this.updateFormatRangeStyleData(location, length, modify);
     if (lv) {
       this.refresh(lv, cb);
+      if (lv & RefreshLevel.REFLOW) {
+        const { isMulti, start, end } = this.getSortedCursor();
+        if (isMulti) {
+          this.setCursorByIndex(start, false);
+          this.setCursorByIndex(end, true);
+        }
+      }
     }
     return lv;
   }
@@ -3209,6 +3216,17 @@ class Text extends Node {
   richAnimate(keyFrames: JKeyFrameRich[], options: Options) {
     const animation =  new RichAnimation(this, keyFrames, options);
     return this.initAnimate(animation, options);
+  }
+
+  override refresh(data: RefreshLevel = RefreshLevel.REPAINT, cb?: ((sync: boolean) => void)) {
+    super.refresh(data, cb);
+    if (data & RefreshLevel.REFLOW) {
+      const { isMulti, start, end } = this.getSortedCursor();
+      if (isMulti) {
+        this.setCursorByIndex(start, false);
+        this.setCursorByIndex(end, true);
+      }
+    }
   }
 
   override cloneProps() {
