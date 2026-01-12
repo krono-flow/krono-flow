@@ -6,9 +6,6 @@ import { loadImg } from './loadImg';
 import { loadAudio } from './loadAudio';
 import { loadFont } from './loadFont';
 import { loadRange } from './loadRangeCache';
-import MbVideoDecoder, { MbVideoDecoderEvent } from './MbVideoDecoder';
-import MbVideoEncoder, { MbVideoEncoderEvent } from './MbVideoEncoder';
-import sound from './sound';
 
 export default {
   type,
@@ -19,9 +16,4 @@ export default {
   loadAudio,
   loadFont,
   loadRange,
-  MbVideoDecoder,
-  MbVideoDecoderEvent,
-  MbVideoEncoder,
-  MbVideoEncoderEvent,
-  sound,
 };

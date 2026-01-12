@@ -5,12 +5,13 @@ import style from './style';
 import config from './config';
 import interaction from './interaction';
 import animation from './animation';
+import { Options as OptionsType } from './animation/AbstractAnimation';
+import { KeyFrame as KeyFrameType, JKeyFrame as JKeyFrameType } from './animation/CssAnimation';
 import math from './math';
 import history from './history';
 import refresh from './refresh';
 import format, { JPoint as JPointType, JStyle as JStyleType } from './format';
-import { Options as OptionsType } from './animation/AbstractAnimation';
-import { KeyFrame as KeyFrameType, JKeyFrame as JKeyFrameType } from './animation/CssAnimation';
+import codec from './codec';
 
 export namespace node {
   export type Container = InstanceType<typeof node.Container>;
@@ -75,4 +76,5 @@ export default {
   history,
   refresh,
   format,
+  codec,
 };

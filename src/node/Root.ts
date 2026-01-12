@@ -30,7 +30,7 @@ import lightDarkFrag from '../gl/lightDark.frag';
 import AbstractAnimation from '../animation/AbstractAnimation';
 import AniController from '../animation/AniController';
 import { CAN_PLAY, REFRESH, REFRESH_COMPLETE, WAITING } from '../refresh/refreshEvent';
-import MbVideoEncoder, { EncodeOptions } from '../util/MbVideoEncoder';
+import MbVideoEncoder, { EncodeOptions } from '../codec/MbVideoEncoder';
 import CacheProgram from '../gl/CacheProgram';
 import config from '../config';
 

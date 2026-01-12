@@ -3,7 +3,7 @@ import { AudioProps } from '../format';
 import { LoadAudioRes } from '../util/loadAudio';
 import { Options } from '../animation/AbstractAnimation';
 import TimeAnimation from '../animation/TimeAnimation';
-import { GOPState, MbVideoDecoder, MbVideoDecoderEvent, VideoAudioMeta } from '../util/MbVideoDecoder';
+import { GOPState, MbVideoDecoder, MbVideoDecoderEvent, VideoAudioMeta } from '../codec/MbVideoDecoder';
 import inject from '../util/inject';
 import { CAN_PLAY, ERROR, META, WAITING } from '../refresh/refreshEvent';
 

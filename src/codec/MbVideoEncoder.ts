@@ -1,6 +1,6 @@
 import Root from '../node/Root';
 import Lottie from '../node/Lottie';
-import Event from './Event';
+import Event from '../util/Event';
 import config from '../config';
 import { EncoderEvent, EncoderType, onMessage } from '../encoder';
 import { CAN_PLAY, REFRESH_COMPLETE } from '../refresh/refreshEvent';
