@@ -29,20 +29,10 @@ import {
 import { Struct } from '../refresh/struct';
 import { RefreshLevel } from '../refresh/level';
 import { ceilBbox } from '../math/bbox';
-import {
-  assignMatrix,
-  calRectPoints,
-  identity,
-  multiply,
-  toE,
-} from '../math/matrix';
+import { assignMatrix, calRectPoints, identity, multiply, toE, } from '../math/matrix';
 import Container from './Container';
 import { LayoutData } from '../refresh/layout';
-import {
-  calMatrixByOrigin,
-  calPerspectiveMatrix,
-  calTransform,
-} from '../style/transform';
+import { calMatrixByOrigin, calPerspectiveMatrix, calTransform, } from '../style/transform';
 import { d2r, H } from '../math/geom';
 import CanvasCache from '../refresh/CanvasCache';
 import TextureCache from '../refresh/TextureCache';
@@ -467,7 +457,8 @@ class Node extends Event {
       (lv & RefreshLevel.SCALE_Y && !computedStyle.scaleY) ||
       (lv & RefreshLevel.ROTATE_Z && (computedStyle.rotateX || computedStyle.rotateY || computedStyle.skewX || computedStyle.skewY)) ||
       (lv & RefreshLevel.ROTATE_X) || // 暂时忽略这2种旋转，应该和z一样考虑优化
-      (lv & RefreshLevel.ROTATE_Y)
+      (lv & RefreshLevel.ROTATE_Y) ||
+      (lv & RefreshLevel.TRANSFORM_ORIGIN)
     ) {
       optimize = false;
     }
@@ -530,13 +521,13 @@ class Node extends Event {
         matrix[13] = transform[13] + oy - transform[1] * ox - transform[5] * oy;
         matrix[14] = transform[14] - transform[2] * ox - transform[6] * oy;
       }
-      if (lv & RefreshLevel.TRANSFORM_ORIGIN) {
-        const tfo = style.transformOrigin.map((item, i) => {
-          return calSize(item, i ? this.computedStyle.height : this.computedStyle.width);
-        });
-        const t = calMatrixByOrigin(transform, tfo[0], tfo[1]);
-        assignMatrix(matrix, t);
-      }
+      // if (lv & RefreshLevel.TRANSFORM_ORIGIN) {
+      //   const tfo = style.transformOrigin.map((item, i) => {
+      //     return calSize(item, i ? this.computedStyle.height : this.computedStyle.width);
+      //   });
+      //   const t = calMatrixByOrigin(transform, tfo[0], tfo[1]);
+      //   assignMatrix(matrix, t);
+      // }
     }
     else {
       toE(transform);

@@ -127,7 +127,7 @@ export type JRich = Partial<Pick<JStyle,
   | 'visibility'
 >> & RichIndex;
 
-type Origin = number | 'left' | 'right' | 'top' | 'bottom' | 'center';
+type Origin = number | 'left' | 'right' | 'top' | 'bottom' | 'center' | string;
 
 export type JStyle = {
   top: number | string;
