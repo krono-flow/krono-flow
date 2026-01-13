@@ -319,6 +319,8 @@ class Root extends Container {
   addAnimation(animation: AbstractAnimation) {
     const { task, aniTask } = this;
     if (!task.length && !aniTask.length) {
+      // 如果之前asyncDraw本帧渲染回调frameCb，可能会添加动画，而之前的frameCb没有删除会重复
+      frame.offFrame(this.frameCb);
       frame.onFrame(this.frameCb);
     }
     if (aniTask.indexOf(animation) === -1) {
