@@ -74,9 +74,6 @@ export function parseJSON(json: Item | Node) {
   if (!tagName) {
     throw new Error('Missing tagName');
   }
-  if(!Array.isArray(animations)) {
-    throw new Error('Animations must be an array');
-  }
   let node: Node;
   if (tagName === 'container') {
     if(json.children && !Array.isArray(json.children)) {
@@ -106,6 +103,12 @@ export function parseJSON(json: Item | Node) {
   }
   else {
     throw new Error('Unknown tagName');
+  }
+  if (animations) {
+    if (!Array.isArray(animations)) {
+      throw new Error('Animations must be an array');
+    }
+    node.animationRecords = animations;
   }
   return node;
 }
