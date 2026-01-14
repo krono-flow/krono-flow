@@ -3,14 +3,14 @@ import {
   CURVE_MODE,
 } from '../style/define';
 import { VideoAudioMeta } from '../decoder';
-import { JAnimations } from '../parser';
+import { JCssAnimations } from '../parser/define';
 
 export type Props = {
   uuid?: string;
   name?: string;
   isLocked?: boolean;
   style?: Partial<JStyle>;
-  animations?: JAnimations[];
+  animations?: JCssAnimations[];
 }
 
 export type RootProps = Props & {

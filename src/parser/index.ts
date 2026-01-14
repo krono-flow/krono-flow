@@ -7,64 +7,7 @@ import Audio from '../node/Audio';
 import Root from '../node/Root';
 import Lottie from '../node/Lottie';
 import Polyline from '../node/geom/Polyline';
-import {
-  AudioProps,
-  BitmapProps,
-  LottieProps,
-  PolylineProps,
-  Props,
-  RootProps,
-  TextProps,
-  VideoProps
-} from '../format';
-import { JKeyFrame } from '../animation/CssAnimation';
-import { Options } from '../animation/AbstractAnimation';
-
-export type JAnimations = {
-  keyframes: JKeyFrame[];
-  options: Options;
-};
-
-export type Item = {
-  tagName: 'container';
-  props: Props;
-  children?: (Item | Node)[];
-  animations?: JAnimations[];
-} | {
-  tagName: 'img';
-  props: BitmapProps;
-  animations?: JAnimations[];
-} | {
-  tagName: 'text';
-  props: TextProps;
-  animations?: JAnimations[];
-} | {
-  tagName: 'video';
-  props: VideoProps;
-  animations?: JAnimations[];
-} | {
-  tagName: 'audio';
-  props: AudioProps;
-  animations?: JAnimations[];
-} | {
-  tagName: 'lottie';
-  props: LottieProps;
-  animations?: JAnimations[];
-} | {
-  tagName: 'polyline';
-  props: PolylineProps;
-  animations?: JAnimations[];
-};
-
-export type ItemRoot = {
-  tagName: 'root',
-  props: RootProps,
-  children?: (Item | Node)[],
-};
-
-export type POptions = {
-  dom?: HTMLElement;
-};
+import { Item, ItemRoot, ParserOptions } from './define';
 
 export function parseJSON(json: Item | Node) {
   if (json instanceof Node) {
@@ -113,7 +56,7 @@ export function parseJSON(json: Item | Node) {
   return node;
 }
 
-export function parseRoot(json: ItemRoot, options?: POptions) {
+export function parseRoot(json: ItemRoot, options?: ParserOptions) {
   const root = new Root(json.props, (json.children || []).map(item => {
     return parseJSON(item);
   }));
@@ -132,11 +75,7 @@ export function parseRoot(json: ItemRoot, options?: POptions) {
   return root;
 }
 
-export function parse(json: Item | {
-  tagName: 'root',
-  props: RootProps,
-  children?: (Item | Node)[],
-}, options?: {
+export function parse(json: Item | ItemRoot, options?: {
   dom?: HTMLElement;
 }) {
   if (json.tagName === 'root') {

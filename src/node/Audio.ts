@@ -118,6 +118,17 @@ class Audio extends Node {
     }
   }
 
+  protected override didMountAnimate() {
+    super.didMountAnimate();
+    if (this.animationRecords) {
+      this.animationRecords.splice(0).forEach(item => {
+        if ('start' in item) {
+          this.timeAnimate(item.start, item.options);
+        }
+      });
+    }
+  }
+
   override calContentLoading() {
     const res = super.calContentLoading();
     if (res) {
@@ -153,9 +164,7 @@ class Audio extends Node {
     }
   }
 
-  timeAnimate(start: number, options: Options & {
-    autoPlay?: boolean;
-  }) {
+  timeAnimate(start: number, options: Options) {
     this.timeAnimation?.remove();
     const animation = this.timeAnimation = new TimeAnimation(this, start, options);
     return this.initAnimate(animation, options);

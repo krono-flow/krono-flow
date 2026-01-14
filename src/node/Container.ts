@@ -23,11 +23,11 @@ class Container extends Node {
       let last = first;
       for (let i = 1; i < len; i++) {
         const child = children[i];
-        child.didMount();
         child.parent = this;
         last.next = child;
         child.prev = last;
         last = child;
+        child.didMount();
       }
     }
   }

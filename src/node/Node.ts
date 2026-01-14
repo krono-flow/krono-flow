@@ -45,7 +45,7 @@ import inject, { OffScreen } from '../util/inject';
 import { canvasPolygon } from '../refresh/paint';
 import { getConic, getLinear, getRadial } from '../style/gradient';
 import { getCanvasGCO } from '../style/mbm';
-import { JAnimations } from '../parser';
+import { JCssAnimations, JTimeAnimations } from '../parser/define';
 
 let id = 0;
 
@@ -94,7 +94,7 @@ class Node extends Event {
   _bboxInt?: Float32Array; // 扩大取整的bbox，渲染不会糊
   _filterBboxInt?: Float32Array; // 同上
   animationList: AbstractAnimation[]; // 节点上所有的动画列表
-  animationRecords?: JAnimations[];
+  animationRecords?: (JCssAnimations | JTimeAnimations)[];
 
   protected contentLoadingNum: number; // 标识当前一共有多少显示资源在加载中
 
@@ -150,6 +150,10 @@ class Node extends Event {
     if (root && uuid) {
       root.refs[uuid] = this;
     }
+    this.didMountAnimate();
+  }
+
+  protected didMountAnimate() {
     // 添加dom之前的动画需生效
     this.animationList.forEach(item => {
       this.root!.aniController.addAni(item);
@@ -160,7 +164,9 @@ class Node extends Event {
     // json定义的
     if (this.animationRecords) {
       this.animationRecords.splice(0).forEach(item => {
-        this.animate(item.keyframes, item.options);
+        if ('keyframes' in item) {
+          this.animate(item.keyframes, item.options);
+        }
       });
     }
   }

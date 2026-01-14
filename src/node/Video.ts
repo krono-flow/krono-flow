@@ -2,7 +2,7 @@ import Node from './Node'
 import { VideoProps } from '../format';
 import TextureCache from '../refresh/TextureCache';
 import { LayoutData } from '../refresh/layout';
-import { OBJECT_FIT, StyleUnit, VISIBILITY } from '../style/define';
+import { OBJECT_FIT, StyleUnit } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
 import CanvasCache from '../refresh/CanvasCache';
 import { Options } from '../animation/AbstractAnimation';
@@ -132,6 +132,17 @@ class Video extends Node {
         }
       });
       mbVideoDecoder.start(this._currentTime);
+    }
+  }
+
+  protected override didMountAnimate() {
+    super.didMountAnimate();
+    if (this.animationRecords) {
+      this.animationRecords.splice(0).forEach(item => {
+        if ('start' in item) {
+          this.timeAnimate(item.start, item.options);
+        }
+      });
     }
   }
 
@@ -425,9 +436,7 @@ class Video extends Node {
     }
   }
 
-  timeAnimate(start: number, options: Options & {
-    autoPlay?: boolean;
-  }) {
+  timeAnimate(start: number, options: Options) {
     this.timeAnimation?.remove();
     const animation = this.timeAnimation = new TimeAnimation(this, start, options);
     return this.initAnimate(animation, options);
