@@ -7,6 +7,7 @@ import interaction from './interaction';
 import animation from './animation';
 import { Options as OptionsType } from './animation/AbstractAnimation';
 import { KeyFrame as KeyFrameType, JKeyFrame as JKeyFrameType } from './animation/CssAnimation';
+import { JKeyFrameRich as JKeyFrameRichType, KeyFrameRich as KeyFrameRichType } from './animation/RichAnimation';
 import math from './math';
 import history from './history';
 import refresh from './refresh';
@@ -31,11 +32,14 @@ export namespace animation {
   export type AbstractAnimation = InstanceType<typeof animation.AbstractAnimation>;
   export type CssAnimation = InstanceType<typeof animation.CssAnimation>;
   export type GifAnimation = InstanceType<typeof animation.GifAnimation>;
+  export type RichAnimation = InstanceType<typeof animation.RichAnimation>;
   export type TimeAnimation = InstanceType<typeof animation.TimeAnimation>;
   export type AniController = InstanceType<typeof animation.AniController>;
   export type Options = OptionsType;
   export type KeyFrame = KeyFrameType;
   export type JKeyFrame = JKeyFrameType;
+  export type JKeyFrameRich = JKeyFrameRichType;
+  export type KeyFrameRich = KeyFrameRichType;
 }
 
 export namespace history {
