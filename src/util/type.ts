@@ -122,6 +122,10 @@ export function equal(a: any, b: any, keys?: string[]) {
   return a === b;
 }
 
+export function isPrimitive(v: any) {
+  return isNil(v) || isBoolean(v) || isString(v) || isNumber(v);
+}
+
 export default {
   isNil,
   isString,
@@ -131,6 +135,7 @@ export default {
   isDate,
   isFunction,
   isPlainObject,
+  isPrimitive,
   equal,
   extend,
   clone,

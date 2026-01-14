@@ -1,4 +1,4 @@
-import parser from './parser';
+import parser, { Item as ItemType, Animations as AnimationsType } from './parser';
 import node from './node';
 import util from './util';
 import style from './style';
@@ -11,7 +11,22 @@ import { JKeyFrameRich as JKeyFrameRichType, KeyFrameRich as KeyFrameRichType } 
 import math from './math';
 import history from './history';
 import refresh from './refresh';
-import format, { JPoint as JPointType, JStyle as JStyleType } from './format';
+import format, {
+  JPoint as JPointType,
+  Point as PointType,
+  JStyle as JStyleType,
+  Props as PropsType,
+  RootProps as RootPropsType,
+  BitmapProps as BitmapPropsType,
+  TextProps as TextPropsType,
+  VideoProps as VideoPropsType,
+  AudioProps as AudioPropsType,
+  LottieProps as LottiePropsType,
+  PolylineProps as PolylinePropsType,
+  LottieMeta as LottieMetaType,
+  RichIndex as RichIndexType,
+  JRich as JRichType,
+} from './format';
 import codec from './codec';
 
 export namespace node {
@@ -65,7 +80,24 @@ export namespace refresh {
 
 export namespace format {
   export type JPoint = JPointType;
+  export type Point = PointType;
   export type JStyle = JStyleType;
+  export type Props = PropsType;
+  export type RootProps = RootPropsType;
+  export type BitmapProps = BitmapPropsType;
+  export type TextProps = TextPropsType;
+  export type VideoProps = VideoPropsType;
+  export type AudioProps = AudioPropsType;
+  export type LottieProps = LottiePropsType;
+  export type PolylineProps = PolylinePropsType;
+  export type LottieMeta = LottieMetaType;
+  export type RichIndex = RichIndexType;
+  export type JRich = JRichType;
+}
+
+export namespace parser {
+  export type Item = ItemType;
+  export type Animations = AnimationsType;
 }
 
 export default {

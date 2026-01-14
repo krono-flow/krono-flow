@@ -13,6 +13,10 @@ export type Props = {
 
 export type RootProps = Props & {
   contextAttributes?: any,
+  style: Partial<JStyle> & {
+    width: number;
+    height: number;
+  };
 }
 
 export type JPoint = {
