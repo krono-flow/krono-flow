@@ -20,7 +20,7 @@ import {
 import { JKeyFrame } from '../animation/CssAnimation';
 import { Options } from '../animation/AbstractAnimation';
 
-export type Animations = {
+export type JAnimations = {
   keyframes: JKeyFrame[];
   options: Options;
 };
@@ -29,31 +29,31 @@ export type Item = {
   tagName: 'container';
   props: Props;
   children?: (Item | Node)[];
-  animations?: Animations[];
+  animations?: JAnimations[];
 } | {
   tagName: 'img';
   props: BitmapProps;
-  animations?: Animations[];
+  animations?: JAnimations[];
 } | {
   tagName: 'text';
   props: TextProps;
-  animations?: Animations[];
+  animations?: JAnimations[];
 } | {
   tagName: 'video';
   props: VideoProps;
-  animations?: Animations[];
+  animations?: JAnimations[];
 } | {
   tagName: 'audio';
   props: AudioProps;
-  animations?: Animations[];
+  animations?: JAnimations[];
 } | {
   tagName: 'lottie';
   props: LottieProps;
-  animations?: Animations[];
+  animations?: JAnimations[];
 } | {
   tagName: 'polyline';
   props: PolylineProps;
-  animations?: Animations[];
+  animations?: JAnimations[];
 };
 
 export type ItemRoot = {

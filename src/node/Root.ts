@@ -59,7 +59,7 @@ class Root extends Container {
     this.structs = [];
     this.task = [];
     this.aniTask = [];
-    this.rl = RefreshLevel.NONE;
+    this.rl = RefreshLevel.REFLOW;
     this.programs = {};
     this.frameCb = (delta: number) => {
       // 优先执行所有动画的差值更新计算，如有更新会调用addUpdate触发task添加，实现本帧绘制

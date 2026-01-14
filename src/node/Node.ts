@@ -83,7 +83,6 @@ class Node extends Event {
   textureTotal?: TextureCache; // 局部子树缓存
   textureFilter?: TextureCache; // 有filter时的缓存
   textureMask?: TextureCache;
-  textureHook?: TextureCache; // puzzle这类特殊拼图效果，外部自定义实现对最终texture进行后渲染
   textureTarget?: TextureCache; // 指向自身所有缓存中最优先的那个
   tempOpacity: number; // 局部根节点merge汇总临时用到的2个
   tempMatrix: Float32Array;
@@ -152,6 +151,9 @@ class Node extends Event {
     // 添加dom之前的动画需生效
     this.animationList.forEach(item => {
       this.root!.aniController.addAni(item);
+      if (item.autoPlay && item.pending) {
+        item.play();
+      }
     });
   }
 
@@ -1775,7 +1777,7 @@ class Node extends Event {
       return animation;
     }
     root.aniController.addAni(animation);
-    if (options.autoPlay) {
+    if (options.autoPlay && this.isMounted) {
       animation.play();
     }
     else if (options.fill === 'backwards' || options.fill === 'both') {

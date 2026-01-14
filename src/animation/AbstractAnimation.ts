@@ -30,6 +30,7 @@ abstract class AbstractAnimation extends Event {
   playbackRate: number;
   fps: number;
   spf: number;
+  autoPlay?: boolean;
   protected skipFrame: boolean;
   protected lastCurrentTime: number;
   protected _currentTime: number;
@@ -63,6 +64,7 @@ abstract class AbstractAnimation extends Event {
     this.playbackRate = options.playbackRate || 1;
     this.fps = options.fps || Infinity;
     this.spf = 1000 / this.fps; // 默认0
+    this.autoPlay = options.autoPlay;
     this.skipFrame = false;
     this.lastCurrentTime = 0;
     this._currentTime = 0;
