@@ -1,4 +1,4 @@
-import parser, { Item as ItemType, Animations as AnimationsType } from './parser';
+import parser, { Item as ItemType, JAnimations as JAnimationsType } from './parser';
 import node from './node';
 import util from './util';
 import style from './style';
@@ -97,7 +97,7 @@ export namespace format {
 
 export namespace parser {
   export type Item = ItemType;
-  export type Animations = AnimationsType;
+  export type JAnimations = JAnimationsType;
 }
 
 export default {
