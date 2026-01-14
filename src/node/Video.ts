@@ -138,11 +138,15 @@ class Video extends Node {
   protected override didMountAnimate() {
     super.didMountAnimate();
     if (this.animationRecords) {
-      this.animationRecords.splice(0).forEach(item => {
+      for (let i = 0, len = this.animationRecords.length; i < len; i++) {
+        const item = this.animationRecords[i];
         if ('start' in item) {
           this.timeAnimate(item.start, item.options);
+          this.animationRecords.splice(i, 1);
+          i--;
+          len--;
         }
-      });
+      }
     }
   }
 

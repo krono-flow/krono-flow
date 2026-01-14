@@ -163,11 +163,15 @@ class Node extends Event {
     });
     // json定义的
     if (this.animationRecords) {
-      this.animationRecords.splice(0).forEach(item => {
+      for (let i = 0, len = this.animationRecords.length; i < len; i++) {
+        const item = this.animationRecords[i];
         if ('keyframes' in item) {
           this.animate(item.keyframes, item.options);
+          this.animationRecords.splice(i, 1);
+          i--;
+          len--;
         }
-      });
+      }
     }
   }
 
