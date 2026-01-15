@@ -1,10 +1,12 @@
 import AbstractDecoder, { DecoderConstructor } from './AbstractDecoder';
-import AbstractEncoder from './AbstractEncoder';
+import AbstractEncoder, { EncoderConstructor } from './AbstractEncoder';
 import { MbVideoDecoderEvent, MbVideoEncoderEvent } from './define';
 import MbVideoDecoder from './MbVideoDecoder';
 import MbVideoEncoder from './MbVideoEncoder';
 
 let defaultDecoder: DecoderConstructor = MbVideoDecoder;
+
+let defaultEncoder: EncoderConstructor = MbVideoEncoder;
 
 export default {
   AbstractDecoder,
@@ -19,4 +21,10 @@ export default {
   setDecoder(v: DecoderConstructor) {
     defaultDecoder = v;
   },
+  getEncoder() {
+    return defaultEncoder;
+  },
+  setEncoder(v: EncoderConstructor) {
+    defaultEncoder = v;
+  }
 };

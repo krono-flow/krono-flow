@@ -30,8 +30,8 @@ import lightDarkFrag from '../gl/lightDark.frag';
 import AbstractAnimation from '../animation/AbstractAnimation';
 import AniController from '../animation/AniController';
 import { CAN_PLAY, REFRESH, REFRESH_COMPLETE, WAITING } from '../refresh/refreshEvent';
+import codec from '../codec';
 import { EncodeOptions } from '../codec/define';
-import MbVideoEncoder from '../codec/MbVideoEncoder';
 import CacheProgram from '../gl/CacheProgram';
 import config from '../config';
 
@@ -462,7 +462,8 @@ class Root extends Container {
   }
 
   async encode(encodeOptions?: EncodeOptions) {
-    return MbVideoEncoder.getInstance().start(this, encodeOptions);
+    const EC = codec.getEncoder();
+    return new EC().start(this, encodeOptions);
   }
 }
 

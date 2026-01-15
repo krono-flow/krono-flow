@@ -1,18 +1,18 @@
 import Root from '../node/Root';
 import Lottie from '../node/Lottie';
-import Event from '../util/Event';
 import config from '../config';
 import { EncoderEvent, EncoderType, onMessage } from '../encoder';
 import { CAN_PLAY, REFRESH_COMPLETE } from '../refresh/refreshEvent';
 import TimeAnimation from '../animation/TimeAnimation';
 import { reSample, sliceAudioBuffer } from './sound';
 import { AudioChunk, EncodeOptions, MbVideoEncoderEvent } from './define';
+import AbstractEncoder from './AbstractEncoder';
 
 let worker: Worker;
 let messageId = 0;
 let instance: MbVideoEncoder | undefined;
 
-export class MbVideoEncoder extends Event {
+export class MbVideoEncoder extends AbstractEncoder {
   constructor() {
     super();
   }
@@ -233,13 +233,6 @@ export class MbVideoEncoder extends Event {
         });
       }
     });
-  }
-
-  static getInstance() {
-    if (!instance) {
-      instance = new MbVideoEncoder();
-    }
-    return instance;
   }
 }
 

@@ -34,6 +34,16 @@ import format, {
   JRich as JRichType,
 } from './format';
 import codec from './codec';
+import {
+  AudioChunk as AudioChunkType,
+  GOP as GOPType,
+  SimpleGOP as SimpleGOPType,
+  VideoAudioMeta as VideoAudioMetaType,
+  CacheGOP as CacheGOPType,
+  EncodeOptions as EncodeOptionsType,
+} from './codec/define';
+import { DecoderConstructor as DecoderConstructorType } from './codec/AbstractDecoder';
+import { EncoderConstructor as EncoderConstructorType } from './codec/AbstractEncoder';
 
 export namespace node {
   export type Container = InstanceType<typeof node.Container>;
@@ -111,6 +121,14 @@ export namespace parser {
 export namespace codec {
   export type AbstractDecoder = InstanceType<typeof codec.AbstractDecoder>;
   export type AbstractEncoder = InstanceType<typeof codec.AbstractEncoder>;
+  export type GOP = GOPType;
+  export type SimpleGOP = SimpleGOPType;
+  export type VideoAudioMeta = AudioChunkType;
+  export type AudioChunk = VideoAudioMetaType;
+  export type CacheGOP = CacheGOPType;
+  export type EncodeOptions = EncodeOptionsType;
+  export type DecoderConstructor = DecoderConstructorType;
+  export type EncoderConstructor = EncoderConstructorType;
 }
 
 export default {
