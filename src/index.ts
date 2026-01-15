@@ -3,6 +3,7 @@ import {
   Item as ItemType,
   JCssAnimations as JCssAnimationsType,
   JTimeAnimations as JTimeAnimationsType,
+  JRichAnimations as JRichAnimationsType,
 } from './parser/define';
 import node from './node';
 import util from './util';
@@ -104,6 +105,7 @@ export namespace parser {
   export type Item = ItemType;
   export type JCssAnimations = JCssAnimationsType;
   export type JTimeAnimations = JTimeAnimationsType;
+  export type JRichAnimations = JRichAnimationsType;
 }
 
 export default {

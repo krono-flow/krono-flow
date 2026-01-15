@@ -325,6 +325,24 @@ class Text extends Node {
     }
   }
 
+  protected override didMountAnimate() {
+    super.didMountAnimate();
+    if (this.animationRecords) {
+      for (let i = 0, len = this.animationRecords.length; i < len; i++) {
+        const item = this.animationRecords[i];
+        if ('keyframes' in item) {
+          // 和cssAnimation区别出来
+          if (item.keyframes.length && ('rich' in item.keyframes[0])) {
+            this.richAnimate(item.keyframes as JKeyFrameRich[], item.options);
+          }
+          this.animationRecords.splice(i, 1);
+          i--;
+          len--;
+        }
+      }
+    }
+  }
+
   override lay(data: LayoutData) {
     super.lay(data);
     const { computedRich, style, computedStyle, _content: content, lineBoxList } = this;

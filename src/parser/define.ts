@@ -1,5 +1,6 @@
-import { JKeyFrame } from '../animation/CssAnimation';
 import { Options } from '../animation/AbstractAnimation';
+import { JKeyFrame } from '../animation/CssAnimation';
+import { JKeyFrameRich } from '../animation/RichAnimation';
 import {
   AudioProps,
   BitmapProps,
@@ -22,6 +23,11 @@ export type JTimeAnimations = {
   options: Options;
 };
 
+export type JRichAnimations = {
+  keyframes: JKeyFrameRich[];
+  options: Options;
+};
+
 export type Item = {
   tagName: 'container';
   props: Props;
@@ -34,7 +40,7 @@ export type Item = {
 } | {
   tagName: 'text';
   props: TextProps;
-  animations?: JCssAnimations[];
+  animations?: (JCssAnimations | JRichAnimations)[];
 } | {
   tagName: 'video';
   props: VideoProps;
