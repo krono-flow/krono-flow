@@ -1,23 +1,23 @@
-import parser from './parser';
+import parserPkg from './parser';
 import {
   Item as ItemType,
   JCssAnimations as JCssAnimationsType,
   JTimeAnimations as JTimeAnimationsType,
   JRichAnimations as JRichAnimationsType,
 } from './parser/define';
-import node from './node';
+import nodePkg from './node';
 import util from './util';
-import style from './style';
+import stylePkg from './style';
 import config from './config';
-import interaction from './interaction';
-import animation from './animation';
+import interactionPkg from './interaction';
+import animationPkg from './animation';
 import { Options as OptionsType } from './animation/AbstractAnimation';
 import { KeyFrame as KeyFrameType, JKeyFrame as JKeyFrameType } from './animation/CssAnimation';
 import { JKeyFrameRich as JKeyFrameRichType, KeyFrameRich as KeyFrameRichType } from './animation/RichAnimation';
 import math from './math';
-import history from './history';
-import refresh from './refresh';
-import format, {
+import historyPkg from './history';
+import refreshPkg from './refresh';
+import formatPkg, {
   JPoint as JPointType,
   Point as PointType,
   JStyle as JStyleType,
@@ -33,7 +33,7 @@ import format, {
   RichIndex as RichIndexType,
   JRich as JRichType,
 } from './format';
-import codec from './codec';
+import codecPkg from './codec';
 import {
   AudioChunk as AudioChunkType,
   GOP as GOPType,
@@ -46,26 +46,26 @@ import { DecoderConstructor as DecoderConstructorType } from './codec/AbstractDe
 import { EncoderConstructor as EncoderConstructorType } from './codec/AbstractEncoder';
 
 export namespace node {
-  export type Container = InstanceType<typeof node.Container>;
-  export type Bitmap = InstanceType<typeof node.Bitmap>;
-  export type Node = InstanceType<typeof node.Node>;
-  export type Root = InstanceType<typeof node.Root>;
-  export type Video = InstanceType<typeof node.Video>;
-  export type Audio = InstanceType<typeof node.Audio>;
-  export type Text = InstanceType<typeof node.Text>;
-  export type Lottie = InstanceType<typeof node.Lottie>;
+  export type Container = InstanceType<typeof nodePkg.Container>;
+  export type Bitmap = InstanceType<typeof nodePkg.Bitmap>;
+  export type Node = InstanceType<typeof nodePkg.Node>;
+  export type Root = InstanceType<typeof nodePkg.Root>;
+  export type Video = InstanceType<typeof nodePkg.Video>;
+  export type Audio = InstanceType<typeof nodePkg.Audio>;
+  export type Text = InstanceType<typeof nodePkg.Text>;
+  export type Lottie = InstanceType<typeof nodePkg.Lottie>;
   export namespace geom {
-    export type Polyline = InstanceType<typeof node.Polyline>;
+    export type Polyline = InstanceType<typeof nodePkg.Polyline>;
   }
 }
 
 export namespace animation {
-  export type AbstractAnimation = InstanceType<typeof animation.AbstractAnimation>;
-  export type CssAnimation = InstanceType<typeof animation.CssAnimation>;
-  export type GifAnimation = InstanceType<typeof animation.GifAnimation>;
-  export type RichAnimation = InstanceType<typeof animation.RichAnimation>;
-  export type TimeAnimation = InstanceType<typeof animation.TimeAnimation>;
-  export type AniController = InstanceType<typeof animation.AniController>;
+  export type AbstractAnimation = InstanceType<typeof animationPkg.AbstractAnimation>;
+  export type CssAnimation = InstanceType<typeof animationPkg.CssAnimation>;
+  export type GifAnimation = InstanceType<typeof animationPkg.GifAnimation>;
+  export type RichAnimation = InstanceType<typeof animationPkg.RichAnimation>;
+  export type TimeAnimation = InstanceType<typeof animationPkg.TimeAnimation>;
+  export type AniController = InstanceType<typeof animationPkg.AniController>;
   export type Options = OptionsType;
   export type KeyFrame = KeyFrameType;
   export type JKeyFrame = JKeyFrameType;
@@ -74,24 +74,24 @@ export namespace animation {
 }
 
 export namespace history {
-  export type History = InstanceType<typeof history.History>;
-  export type AbstractCommand = InstanceType<typeof history.AbstractCommand>;
-  export type MoveCommand = InstanceType<typeof history.MoveCommand>;
-  export type RemoveCommand = InstanceType<typeof history.RemoveCommand>;
-  export type ResizeCommand = InstanceType<typeof history.ResizeCommand>;
-  export type RotateCommand = InstanceType<typeof history.RotateCommand>;
-  export type TextCommand = InstanceType<typeof history.TextCommand>;
+  export type History = InstanceType<typeof historyPkg.History>;
+  export type AbstractCommand = InstanceType<typeof historyPkg.AbstractCommand>;
+  export type MoveCommand = InstanceType<typeof historyPkg.MoveCommand>;
+  export type RemoveCommand = InstanceType<typeof historyPkg.RemoveCommand>;
+  export type ResizeCommand = InstanceType<typeof historyPkg.ResizeCommand>;
+  export type RotateCommand = InstanceType<typeof historyPkg.RotateCommand>;
+  export type TextCommand = InstanceType<typeof historyPkg.TextCommand>;
 }
 
 export namespace interaction {
-  export type Listener = InstanceType<typeof interaction.Listener>;
-  export type Select = InstanceType<typeof interaction.Select>;
-  export type Input = InstanceType<typeof interaction.Input>;
+  export type Listener = InstanceType<typeof interactionPkg.Listener>;
+  export type Select = InstanceType<typeof interactionPkg.Select>;
+  export type Input = InstanceType<typeof interactionPkg.Input>;
 }
 
 export namespace refresh {
-  export type CanvasCache = InstanceType<typeof refresh.CanvasCache>;
-  export type TextureCache = InstanceType<typeof refresh.TextureCache>;
+  export type CanvasCache = InstanceType<typeof refreshPkg.CanvasCache>;
+  export type TextureCache = InstanceType<typeof refreshPkg.TextureCache>;
 }
 
 export namespace format {
@@ -119,8 +119,8 @@ export namespace parser {
 }
 
 export namespace codec {
-  export type AbstractDecoder = InstanceType<typeof codec.AbstractDecoder>;
-  export type AbstractEncoder = InstanceType<typeof codec.AbstractEncoder>;
+  export type AbstractDecoder = InstanceType<typeof codecPkg.AbstractDecoder>;
+  export type AbstractEncoder = InstanceType<typeof codecPkg.AbstractEncoder>;
   export type GOP = GOPType;
   export type SimpleGOP = SimpleGOPType;
   export type VideoAudioMeta = AudioChunkType;
@@ -132,16 +132,16 @@ export namespace codec {
 }
 
 export default {
-  parser,
-  node,
+  parser: parserPkg,
+  node: nodePkg,
   util,
   config,
-  style,
-  interaction,
-  animation,
+  style: stylePkg,
+  interaction: interactionPkg,
+  animation: animationPkg,
   math,
-  history,
-  refresh,
-  format,
-  codec,
+  history: historyPkg,
+  refresh: refreshPkg,
+  format: formatPkg,
+  codec: codecPkg,
 };

@@ -5,6 +5,8 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import glslify from 'rollup-plugin-glslify';
 import postcss from 'rollup-plugin-postcss';
 import terser from '@rollup/plugin-terser';
+import dts from 'rollup-plugin-dts';
+import del from 'rollup-plugin-delete';
 
 const publicConfig = {
   format: 'umd',
@@ -124,6 +126,23 @@ export default [
       postcss({
         extract: true,
         minimize: true,
+      }),
+    ],
+  },
+  // 归并 .d.ts 文件
+  {
+    input: 'types/index.d.ts',
+    output: {
+      file: 'dist/index.d.ts',
+      format: 'es',
+    },
+    plugins: [
+      // 将类型文件全部集中到一个文件中
+      dts(),
+      // 在构建完成后，删除 types 文件夹
+      del({
+        targets: 'types',
+        hook: 'buildEnd',
       }),
     ],
   },
