@@ -1,14 +1,17 @@
-import Event from '../util/Event';
 import {
-  AudioChunk, CacheGOP, CacheState,
+  AudioChunk,
+  CacheGOP,
+  CacheState,
   DecoderEvent,
   DecoderType,
-  GOPState, MbVideoDecoderEvent,
+  GOPState,
+  MbVideoDecoderEvent,
   SimpleGOP,
   VideoAudioMeta,
 } from './define';
 import { onMessage } from '../decoder';
 import config from '../config';
+import AbstractDecoder from './AbstractDecoder';
 
 type Cache = {
   state: CacheState,
@@ -31,7 +34,7 @@ let worker: Worker;
 let id = 0;
 let messageId = 0;
 
-export class MbVideoDecoder extends Event {
+export class MbVideoDecoder extends AbstractDecoder {
   url: string;
   id: number;
   currentTime: number; // 当前解析的时间
@@ -220,7 +223,7 @@ export class MbVideoDecoder extends Event {
    * 加载解码后续即将播放的区域，不需要的地方也会取消加载（如有）。
    * @param time
    */
-  process(time: number) {
+  protected process(time: number) {
     if (time < -config.decodeNextDuration) {
       this.releaseGOPList();
       return;
@@ -266,7 +269,7 @@ export class MbVideoDecoder extends Event {
     }
   }
 
-  getForwardsNearestGOPIndex(time: number) {
+  protected getForwardsNearestGOPIndex(time: number) {
     const cache = HASH[this.url];
     const duration = cache.meta.duration;
     const gopList = cache.gopList;
@@ -357,7 +360,7 @@ export class MbVideoDecoder extends Event {
     }
   }
 
-  decodeGOP(gop: CacheGOP) {
+  protected decodeGOP(gop: CacheGOP) {
     if (gop.state === GOPState.ERROR) {
       return;
     }
@@ -404,7 +407,7 @@ export class MbVideoDecoder extends Event {
     }
   }
 
-  releaseGOP(gop: CacheGOP) {
+  protected releaseGOP(gop: CacheGOP) {
     const i = gop.users.indexOf(this);
     if (i > -1) {
       gop.users.splice(i, 1);
@@ -437,7 +440,7 @@ export class MbVideoDecoder extends Event {
     }
   }
 
-  releaseGOPList() {
+  protected releaseGOPList() {
     const cache = HASH[this.url];
     cache.gopList.forEach(item => {
       this.releaseGOP(item);
@@ -470,10 +473,6 @@ export class MbVideoDecoder extends Event {
 
   get currentGOP() {
     return HASH[this.url]?.gopList[this.gopIndex];
-  }
-
-  get cache() {
-    return HASH[this.url];
   }
 }
 

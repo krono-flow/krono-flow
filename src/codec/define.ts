@@ -102,7 +102,6 @@ export enum CacheState {
 export type CacheGOP = SimpleGOP & {
   state: GOPState,
   videoFrames: VideoFrame[],
-  // audioChunks?: AudioChunk[],
   audioBuffer?: AudioBuffer,
   audioBufferSourceNode?: AudioBufferSourceNode,
   users: MbVideoDecoder[],
