@@ -1,4 +1,4 @@
-import MbVideoDecoder from './MbVideoDecoder';
+import AbstractDecoder from './AbstractDecoder';
 
 export enum DecoderType {
   META = 0,
@@ -104,7 +104,7 @@ export type CacheGOP = SimpleGOP & {
   videoFrames: VideoFrame[],
   audioBuffer?: AudioBuffer,
   audioBufferSourceNode?: AudioBufferSourceNode,
-  users: MbVideoDecoder[],
+  users: AbstractDecoder[],
 };
 
 export enum MbVideoEncoderEvent {

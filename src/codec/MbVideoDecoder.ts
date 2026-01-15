@@ -15,14 +15,14 @@ import AbstractDecoder from './AbstractDecoder';
 
 type Cache = {
   state: CacheState,
-  metaList: [MbVideoDecoder], // meta加载完之前所有尝试加载meta的等待队列
-  loadList: [MbVideoDecoder], // 整个处理队列记录
+  metaList: [AbstractDecoder], // meta加载完之前所有尝试加载meta的等待队列
+  loadList: [AbstractDecoder], // 整个处理队列记录
   meta: VideoAudioMeta,
   gopList: CacheGOP[],
   singleHash: Record<number, {
     videoFrame: VideoFrame,
     // audioChunks?: AudioChunk[],
-    users: MbVideoDecoder[],
+    users: AbstractDecoder[],
   }>, // 单帧合成模式下，按时间戳保存，同一个gop下可能多个不同时间的
   error?: string,
   count: number;
@@ -35,7 +35,6 @@ let id = 0;
 let messageId = 0;
 
 export class MbVideoDecoder extends AbstractDecoder {
-  url: string;
   id: number;
   currentTime: number; // 当前解析的时间
   gopIndex: number; // 当前区域索引
@@ -43,8 +42,7 @@ export class MbVideoDecoder extends AbstractDecoder {
   error: boolean;
 
   constructor(url: string) {
-    super();
-    this.url = url;
+    super(url);
     this.id = id++;
     this.currentTime = -Infinity;
     this.gopIndex = -1;
@@ -440,7 +438,7 @@ export class MbVideoDecoder extends AbstractDecoder {
     }
   }
 
-  protected releaseGOPList() {
+  releaseGOPList() {
     const cache = HASH[this.url];
     cache.gopList.forEach(item => {
       this.releaseGOP(item);

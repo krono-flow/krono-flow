@@ -9,7 +9,8 @@ import { Options } from '../animation/AbstractAnimation';
 import TimeAnimation from '../animation/TimeAnimation';
 import config from '../config';
 import { GOPState, MbVideoDecoderEvent, VideoAudioMeta } from '../codec/define';
-import MbVideoDecoder from '../codec/MbVideoDecoder';
+import AbstractDecoder from '../codec/AbstractDecoder';
+import codec from '../codec';
 import inject from '../util/inject';
 import { CAN_PLAY, ERROR, META, WAITING } from '../refresh/refreshEvent';
 
@@ -21,7 +22,7 @@ class Video extends Node {
   onError?: (e: string) => void;
   onWaiting?: () => void;
   gainNode?: GainNode;
-  private _decoder?: MbVideoDecoder;
+  private _decoder?: AbstractDecoder;
   private _videoFrame?: VideoFrame;
   private _currentTime: number;
   private _metaData?: VideoAudioMeta;
@@ -50,8 +51,9 @@ class Video extends Node {
       if (this._currentTime >= 0) {
         this.contentLoadingNum = 1;
       }
-      const mbVideoDecoder = this._decoder = new MbVideoDecoder(src);
-      mbVideoDecoder.on(MbVideoDecoderEvent.META, e => {
+      const DC = codec.getDecoder();
+      const decoder = this._decoder = new DC(src);
+      decoder.on(MbVideoDecoderEvent.META, e => {
         this._metaData = e;
         if (this._currentTime >= 0 && this._currentTime < e.duration) {
           this.contentLoadingNum = 1;
@@ -73,7 +75,7 @@ class Video extends Node {
         }
         this.emit(META, e);
       });
-      mbVideoDecoder.on(MbVideoDecoderEvent.ERROR, e => {
+      decoder.on(MbVideoDecoderEvent.ERROR, e => {
         inject.error(e);
         this.contentLoadingNum = 0;
         if (this.onError) {
@@ -82,8 +84,8 @@ class Video extends Node {
         this.emit(ERROR, e);
         this.refresh();
       });
-      mbVideoDecoder.on(MbVideoDecoderEvent.CANPLAY, gop => {
-        const frame = mbVideoDecoder.getFrameByTime(this._currentTime);
+      decoder.on(MbVideoDecoderEvent.CANPLAY, gop => {
+        const frame = decoder.getFrameByTime(this._currentTime);
         this.videoFrame = frame;
         this.contentLoadingNum = 0;
         if (this.onCanplay) {
@@ -92,7 +94,7 @@ class Video extends Node {
         this.emit(CAN_PLAY);
         this.refresh();
       });
-      mbVideoDecoder.on([MbVideoDecoderEvent.CANPLAY, MbVideoDecoderEvent.AUDIO_BUFFER], gop => {
+      decoder.on([MbVideoDecoderEvent.CANPLAY, MbVideoDecoderEvent.AUDIO_BUFFER], gop => {
         const root = this.root;
         if (!root || !gop.audioBuffer) {
           return;
@@ -132,7 +134,7 @@ class Video extends Node {
           }
         }
       });
-      mbVideoDecoder.start(this._currentTime);
+      decoder.start(this._currentTime);
     }
   }
 

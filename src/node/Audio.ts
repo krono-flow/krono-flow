@@ -4,7 +4,8 @@ import { LoadAudioRes } from '../util/loadAudio';
 import { Options } from '../animation/AbstractAnimation';
 import TimeAnimation from '../animation/TimeAnimation';
 import { GOPState, MbVideoDecoderEvent, VideoAudioMeta } from '../codec/define';
-import MbVideoDecoder from '../codec/MbVideoDecoder';
+import AbstractDecoder from '../codec/AbstractDecoder';
+import codec from '../codec';
 import inject from '../util/inject';
 import { CAN_PLAY, ERROR, META, WAITING } from '../refresh/refreshEvent';
 
@@ -17,7 +18,7 @@ class Audio extends Node {
   onWaiting?: () => void;
   audioBufferSourceNode?: AudioBufferSourceNode;
   gainNode?: GainNode;
-  private _decoder?: MbVideoDecoder;
+  private _decoder?: AbstractDecoder;
   private _currentTime: number;
   private _metaData?: VideoAudioMeta;
   private _volumn: number;
@@ -44,8 +45,9 @@ class Audio extends Node {
       if (this._currentTime >= 0) {
         this.contentLoadingNum = 1;
       }
-      const mbVideoDecoder = this._decoder = new MbVideoDecoder(src);
-      mbVideoDecoder.on(MbVideoDecoderEvent.META, e => {
+      const DC = codec.getDecoder();
+      const decoder = this._decoder = new DC(src);
+      decoder.on(MbVideoDecoderEvent.META, e => {
         this._metaData = e;
         if (this._currentTime >= 0 && this._currentTime <= e.duration) {
           this.contentLoadingNum = 1;
@@ -58,7 +60,7 @@ class Audio extends Node {
         }
         this.emit(META);
       });
-      mbVideoDecoder.on(MbVideoDecoderEvent.ERROR, e => {
+      decoder.on(MbVideoDecoderEvent.ERROR, e => {
         inject.error(e);
         this.contentLoadingNum = 0;
         if (this.onError) {
@@ -67,7 +69,7 @@ class Audio extends Node {
         this.emit(ERROR);
         this.refresh();
       });
-      mbVideoDecoder.on(MbVideoDecoderEvent.CANPLAY, gop => {
+      decoder.on(MbVideoDecoderEvent.CANPLAY, gop => {
         this.contentLoadingNum = 0;
         if (this.onCanplay) {
           this.onCanplay();
@@ -75,7 +77,7 @@ class Audio extends Node {
         this.emit(CAN_PLAY);
         this.refresh();
       });
-      mbVideoDecoder.on([MbVideoDecoderEvent.CANPLAY, MbVideoDecoderEvent.AUDIO_BUFFER], gop => {
+      decoder.on([MbVideoDecoderEvent.CANPLAY, MbVideoDecoderEvent.AUDIO_BUFFER], gop => {
         const root = this.root;
         if (!root || !gop.audioBuffer) {
           return;
@@ -115,7 +117,7 @@ class Audio extends Node {
           }
         }
       });
-      mbVideoDecoder.start(this._currentTime);
+      decoder.start(this._currentTime);
     }
   }
 
