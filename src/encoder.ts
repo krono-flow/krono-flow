@@ -7,7 +7,8 @@ import {
   EncodedAudioPacketSource,
   WebMOutputFormat,
 } from 'mediabunny';
-import { AudioChunk, sleep } from './decoder';
+import { AudioChunk } from './codec/define';
+import { sleep } from './decoder';
 import inject from './util/inject';
 
 export enum EncoderType {

@@ -8,7 +8,8 @@ import CanvasCache from '../refresh/CanvasCache';
 import { Options } from '../animation/AbstractAnimation';
 import TimeAnimation from '../animation/TimeAnimation';
 import config from '../config';
-import { GOPState, MbVideoDecoder, MbVideoDecoderEvent, VideoAudioMeta } from '../codec/MbVideoDecoder';
+import { GOPState, MbVideoDecoderEvent, VideoAudioMeta } from '../codec/define';
+import MbVideoDecoder from '../codec/MbVideoDecoder';
 import inject from '../util/inject';
 import { CAN_PLAY, ERROR, META, WAITING } from '../refresh/refreshEvent';
 

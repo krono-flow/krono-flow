@@ -108,6 +108,11 @@ export namespace parser {
   export type JRichAnimations = JRichAnimationsType;
 }
 
+export namespace codec {
+  export type AbstractDecoder = InstanceType<typeof codec.AbstractDecoder>;
+  export type AbstractEncoder = InstanceType<typeof codec.AbstractEncoder>;
+}
+
 export default {
   parser,
   node,

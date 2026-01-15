@@ -1,42 +1,14 @@
 import Event from '../util/Event';
 import {
-  AudioChunk,
+  AudioChunk, CacheGOP, CacheState,
   DecoderEvent,
   DecoderType,
-  GOPState,
+  GOPState, MbVideoDecoderEvent,
   SimpleGOP,
   VideoAudioMeta,
-  onMessage,
-} from '../decoder';
+} from './define';
+import { onMessage } from '../decoder';
 import config from '../config';
-
-export { GOPState, VideoAudioMeta };
-
-export enum MbVideoDecoderEvent {
-  META = 'meta',
-  LOADED = 'loaded',
-  ERROR = 'error',
-  PROGRESS = 'progress',
-  CANPLAY = 'canplay',
-  AUDIO_BUFFER = 'audio_buffer',
-}
-
-export enum CacheState {
-  NONE = 0,
-  LOADING_META = 1,
-  META = 2,
-  LOADED = 3,
-  ERROR = 4,
-}
-
-export type CacheGOP = SimpleGOP & {
-  state: GOPState,
-  videoFrames: VideoFrame[],
-  // audioChunks?: AudioChunk[],
-  audioBuffer?: AudioBuffer,
-  audioBufferSourceNode?: AudioBufferSourceNode,
-  users: MbVideoDecoder[],
-};
 
 type Cache = {
   state: CacheState,
@@ -56,7 +28,6 @@ type Cache = {
 const HASH: Record<string, Cache> = {};
 
 let worker: Worker;
-let noWorker = false;
 let id = 0;
 let messageId = 0;
 
@@ -88,9 +59,6 @@ export class MbVideoDecoder extends Event {
       const blob = new Blob([config.decoderWorkerStr.trim()], { 'type': 'application/javascript' });
       const url = URL.createObjectURL(blob);
       worker = new Worker(url);
-    }
-    else {
-      // noWorker = true;
     }
     const onMessage = (e: MessageEvent<{
       url: string,

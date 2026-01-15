@@ -2,7 +2,7 @@ import { DEFAULT_STYLE } from './dft';
 import {
   CURVE_MODE,
 } from '../style/define';
-import { VideoAudioMeta } from '../decoder';
+import { VideoAudioMeta } from '../codec/define';
 import { JCssAnimations } from '../parser/define';
 
 export type Props = {

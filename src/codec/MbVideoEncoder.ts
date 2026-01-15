@@ -6,26 +6,11 @@ import { EncoderEvent, EncoderType, onMessage } from '../encoder';
 import { CAN_PLAY, REFRESH_COMPLETE } from '../refresh/refreshEvent';
 import TimeAnimation from '../animation/TimeAnimation';
 import { reSample, sliceAudioBuffer } from './sound';
-import { AudioChunk } from '../decoder';
+import { AudioChunk, EncodeOptions, MbVideoEncoderEvent } from './define';
 
 let worker: Worker;
-let noWorker = false;
 let messageId = 0;
 let instance: MbVideoEncoder | undefined;
-
-export enum MbVideoEncoderEvent {
-  START = 'start',
-  PROGRESS = 'progress',
-  FINISH = 'finish',
-  ERROR = 'error',
-}
-
-export type EncodeOptions = {
-  timestamp?: number;
-  duration?: number;
-  video?: Partial<VideoEncoderConfig>,
-  audio?: Partial<AudioEncoderConfig>,
-};
 
 export class MbVideoEncoder extends Event {
   constructor() {
@@ -43,9 +28,6 @@ export class MbVideoEncoder extends Event {
       const blob = new Blob([config.encoderWorkerStr.trim()], { 'type': 'application/javascript' });
       const url = URL.createObjectURL(blob);
       worker = new Worker(url);
-    }
-    else {
-      noWorker = true;
     }
   }
 
