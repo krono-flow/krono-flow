@@ -1,16 +1,15 @@
 import Root from '../node/Root';
 import Lottie from '../node/Lottie';
 import config from '../config';
-import { EncoderEvent, EncoderType, onMessage } from '../encoder';
+import { onMessage } from '../encoder';
 import { CAN_PLAY, REFRESH_COMPLETE } from '../refresh/refreshEvent';
 import TimeAnimation from '../animation/TimeAnimation';
 import { reSample, sliceAudioBuffer } from './sound';
-import { AudioChunk, EncodeOptions, MbVideoEncoderEvent } from './define';
+import { AudioChunk, EncodeOptions, VideoEncoderEvent, EncoderMessageEvent, EncoderMessageType } from './define';
 import AbstractEncoder from './AbstractEncoder';
 
 let worker: Worker;
 let messageId = 0;
-let instance: MbVideoEncoder | undefined;
 
 export class MbVideoEncoder extends AbstractEncoder {
   constructor() {
@@ -64,7 +63,7 @@ export class MbVideoEncoder extends AbstractEncoder {
     const num = Math.ceil((duration - timestamp) / spf);
     const begin = Math.floor(timestamp / spf);
     const mes = {
-      type: EncoderType.INIT,
+      type: EncoderMessageType.INIT,
       messageId: messageId++,
       isWorker: !!config.encoderWorker || !!config.encoderWorkerStr,
       duration,
@@ -80,14 +79,14 @@ export class MbVideoEncoder extends AbstractEncoder {
     else {
       await onMessage({ data: mes } as any);
     }
-    this.emit(MbVideoEncoderEvent.START, num);
+    this.emit(VideoEncoderEvent.START, num);
     // 记录每个node的当前时间的音频有没有提取过，避免encode重复，已node的id+时间做key
     const audioRecord: Record<string, true> = {};
     for (let i = 0; i < num; i++) {
       const timestamp = (i + begin) * spf;
       // console.warn('encode>>>>>>>>>>>>>>>>', i, num, timestamp);
       root.aniController.gotoAndStop(timestamp);
-      this.emit(MbVideoEncoderEvent.PROGRESS, i, num, true);
+      this.emit(VideoEncoderEvent.PROGRESS, i, num, true);
       await new Promise<void>((resolve, reject) => {
         const frameCb = async () => {
           const bitmap = await createImageBitmap(root.canvas!);
@@ -150,21 +149,21 @@ export class MbVideoEncoder extends AbstractEncoder {
             }
           }
           const messageCb = (e: MessageEvent<{
-            type: EncoderEvent,
+            type: EncoderMessageEvent,
             buffer: ArrayBuffer,
             error: string,
           }>) => {
-            if (e.data.type === EncoderEvent.PROGRESS) {
+            if (e.data.type === EncoderMessageEvent.PROGRESS) {
               resolve();
-              this.emit(MbVideoEncoderEvent.PROGRESS, i, num, false);
+              this.emit(VideoEncoderEvent.PROGRESS, i, num, false);
             }
             else {
               reject(e.data.error);
-              this.emit(MbVideoEncoderEvent.ERROR, e.data.error);
+              this.emit(VideoEncoderEvent.ERROR, e.data.error);
             }
           };
           const mes = {
-            type: EncoderType.FRAME,
+            type: EncoderMessageType.FRAME,
             messageId: messageId++,
             isWorker: !!config.encoderWorker || !!config.encoderWorkerStr,
             timestamp,
@@ -207,16 +206,16 @@ export class MbVideoEncoder extends AbstractEncoder {
     }
     return new Promise<ArrayBuffer>(resolve => {
       const cb = (e: MessageEvent<{
-        type: EncoderEvent,
+        type: EncoderMessageEvent,
         buffer: ArrayBuffer,
       }>) => {
-        if (e.data.type === EncoderEvent.FINISH) {
+        if (e.data.type === EncoderMessageEvent.FINISH) {
           resolve(e.data.buffer);
         }
-        this.emit(MbVideoEncoderEvent.FINISH);
+        this.emit(VideoEncoderEvent.FINISH);
       };
       const mes = {
-        type: EncoderType.END,
+        type: EncoderMessageType.END,
         messageId: messageId++,
         isWorker: !!config.encoderWorker || !!config.encoderWorkerStr,
         videoEncoderConfig,

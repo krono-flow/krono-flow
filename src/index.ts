@@ -39,6 +39,7 @@ import {
   GOP as GOPType,
   SimpleGOP as SimpleGOPType,
   VideoAudioMeta as VideoAudioMetaType,
+  Cache as CacheType,
   CacheGOP as CacheGOPType,
   EncodeOptions as EncodeOptionsType,
 } from './codec/define';
@@ -125,6 +126,7 @@ export namespace codec {
   export type SimpleGOP = SimpleGOPType;
   export type VideoAudioMeta = AudioChunkType;
   export type AudioChunk = VideoAudioMetaType;
+  export type Cache = CacheType;
   export type CacheGOP = CacheGOPType;
   export type EncodeOptions = EncodeOptionsType;
   export type DecoderConstructor = DecoderConstructorType;

@@ -1,52 +1,28 @@
 import {
   AudioChunk,
+  Cache,
   CacheGOP,
   CacheState,
-  DecoderEvent,
-  DecoderType,
+  DecoderMessageEvent,
+  DecoderMessageType,
   GOPState,
-  MbVideoDecoderEvent,
+  VideoDecoderEvent,
   SimpleGOP,
-  VideoAudioMeta,
 } from './define';
 import { onMessage } from '../decoder';
 import config from '../config';
 import AbstractDecoder from './AbstractDecoder';
 
-type Cache = {
-  state: CacheState,
-  metaList: [AbstractDecoder], // meta加载完之前所有尝试加载meta的等待队列
-  loadList: [AbstractDecoder], // 整个处理队列记录
-  meta: VideoAudioMeta,
-  gopList: CacheGOP[],
-  singleHash: Record<number, {
-    videoFrame: VideoFrame,
-    // audioChunks?: AudioChunk[],
-    users: AbstractDecoder[],
-  }>, // 单帧合成模式下，按时间戳保存，同一个gop下可能多个不同时间的
-  error?: string,
-  count: number;
-};
-
 const HASH: Record<string, Cache> = {};
 
 let worker: Worker;
-let id = 0;
 let messageId = 0;
 
 export class MbVideoDecoder extends AbstractDecoder {
-  id: number;
-  currentTime: number; // 当前解析的时间
-  gopIndex: number; // 当前区域索引
   onMessage?: Function;
-  error: boolean;
 
   constructor(url: string) {
     super(url);
-    this.id = id++;
-    this.currentTime = -Infinity;
-    this.gopIndex = -1;
-    this.error = false;
   }
 
   initWorker() {
@@ -64,7 +40,7 @@ export class MbVideoDecoder extends AbstractDecoder {
     const onMessage = (e: MessageEvent<{
       url: string,
       id: number,
-      type: DecoderEvent,
+      type: DecoderMessageEvent,
       data: any,
     }>) => {
       if (!e?.data) {
@@ -77,7 +53,7 @@ export class MbVideoDecoder extends AbstractDecoder {
       if (!cache) {
         return;
       }
-      if (type === DecoderEvent.META) {
+      if (type === DecoderMessageEvent.META) {
         cache.state = CacheState.META;
         cache.meta = data.meta;
         cache.gopList = data.simpleGOPList.map((item: SimpleGOP) => {
@@ -91,11 +67,11 @@ export class MbVideoDecoder extends AbstractDecoder {
         cache.metaList.splice(0).forEach(item => {
           // 设置gopIndex
           item.start(item.currentTime);
-          item.emit(MbVideoDecoderEvent.META, data.meta);
+          item.emit(VideoDecoderEvent.META, data.meta);
         });
       }
       // 一个gop解码完成
-      else if (type === DecoderEvent.DECODED) {
+      else if (type === DecoderMessageEvent.DECODED) {
         const gop = cache.gopList[data.index];
         if (gop) {
           gop.state = GOPState.DECODED;
@@ -126,19 +102,19 @@ export class MbVideoDecoder extends AbstractDecoder {
           }
           gop.users.forEach(item => {
             if (item.gopIndex === gop.index) {
-              item.emit(MbVideoDecoderEvent.CANPLAY, gop);
+              item.emit(VideoDecoderEvent.CANPLAY, gop);
             }
             // 后续的gop音频添加通知
             if (gop.audioBuffer && item.gopIndex < gop.index) {
-              item.emit(MbVideoDecoderEvent.AUDIO_BUFFER, gop);
+              item.emit(VideoDecoderEvent.AUDIO_BUFFER, gop);
             }
           });
         }
       }
-      else if (type === DecoderEvent.ERROR) {
+      else if (type === DecoderMessageEvent.ERROR) {
         cache.metaList.forEach(item => {
           item.error = true;
-          item.emit(MbVideoDecoderEvent.ERROR, data);
+          item.emit(VideoDecoderEvent.ERROR, data);
         });
       }
     };
@@ -157,7 +133,6 @@ export class MbVideoDecoder extends AbstractDecoder {
    */
   start(time: number) {
     this.initWorker();
-    const lastTime = this.currentTime;
     this.currentTime = time;
     const { url, id } = this;
     const cache = HASH[url];
@@ -175,12 +150,12 @@ export class MbVideoDecoder extends AbstractDecoder {
         if (!cache.loadList.includes(this)) {
           cache.loadList.push(this);
           cache.count++;
-          this.emit(MbVideoDecoderEvent.META, cache.meta);
+          this.emit(VideoDecoderEvent.META, cache.meta);
         }
         this.process(time);
       }
       else if (cache.state === CacheState.ERROR) {
-        this.emit(MbVideoDecoderEvent.ERROR, cache.error);
+        this.emit(VideoDecoderEvent.ERROR, cache.error);
       }
       return;
     }
@@ -199,7 +174,7 @@ export class MbVideoDecoder extends AbstractDecoder {
     const mes = {
       url,
       id,
-      type: DecoderType.META,
+      type: DecoderMessageType.META,
       messageId: messageId++,
       isWorker: !!config.decoderWorker || !!config.decoderWorkerStr,
       indexedDB: config.indexedDB,
@@ -370,7 +345,7 @@ export class MbVideoDecoder extends AbstractDecoder {
     // 线程异步可能别的gop解码完成了，也可能自己解码完成，播放时不停调用
     if (gop.state === GOPState.DECODED) {
       if (isNewer) {
-        this.emit(MbVideoDecoderEvent.CANPLAY, gop);
+        this.emit(VideoDecoderEvent.CANPLAY, gop);
       }
       return;
     }
@@ -388,7 +363,7 @@ export class MbVideoDecoder extends AbstractDecoder {
     gop.audioBuffer = undefined;
     const mes = {
       url: this.url,
-      type: DecoderType.DECODE,
+      type: DecoderMessageType.DECODE,
       id: this.id,
       messageId: messageId++,
       isWorker: !!config.decoderWorker || !!config.decoderWorkerStr,
@@ -421,7 +396,7 @@ export class MbVideoDecoder extends AbstractDecoder {
       }
       const mes = {
         url: this.url,
-        type: DecoderType.RELEASE,
+        type: DecoderMessageType.RELEASE,
         id: this.id,
         index: gop.index,
         messageId: messageId++,

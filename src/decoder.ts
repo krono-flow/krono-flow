@@ -10,7 +10,7 @@ import {
   AudioSampleSink,
 } from 'mediabunny';
 import { loadRange } from './util/loadRangeCache';
-import { AudioChunk, DecoderEvent, DecoderType, GOP, GOPState, SimpleGOP, VideoAudioMeta } from './codec/define';
+import { AudioChunk, DecoderMessageEvent, DecoderMessageType, GOP, GOPState, SimpleGOP, VideoAudioMeta } from './codec/define';
 
 export async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -27,7 +27,7 @@ const FILE_HASH: Record<string, FileData> = {};
 export const onMessage = async (e: MessageEvent<{
   url: string,
   id: number,
-  type: DecoderType,
+  type: DecoderMessageType,
   messageId: number,
   isWorker: boolean,
   indexedDB: boolean,
@@ -44,7 +44,7 @@ export const onMessage = async (e: MessageEvent<{
   const onError = (e: string) => {
     const res = {
       url,
-      type: DecoderEvent.ERROR,
+      type: DecoderMessageEvent.ERROR,
       data: e,
     };
     if (isWorker) {
@@ -58,7 +58,7 @@ export const onMessage = async (e: MessageEvent<{
     };
   }
   const fileData = FILE_HASH[url];
-  if (type === DecoderType.META) {
+  if (type === DecoderMessageType.META) {
     let preloadAll = e.data.preloadAll;
     let fileSize = 0;
     // 先请求文件大小，这个有304缓存
@@ -232,7 +232,7 @@ export const onMessage = async (e: MessageEvent<{
     });
     const res = {
       url,
-      type: DecoderEvent.META,
+      type: DecoderMessageEvent.META,
       data: { meta, simpleGOPList },
     };
     if (isWorker) {
@@ -240,7 +240,7 @@ export const onMessage = async (e: MessageEvent<{
     }
     return { data: res };
   }
-  else if (type === DecoderType.DECODE) {
+  else if (type === DecoderMessageType.DECODE) {
     const gop = fileData.gopList[e.data.index];
     // 理论不会，预防，只有加载成功后才会进入解码状态
     if (!gop || gop.state === GOPState.ERROR) {
@@ -331,7 +331,7 @@ export const onMessage = async (e: MessageEvent<{
     });
     const res = {
       url,
-      type: DecoderEvent.DECODED,
+      type: DecoderMessageEvent.DECODED,
       data: {
         index: e.data.index,
         videoFrames,
@@ -346,7 +346,7 @@ export const onMessage = async (e: MessageEvent<{
     }
     return { data: res };
   }
-  else if (type === DecoderType.RELEASE) {
+  else if (type === DecoderMessageType.RELEASE) {
     const gop = fileData.gopList[e.data.index];
     if (!gop) {
       return;

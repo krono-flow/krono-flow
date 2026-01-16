@@ -1,15 +1,27 @@
 import AbstractDecoder from './AbstractDecoder';
 
-export enum DecoderType {
+export enum DecoderMessageType {
   META = 0,
   DECODE = 1,
   RELEASE = 2,
 }
 
-export enum DecoderEvent {
+export enum DecoderMessageEvent {
   META = 'meta',
   ERROR = 'error',
   DECODED = 'decoded',
+}
+
+export enum EncoderMessageType {
+  INIT = 0,
+  FRAME = 1,
+  END = 2, // 数据结束，可以输出视频
+}
+
+export enum EncoderMessageEvent {
+  PROGRESS = 0,
+  FINISH = 1,
+  ERROR = 2,
 }
 
 export enum GOPState {
@@ -82,7 +94,7 @@ export type VideoAudioMeta = {
   fileSize: number;
 };
 
-export enum MbVideoDecoderEvent {
+export enum VideoDecoderEvent {
   META = 'meta',
   LOADED = 'loaded',
   ERROR = 'error',
@@ -99,6 +111,20 @@ export enum CacheState {
   ERROR = 4,
 }
 
+export type Cache = {
+  state: CacheState,
+  metaList: [AbstractDecoder], // meta加载完之前所有尝试加载meta的等待队列
+  loadList: [AbstractDecoder], // 整个处理队列记录
+  meta: VideoAudioMeta,
+  gopList: CacheGOP[],
+  singleHash: Record<number, {
+    videoFrame: VideoFrame,
+    users: AbstractDecoder[],
+  }>, // 单帧合成模式下，按时间戳保存，同一个gop下可能多个不同时间的
+  error?: string,
+  count: number;
+};
+
 export type CacheGOP = SimpleGOP & {
   state: GOPState,
   videoFrames: VideoFrame[],
@@ -107,7 +133,7 @@ export type CacheGOP = SimpleGOP & {
   users: AbstractDecoder[],
 };
 
-export enum MbVideoEncoderEvent {
+export enum VideoEncoderEvent {
   START = 'start',
   PROGRESS = 'progress',
   FINISH = 'finish',

@@ -7,21 +7,9 @@ import {
   EncodedAudioPacketSource,
   WebMOutputFormat,
 } from 'mediabunny';
-import { AudioChunk } from './codec/define';
+import { AudioChunk, EncoderMessageType, EncoderMessageEvent } from './codec/define';
 import { sleep } from './decoder';
 import inject from './util/inject';
-
-export enum EncoderType {
-  INIT = 0,
-  FRAME = 1,
-  END = 2, // 数据结束，可以输出视频
-}
-
-export enum EncoderEvent {
-  PROGRESS = 0,
-  FINISH = 1,
-  ERROR = 2,
-}
 
 let videoEncoder: VideoEncoder | undefined;
 let audioEncoder: AudioEncoder | undefined;
@@ -72,7 +60,7 @@ function appendAudio(
 }
 
 export const onMessage = async (e: MessageEvent<{
-  type: EncoderType,
+  type: EncoderMessageType,
   messageId: number,
   isWorker: boolean,
   timestamp: number,
@@ -89,7 +77,7 @@ export const onMessage = async (e: MessageEvent<{
   // console.log('encoder', type, isWorker, e.data.messageId);
   const onError = (e: string) => {
     const res = {
-      type: EncoderEvent.ERROR,
+      type: EncoderMessageEvent.ERROR,
       error: e,
     };
     if (isWorker) {
@@ -102,7 +90,7 @@ export const onMessage = async (e: MessageEvent<{
       onFrame = resolve;
     });
   }
-  if (type === EncoderType.INIT) {
+  if (type === EncoderMessageType.INIT) {
     promise = undefined;
     encoderFrameQue = e.data.encoderFrameQue || 0;
     encoderFrameCount = 0;
@@ -135,7 +123,7 @@ export const onMessage = async (e: MessageEvent<{
       encoderFrameCount--;
       if (!encoderFrameCount || encoderFrameCount < encoderFrameQue) {
         const res = {
-          type: EncoderEvent.PROGRESS,
+          type: EncoderMessageEvent.PROGRESS,
         };
         if (isWorker) {
           self.postMessage(res);
@@ -242,7 +230,7 @@ export const onMessage = async (e: MessageEvent<{
     }
     await output.start();
   }
-  else if (type === EncoderType.FRAME) {
+  else if (type === EncoderMessageType.FRAME) {
     encoderFrameCount++;
     const videoFrame = e.data.videoFrame;
     if (videoEncoder && videoEncoder.state === 'configured' && videoFrame) {
@@ -292,7 +280,7 @@ export const onMessage = async (e: MessageEvent<{
     // encoderFrameQue为负数时渲染和合成互相不等待，直接返回；队列不足时也直接返回
     if (!promise || encoderFrameCount < encoderFrameQue) {
       const res = {
-        type: EncoderEvent.PROGRESS,
+        type: EncoderMessageEvent.PROGRESS,
       };
       if (isWorker) {
         self.postMessage(res);
@@ -301,7 +289,7 @@ export const onMessage = async (e: MessageEvent<{
     }
     return promise;
   }
-  else if (type === EncoderType.END) {
+  else if (type === EncoderMessageType.END) {
     if (!videoEncoder || !output) {
       return;
     }
@@ -318,7 +306,7 @@ export const onMessage = async (e: MessageEvent<{
     const buffer = (output.target as BufferTarget).buffer;
     output = undefined;
     const res = {
-      type: EncoderEvent.FINISH,
+      type: EncoderMessageEvent.FINISH,
       buffer,
     };
     if (isWorker) {

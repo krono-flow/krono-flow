@@ -3,7 +3,7 @@ import { AudioProps } from '../format';
 import { LoadAudioRes } from '../util/loadAudio';
 import { Options } from '../animation/AbstractAnimation';
 import TimeAnimation from '../animation/TimeAnimation';
-import { GOPState, MbVideoDecoderEvent, VideoAudioMeta } from '../codec/define';
+import { GOPState, VideoDecoderEvent, VideoAudioMeta } from '../codec/define';
 import AbstractDecoder from '../codec/AbstractDecoder';
 import codec from '../codec';
 import inject from '../util/inject';
@@ -47,7 +47,7 @@ class Audio extends Node {
       }
       const DC = codec.getDecoder();
       const decoder = this._decoder = new DC(src);
-      decoder.on(MbVideoDecoderEvent.META, e => {
+      decoder.on(VideoDecoderEvent.META, e => {
         this._metaData = e;
         if (this._currentTime >= 0 && this._currentTime <= e.duration) {
           this.contentLoadingNum = 1;
@@ -60,7 +60,7 @@ class Audio extends Node {
         }
         this.emit(META);
       });
-      decoder.on(MbVideoDecoderEvent.ERROR, e => {
+      decoder.on(VideoDecoderEvent.ERROR, e => {
         inject.error(e);
         this.contentLoadingNum = 0;
         if (this.onError) {
@@ -69,7 +69,7 @@ class Audio extends Node {
         this.emit(ERROR);
         this.refresh();
       });
-      decoder.on(MbVideoDecoderEvent.CANPLAY, gop => {
+      decoder.on(VideoDecoderEvent.CANPLAY, gop => {
         this.contentLoadingNum = 0;
         if (this.onCanplay) {
           this.onCanplay();
@@ -77,7 +77,7 @@ class Audio extends Node {
         this.emit(CAN_PLAY);
         this.refresh();
       });
-      decoder.on([MbVideoDecoderEvent.CANPLAY, MbVideoDecoderEvent.AUDIO_BUFFER], gop => {
+      decoder.on([VideoDecoderEvent.CANPLAY, VideoDecoderEvent.AUDIO_BUFFER], gop => {
         const root = this.root;
         if (!root || !gop.audioBuffer) {
           return;
