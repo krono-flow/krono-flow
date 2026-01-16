@@ -146,3 +146,14 @@ export type EncodeOptions = {
   video?: Partial<VideoEncoderConfig>,
   audio?: Partial<AudioEncoderConfig>,
 };
+
+export default {
+  DecoderMessageType,
+  DecoderMessageEvent,
+  EncoderMessageType,
+  EncoderMessageEvent,
+  GOPState,
+  VideoDecoderEvent,
+  VideoEncoderEvent,
+  CacheState,
+};

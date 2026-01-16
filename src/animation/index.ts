@@ -5,7 +5,7 @@ import GifAnimation from './GifAnimation';
 import TimeAnimation from './TimeAnimation';
 import RichAnimation from './RichAnimation';
 import AniController from './AniController';
-import * as animationEvent from './animationEvent';
+import animationEvent from './animationEvent';
 
 export default {
   frame,

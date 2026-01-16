@@ -3,7 +3,7 @@ import AbstractEncoder, { EncoderConstructor } from './AbstractEncoder';
 import { VideoDecoderEvent, VideoEncoderEvent } from './define';
 import MbVideoDecoder from './MbVideoDecoder';
 import MbVideoEncoder from './MbVideoEncoder';
-import * as define from './define';
+import define from './define';
 
 let defaultDecoder: DecoderConstructor = MbVideoDecoder;
 
