@@ -3,13 +3,15 @@ import AbstractDecoder from './AbstractDecoder';
 export enum DecoderMessageType {
   META = 0,
   DECODE = 1,
-  RELEASE = 2,
+  DECODED_FRAME = 2,
+  RELEASE = 3,
 }
 
 export enum DecoderMessageEvent {
   META = 'meta',
   ERROR = 'error',
   DECODED = 'decoded',
+  DECODED_FRAME = 'decodedFrame',
 }
 
 export enum EncoderMessageType {

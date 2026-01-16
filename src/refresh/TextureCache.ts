@@ -90,7 +90,7 @@ class TextureCache {
       }
       else {
         const t = createTexture(gl, 0, source);
-        if (source instanceof HTMLImageElement) {
+        if (typeof HTMLImageElement !== 'undefined' && source instanceof HTMLImageElement) {
           this.image = source;
           this.list.push({
             bbox: new Float32Array(bbox),
@@ -100,7 +100,7 @@ class TextureCache {
             tc,
           });
         }
-        else if (source instanceof VideoFrame) {
+        else if (typeof VideoFrame !== 'undefined' && source instanceof VideoFrame) {
           this.videoFrame = source;
           this.list.push({
             bbox: new Float32Array(bbox),
@@ -110,12 +110,22 @@ class TextureCache {
             tc,
           });
         }
-        else if (source instanceof HTMLCanvasElement) {
+        else if (typeof HTMLCanvasElement !== 'undefined' && source instanceof HTMLCanvasElement) {
           this.canvas = source;
           this.list.push({
             bbox: new Float32Array(bbox),
             w: source.width,
             h: source.height,
+            t,
+            tc,
+          });
+        }
+        // nodejs使用
+        else if (source) {
+          this.list.push({
+            bbox: new Float32Array(bbox),
+            w: (source as any).width,
+            h: (source as any).height,
             t,
             tc,
           });

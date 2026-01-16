@@ -64,7 +64,7 @@ export function renderWebgl(
         target = node.textureTarget;
       }
     }
-    // console.log(i, node.name, node.hasContent, target?.available)
+    // console.log(i, node.name, node.hasContent, target?.available, isInScreen)
     // 屏幕内有内容渲染
     if (isInScreen && target?.available) {
       const list = target.list;

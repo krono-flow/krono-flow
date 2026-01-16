@@ -298,8 +298,11 @@ export class MbVideoDecoder extends AbstractDecoder {
         gop = gopList[i];
       }
     }
+    if (!gop) {
+      return;
+    }
     // 普通模式2分查找
-    if (gop && gop.state === GOPState.DECODED) {
+    if (gop.state === GOPState.DECODED) {
       const list = gop.videoFrames;
       if (!list.length) {
         return;
