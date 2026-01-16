@@ -330,4 +330,7 @@ export const onMessage = async (e: MessageEvent<{
   }
 };
 
-self.onmessage = onMessage;
+// nodejs没有
+if (typeof self !== 'undefined') {
+  self.onmessage = onMessage;
+}

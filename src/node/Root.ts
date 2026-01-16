@@ -48,7 +48,7 @@ class Root extends Container {
   programs: Record<string, CacheProgram>;
   private readonly frameCb: (delta: number) => void; // 帧动画回调
   aniController: AniController;
-  audioContext: AudioContext;
+  audioContext?: AudioContext;
   contentLoadingCount: number; // 各子节点控制（如视频）加载中++，完成后--，为0时说明渲染完整
   lastContentLoadingCount: number;
   firstDraw: boolean;
@@ -86,7 +86,10 @@ class Root extends Container {
         frame.offFrame(this.frameCb);
       }
     };
-    this.audioContext = new AudioContext();
+    // nodejs没有
+    if (typeof AudioContext !== 'undefined') {
+      this.audioContext = new AudioContext();
+    }
     this.aniController = new AniController(this.audioContext);
     this.contentLoadingCount = 0;
     this.lastContentLoadingCount = 0;

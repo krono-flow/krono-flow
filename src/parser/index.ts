@@ -60,7 +60,10 @@ export function parseRoot(json: ItemRoot, options?: ParserOptions) {
   const root = new Root(json.props, (json.children || []).map(item => {
     return parseJSON(item);
   }));
-  if (options?.dom) {
+  if (options?.gl) {
+    root.appendToGl(options.gl);
+  }
+  else if (options?.dom) {
     if (options.dom.tagName.toUpperCase() === 'CANVAS') {
       root.appendTo(options.dom as HTMLCanvasElement);
     }

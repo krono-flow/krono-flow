@@ -6,9 +6,9 @@ import Video from '../node/Video';
 
 class AniController extends Event {
   aniList: AbstractAnimation[];
-  audioContext: AudioContext;
+  audioContext?: AudioContext;
 
-  constructor(audioContext: AudioContext) {
+  constructor(audioContext?: AudioContext) {
     super();
     this.aniList = [];
     this.audioContext = audioContext;
@@ -189,7 +189,7 @@ function checkPlayAudio(animation: AbstractAnimation) {
     // video可能没有声音就没有AudioBuffer
     if (node.decoder) {
       const gop = node.decoder.currentGOP;
-      if (gop?.audioBuffer && node.root) {
+      if (gop?.audioBuffer && node.root && node.root.audioContext) {
         const audioContext = node.root!.audioContext;
         if (!node.gainNode) {
           node.gainNode = audioContext.createGain();
