@@ -42,6 +42,10 @@ import {
   Cache as CacheType,
   CacheGOP as CacheGOPType,
   EncodeOptions as EncodeOptionsType,
+  DecoderMessageType as DecoderMessageTypeType,
+  DecoderMessageEvent as DecoderMessageEventType,
+  EncoderMessageType as EncoderMessageTypeType,
+  EncoderMessageEvent as EncoderMessageEventType,
 } from './codec/define';
 import { DecoderConstructor as DecoderConstructorType } from './codec/AbstractDecoder';
 import { EncoderConstructor as EncoderConstructorType } from './codec/AbstractEncoder';
@@ -131,6 +135,10 @@ export namespace codec {
   export type EncodeOptions = EncodeOptionsType;
   export type DecoderConstructor = DecoderConstructorType;
   export type EncoderConstructor = EncoderConstructorType;
+  export type DecoderMessageType = DecoderMessageTypeType;
+  export type DecoderMessageEvent = DecoderMessageEventType;
+  export type EncoderMessageType = EncoderMessageTypeType;
+  export type EncoderMessageEvent = EncoderMessageEventType;
 }
 
 export default {

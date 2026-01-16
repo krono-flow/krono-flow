@@ -66,7 +66,6 @@ export const onMessage = async (e: MessageEvent<{
       const headResponse = await fetch(url, { method: 'HEAD' });
       const cl = headResponse.headers.get('content-length');
       if (!cl || headResponse.status !== 200 && headResponse.status !== 304) {
-        // return onError('Unknown content-length');
         preloadAll = true;
       }
       else {
