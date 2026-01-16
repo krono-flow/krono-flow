@@ -59,13 +59,21 @@ export const onMessage = async (e: MessageEvent<{
   }
   const fileData = FILE_HASH[url];
   if (type === DecoderType.META) {
+    let preloadAll = e.data.preloadAll;
+    let fileSize = 0;
     // 先请求文件大小，这个有304缓存
-    const headResponse = await fetch(url, { method: 'HEAD' });
-    const cl = headResponse.headers.get('content-length');
-    if (!cl || headResponse.status !== 200 && headResponse.status !== 304) {
-      return onError('Unknown content-length');
+    try {
+      const headResponse = await fetch(url, { method: 'HEAD' });
+      const cl = headResponse.headers.get('content-length');
+      if (!cl || headResponse.status !== 200 && headResponse.status !== 304) {
+        // return onError('Unknown content-length');
+        preloadAll = true;
+      }
+      else {
+        fileSize = parseInt(cl);
+      }
+    } catch (e) {
     }
-    const fileSize = parseInt(cl);
     // 解封装的基础信息
     const meta: VideoAudioMeta = {
       duration: 0,
@@ -73,7 +81,7 @@ export const onMessage = async (e: MessageEvent<{
     };
     let source: UrlSource | StreamSource;
     // config配置全部加载，或者自定义range请求
-    if (e.data.preloadAll) {
+    if (preloadAll) {
       source = new UrlSource(url);
     }
     else {
