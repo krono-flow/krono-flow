@@ -82,7 +82,7 @@ function isEnter(s: string) {
  * 返回内容和end索引和长度，最少也要1个字符
  */
 function measure(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
   start: number,
   length: number,
   content: string,
@@ -186,7 +186,7 @@ function measure(
   return { hypotheticalNum, rw, newLine };
 }
 
-function setCtxPre(ctx: CanvasRenderingContext2D, textBox: TextBox, scale = 1) {
+function setCtxPre(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, textBox: TextBox, scale = 1) {
   // 缩放影响字号
   if (scale !== 1) {
     ctx.font = textBox.font.replace(

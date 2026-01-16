@@ -934,7 +934,7 @@ class Node extends Event {
           }
         }
         // 注意canvas只有居中描边，内部需用clip模拟，外部比较复杂需离屏擦除
-        let os: OffScreen | undefined, ctx2: CanvasRenderingContext2D | undefined;
+        let os: OffScreen | undefined, ctx2: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | undefined;
         if (p === STROKE_POSITION.INSIDE && isClosed) {
           ctx.lineWidth = strokeWidth[j] * 2;
         }

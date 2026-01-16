@@ -1119,7 +1119,22 @@ export function normalizeRich(rich: Partial<JRich>, style: Style, complete = tru
     RICH_KEYS.forEach((k) => {
       const v = style[k as keyof Style];
       if (v !== undefined) {
-        res[k] = v;
+        // 一些特殊的不继承node上的样式
+        if (k === 'opacity') {
+          res[k] = {
+            v: 1,
+            u: StyleUnit.NUMBER,
+          };
+        }
+        else if (k === 'visibility') {
+          res[k] = {
+            v: VISIBILITY.VISIBLE,
+            u: StyleUnit.NUMBER,
+          };
+        }
+        else {
+          res[k] = v;
+        }
       }
     });
   }

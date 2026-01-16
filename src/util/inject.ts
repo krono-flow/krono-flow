@@ -7,8 +7,8 @@ const SUPPORT_OFFSCREEN_CANVAS =
   typeof OffscreenCanvas === 'function' && OffscreenCanvas.prototype.getContext;
 
 export type OffScreen = {
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
+  canvas: HTMLCanvasElement | OffscreenCanvas | any;
+  ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
   width: number;
   height: number;
   available: boolean;
@@ -21,7 +21,7 @@ function offscreenCanvas(
   key?: string,
   contextAttributes?: CanvasRenderingContext2DSettings,
 ): OffScreen {
-  let o: any;
+  let o: HTMLCanvasElement | OffscreenCanvas;
   if (!key) {
     o =
       !config.debug && config.offscreenCanvas && SUPPORT_OFFSCREEN_CANVAS
@@ -42,23 +42,25 @@ function offscreenCanvas(
   height = Math.ceil(height);
   o.width = width;
   o.height = height;
-  o.style.position = 'fixed';
-  o.style.left = '9999px';
-  o.style.top = '0px';
-  o.style.webkitFontSmoothing = 'antialiased'; // offscreenCanvas无效
-  o.style.mozOsxFontSmoothing = 'grayscale';
-  if (config.debug) {
-    o.style.width = width + 'px';
-    o.style.height = height + 'px';
-  }
   // 字体抗锯齿需要添加到DOM
   if (o instanceof HTMLCanvasElement) {
+    o.style.position = 'fixed';
+    o.style.left = '9999px';
+    o.style.top = '0px';
+    // @ts-ignore
+    o.style.webkitFontSmoothing = 'antialiased'; // offscreenCanvas无效
+    // @ts-ignores
+    o.style.mozOsxFontSmoothing = 'grayscale';
+    if (config.debug) {
+      o.style.width = width + 'px';
+      o.style.height = height + 'px';
+    }
     document.body.appendChild(o);
     if (key) {
       o.setAttribute('key', key);
     }
   }
-  const ctx = o.getContext('2d', contextAttributes);
+  const ctx = o.getContext('2d', contextAttributes) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
   if (!ctx) {
     inject.error('Total canvas memory use exceeds the maximum limit');
   }
@@ -81,6 +83,7 @@ function offscreenCanvas(
       if (o instanceof HTMLCanvasElement) {
         document.body.removeChild(o);
       }
+      // @ts-ignores
       o = null;
     },
   };

@@ -967,13 +967,15 @@ export function texture2Blob (gl: WebGL2RenderingContext | WebGLRenderingContext
   if (title) {
     img.title = title;
   }
-  os.canvas.toBlob(blob => {
-    if (blob) {
-      img.src = URL.createObjectURL(blob!);
-      // img.style.backgroundColor = '#000';
-      img.style.transform = 'scaleY(-1)';
-      document.body.appendChild(img);
-      os.release();
-    }
-  });
+  if (os.canvas instanceof HTMLCanvasElement) {
+    os.canvas.toBlob(blob => {
+      if (blob) {
+        img.src = URL.createObjectURL(blob!);
+        // img.style.backgroundColor = '#000';
+        img.style.transform = 'scaleY(-1)';
+        document.body.appendChild(img);
+        os.release();
+      }
+    });
+  }
 }

@@ -19,6 +19,11 @@ export default [
         file: 'dist/index.js',
         ...publicConfig,
       },
+      {
+        file: 'dist/index.mjs',
+        ...publicConfig,
+        format: 'es',
+      },
     ],
     plugins: [
       nodeResolve({ preferBuiltins: false }),
