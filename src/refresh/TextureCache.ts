@@ -120,8 +120,9 @@ class TextureCache {
             tc,
           });
         }
-        // nodejs使用
+        // nodejs使用特殊的单帧ImageData，当做VideoFrame
         else if (source) {
+          this.videoFrame = source as any;
           this.list.push({
             bbox: new Float32Array(bbox),
             w: (source as any).width,
