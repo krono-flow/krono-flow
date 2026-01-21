@@ -16,6 +16,9 @@
       "dom",
       "webworker",
       "esnext"
+    ],
+    "types": [
+      "@webgpu/types"
     ]
   },
   "exclude": [

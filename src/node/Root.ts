@@ -44,7 +44,6 @@ class Root extends Container {
   task: Array<((sync: boolean) => void) | undefined>; // 异步绘制任务回调列表
   aniTask: AbstractAnimation[]; // 动画任务，空占位
   rl: RefreshLevel; // 一帧内画布最大刷新等级记录
-  // programs: Record<string, WebGLProgram>;
   programs: Record<string, CacheProgram>;
   private readonly frameCb: (delta: number) => void; // 帧动画回调
   aniController: AniController;

@@ -4,6 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import glslify from 'rollup-plugin-glslify';
 import postcss from 'rollup-plugin-postcss';
+import { wgsl } from './rollup.config.mjs';
 
 const publicConfig = {
   format: 'umd',
@@ -29,6 +30,7 @@ export default [
       nodeResolve({ preferBuiltins: false }),
       commonjs(),
       glslify(),
+      wgsl,
       typescript({
         declaration: false,
         target: "ES5",

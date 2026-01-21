@@ -8,6 +8,19 @@ import terser from '@rollup/plugin-terser';
 import dts from 'rollup-plugin-dts';
 import del from 'rollup-plugin-delete';
 
+export const wgsl = {
+  name: 'wgsl-loader',
+  transform(code, id) {
+    if (id.endsWith('.wgsl')) {
+      return {
+        // 将 WGSL 源码转为 JS 字符串导出
+        code: `export default ${JSON.stringify(code)};`,
+        map: { mappings: '' }
+      };
+    }
+  }
+};
+
 const publicConfig = {
   format: 'umd',
   name: 'kronoFlow',
@@ -39,6 +52,7 @@ export default [
       nodeResolve({ preferBuiltins: false }),
       commonjs(),
       glslify(),
+      wgsl,
       typescript({
         declaration: false,
         target: "ES5",
