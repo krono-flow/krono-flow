@@ -4,7 +4,7 @@ export function identity() {
 
 // 16位单位矩阵判断，空也认为是
 export function isE(m: Float32Array | undefined) {
-  if (!m || !m.length) {
+  if (!m || !m.length || m === EMPTY_MATRIX) {
     return true;
   }
   return (
@@ -88,6 +88,9 @@ export function multiplyRef(a: Float32Array, b: Float32Array) {
 }
 
 export function toE(m: Float32Array) {
+  if (m === EMPTY_MATRIX) {
+    return m;
+  }
   m[0] = 1;
   m[1] = 0;
   m[2] = 0;
@@ -261,24 +264,22 @@ export function inverse4(m: Float32Array) {
 }
 
 export function assignMatrix(t: Float32Array, v: Float32Array) {
-  if (t && v) {
-    t[0] = v[0];
-    t[1] = v[1];
-    t[2] = v[2];
-    t[3] = v[3];
-    t[4] = v[4];
-    t[5] = v[5];
-    t[6] = v[6];
-    t[7] = v[7];
-    t[8] = v[8];
-    t[9] = v[9];
-    t[10] = v[10];
-    t[11] = v[11];
-    t[12] = v[12];
-    t[13] = v[13];
-    t[14] = v[14];
-    t[15] = v[15];
-  }
+  t[0] = v[0];
+  t[1] = v[1];
+  t[2] = v[2];
+  t[3] = v[3];
+  t[4] = v[4];
+  t[5] = v[5];
+  t[6] = v[6];
+  t[7] = v[7];
+  t[8] = v[8];
+  t[9] = v[9];
+  t[10] = v[10];
+  t[11] = v[11];
+  t[12] = v[12];
+  t[13] = v[13];
+  t[14] = v[14];
+  t[15] = v[15];
   return t;
 }
 
@@ -596,6 +597,9 @@ export function calRectPoints(
   return { x1, y1, z1, w1, x2, y2, z2, w2, x3, y3, z3, w3, x4, y4, z4, w4 };
 }
 
+// perspectiveMatrix占位符，由于较少用到，用它代替空
+export const EMPTY_MATRIX = identity();
+
 export default {
   identity,
   isE,
@@ -620,5 +624,6 @@ export default {
   multiplySkewY,
   multiplyScale,
   multiplyScaleX,
-  multiplyScaleY
+  multiplyScaleY,
+  EMPTY_MATRIX,
 };

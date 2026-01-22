@@ -182,6 +182,27 @@ export function ceilBbox(bbox: Float32Array) {
   bbox[1] = Math.floor(bbox[1]);
   bbox[2] = Math.ceil(bbox[2]);
   bbox[3] = Math.ceil(bbox[3]);
+  return bbox;
+}
+
+export const EMPTY_RECT = new Float32Array([0, 0, 0, 0]); // rect相关的
+
+export function resetBbox(b: Float32Array, x = 0, y = 0, w = 0, h = 0) {
+  if (b !== EMPTY_RECT) {
+    b[0] = x;
+    b[1] = y;
+    b[2] = w;
+    b[3] = h;
+  }
+  return b;
+}
+
+export function assignBbox(t: Float32Array, v: Float32Array) {
+  t[0] = v[0];
+  t[1] = v[1];
+  t[2] = v[2];
+  t[3] = v[3];
+  return t;
 }
 
 export default {
@@ -189,4 +210,7 @@ export default {
   getPointsRect,
   getShapeGroupRect,
   ceilBbox,
+  resetBbox,
+  EMPTY_RECT,
+  assignBbox,
 };

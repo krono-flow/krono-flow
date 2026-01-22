@@ -1,13 +1,14 @@
-import Node from '../node/Node';
+import AbstractNode from './AbstractNode';
+import Node from './Node';
 import { Props } from '../format';
 import { LayoutData } from '../refresh/layout';
 import { RefreshLevel } from '../refresh/level';
 import inject from '../util/inject';
 
 class Container extends Node {
-  children: Node[];
+  children: AbstractNode[];
 
-  constructor(props: Props, children: Node[] = []) {
+  constructor(props: Props, children: AbstractNode[] = []) {
     super(props);
     this.children = children;
   }
@@ -62,7 +63,7 @@ class Container extends Node {
     return res;
   }
 
-  insertStruct(child: Node, childIndex: number) {
+  insertStruct(child: AbstractNode, childIndex: number) {
     const { struct, root } = this;
     const cs = child.structure(struct.lv + 1);
     const structs = root!.structs;
@@ -86,7 +87,7 @@ class Container extends Node {
     }
   }
 
-  deleteStruct(child: Node) {
+  deleteStruct(child: AbstractNode) {
     const cs = child.struct;
     const total = cs.total + 1;
     const root = this.root!,
@@ -103,7 +104,7 @@ class Container extends Node {
     }
   }
 
-  appendChild(node: Node, cb?: (sync: boolean) => void) {
+  appendChild(node: AbstractNode, cb?: (sync: boolean) => void) {
     node.remove();
     const { root, children } = this;
     const len = children.length;
@@ -124,7 +125,7 @@ class Container extends Node {
     root.addUpdate(node, [], RefreshLevel.ADD_DOM, cb);
   }
 
-  prependChild(node: Node, cb?: (sync: boolean) => void) {
+  prependChild(node: AbstractNode, cb?: (sync: boolean) => void) {
     node.remove();
     const { root, children } = this;
     const len = children.length;
@@ -145,7 +146,7 @@ class Container extends Node {
     root.addUpdate(node, [], RefreshLevel.ADD_DOM, cb);
   }
 
-  removeChild(node: Node, cb?: (sync: boolean) => void) {
+  removeChild(node: AbstractNode, cb?: (sync: boolean) => void) {
     if (node.parent === this) {
       node.remove(cb);
     }

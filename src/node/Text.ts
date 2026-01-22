@@ -44,6 +44,7 @@ import { calComputedStroke } from '../style/compute';
 import { calPoint, inverse4 } from '../math/matrix';
 import { JKeyFrameRich, RichAnimation } from '../animation/RichAnimation';
 import { Options } from '../animation/AbstractAnimation';
+import { ceilBbox } from '../math/bbox';
 
 export type EditStyle = {
   isLeft: boolean;
@@ -215,6 +216,9 @@ class Text extends Node {
   inputStyle?: ModifyRichStyle; // 编辑状态时未选择文字，改变样式临时存储，在输入时使用此样式
   editStyle?: EditStyle; // 进入编辑时改变布局置空translate防止位置变化，固定宽高也要显示全文本
   tempCursorX: number;
+  isEdit: boolean;
+
+  declare props: TextProps;
 
   constructor(props: TextProps) {
     super(props);
@@ -235,13 +239,14 @@ class Text extends Node {
       end: 0,
     };
     this.tempCursorX = 0;
+    this.isEdit = false;
   }
 
   override didMount() {
     super.didMount();
     // 首次布局特殊逻辑，由于字体的不确定性，自动尺寸的文本框在其它环境下中心点对齐可能会偏差，因此最初先按自动布局，
     // 完成后这里和css的width/height对比进行差值计算偏移，并还原对应的w/h为auto。
-    const textBehaviour = (this.props as TextProps).textBehaviour;
+    const textBehaviour = this.props.textBehaviour;
     const { style, computedStyle, parent } = this;
     const {
       left,
@@ -363,7 +368,7 @@ class Text extends Node {
      * 此时数据width是固定尺寸，视为非固定即autoW/autoH，在didMount()时机再做调整（向上影响尺寸位置）。
      */
     if (!this.isMounted) {
-      const textBehaviour = (this.props as TextProps).textBehaviour;
+      const textBehaviour = this.props.textBehaviour;
       if (textBehaviour === 'auto'
         && width.u !== StyleUnit.AUTO
         && (left.u === StyleUnit.AUTO || right.u === StyleUnit.AUTO)) {
@@ -1054,7 +1059,7 @@ class Text extends Node {
 
   override renderCanvas() {
     super.renderCanvas();
-    const bbox = this._bboxInt || this.bboxInt;
+    const bbox = ceilBbox(this.bbox.slice(0));
     const x = bbox[0],
       y = bbox[1];
     const w = bbox[2] - x,
@@ -1509,6 +1514,7 @@ class Text extends Node {
     if (isDestroyed || !parent) {
       throw new Error('Can not edit a destroyed Text');
     }
+    this.isEdit = true;
     const prev = this.getStyle();
     const {
       left,
@@ -1787,9 +1793,10 @@ class Text extends Node {
 
   // 和beforeEdit()对应，可能prev为空即无需关心样式还原问题。
   afterEdit() {
-    if (!this.editStyle) {
+    if (!this.editStyle || !this.isEdit) {
       return;
     }
+    this.isEdit = false;
     const {
       isLeft,
       isCenter,
@@ -2949,7 +2956,7 @@ class Text extends Node {
 
   override updateStyle(style: Partial<JStyle>, cb?: (sync: boolean) => void) {
     const lv = super.updateStyle(style, cb);
-    if (lv && lv & RefreshLevel.REFLOW_REPAINT) {
+    if (lv && (lv & RefreshLevel.REFLOW_REPAINT)) {
       this.reLocateCursor();
     }
     return lv;
@@ -3257,78 +3264,74 @@ class Text extends Node {
   override clone() {
     const props = this.cloneProps();
     const res = new Text(props);
-    return res;
+    return res as this;
   }
 
-  override get bbox() {
-    let res = this._bbox;
-    if (!res) {
-      const rect = this._rect || this.rect;
-      res = this._bbox = rect.slice(0);
-      const lineBoxList = this.lineBoxList;
-      lineBoxList.forEach(lineBox => {
-        lineBox.list.forEach(textBox => {
-          const { fontFamily, fontSize, lineHeight, str, font: f, textShadow } = textBox;
-          let normal = lineHeight;
-          if (font.hasRegister(fontFamily)) {
-            const fontData = font.data[fontFamily];
-            normal = fontData.lhr * fontSize;
+  override calBbox() {
+    super.calBbox();
+    const bbox = this._bbox;
+    const lineBoxList = this.lineBoxList;
+    lineBoxList.forEach(lineBox => {
+      lineBox.list.forEach(textBox => {
+        const { fontFamily, fontSize, lineHeight, str, font: f, textShadow } = textBox;
+        let normal = lineHeight;
+        if (font.hasRegister(fontFamily)) {
+          const fontData = font.data[fontFamily];
+          normal = fontData.lhr * fontSize;
+        }
+        else {
+          const ctx = inject.getFontCanvas().ctx;
+          ctx.font = f;
+          const r = ctx.measureText(str);
+          normal = r.actualBoundingBoxAscent + r.actualBoundingBoxDescent;
+        }
+        const half = Math.max(0, (normal - lineHeight) * 0.5);
+        if (half > 0) {
+          const y1 = textBox.y - half;
+          const y2 = textBox.lineHeight + half;
+          bbox[1] = Math.min(bbox[1], y1);
+          bbox[3] = Math.max(bbox[3], y2);
+        }
+        if (textShadow) {
+          const d = gaussSize(textShadow.blur);
+          let dx = textShadow.x + d;
+          let dy = textShadow.y + d;
+          if (dx > 0) {
+            bbox[2] = Math.max(bbox[2], textBox.x + textBox.w + dx);
           }
-          else {
-            const ctx = inject.getFontCanvas().ctx;
-            ctx.font = f;
-            const r = ctx.measureText(str);
-            normal = r.actualBoundingBoxAscent + r.actualBoundingBoxDescent;
+          else if (dx < 0) {
+            bbox[0] = Math.min(bbox[0], textBox.x + dx);
           }
-          const half = Math.max(0, (normal - lineHeight) * 0.5);
-          if (half > 0) {
-            const y1 = textBox.y - half;
-            const y2 = textBox.lineHeight + half;
-            res![1] = Math.min(res![1], y1);
-            res![3] = Math.max(res![3], y2);
+          if (dy > 0) {
+            bbox[3] = Math.max(bbox[3], textBox.y + textBox.lineHeight + dy + half);
           }
-          if (textShadow) {
-            const d = gaussSize(textShadow.blur);
-            let dx = textShadow.x + d;
-            let dy = textShadow.y + d;
-            if (dx > 0) {
-              res![2] = Math.max(res![2], textBox.x + textBox.w + dx);
-            }
-            else if (dx < 0) {
-              res![0] = Math.min(res![0], textBox.x + dx);
-            }
-            if (dy > 0) {
-              res![3] = Math.max(res![3], textBox.y + textBox.lineHeight + dy + half);
-            }
-            else if (dy < 0) {
-              res![1] = Math.min(res![1], textBox.y + dy - half);
-            }
-          }
-        });
-      });
-      const { strokeWidth, strokeEnable, strokePosition } = this.computedStyle;
-      // 所有描边最大值，影响bbox，text强制miterLimit是1
-      let border = 0;
-      strokeWidth.forEach((item, i) => {
-        if (strokeEnable[i]) {
-          if (strokePosition[i] === STROKE_POSITION.INSIDE) {
-            // 0
-          }
-          else if (strokePosition[i] === STROKE_POSITION.OUTSIDE) {
-            border = Math.max(border, item * 2);
-          }
-          else {
-            // 默认中间
-            border = Math.max(border, item * 0.5 * 2);
+          else if (dy < 0) {
+            bbox[1] = Math.min(bbox[1], textBox.y + dy - half);
           }
         }
       });
-      res[0] -= border;
-      res[1] -= border;
-      res[2] += border;
-      res[3] += border;
-    }
-    return res;
+    });
+    const { strokeWidth, strokeEnable, strokePosition } = this.computedStyle;
+    // 所有描边最大值，影响bbox，text强制miterLimit是1
+    let border = 0;
+    strokeWidth.forEach((item, i) => {
+      if (strokeEnable[i]) {
+        if (strokePosition[i] === STROKE_POSITION.INSIDE) {
+          // 0
+        }
+        else if (strokePosition[i] === STROKE_POSITION.OUTSIDE) {
+          border = Math.max(border, item * 2);
+        }
+        else {
+          // 默认中间
+          border = Math.max(border, item * 0.5 * 2);
+        }
+      }
+    });
+    bbox[0] -= border;
+    bbox[1] -= border;
+    bbox[2] += border;
+    bbox[3] += border;
   }
 
   get content() {

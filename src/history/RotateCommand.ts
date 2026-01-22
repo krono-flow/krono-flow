@@ -1,6 +1,6 @@
-import Node from '../node/Node';
 import UpdateStyleCommand from './UpdateStyleCommand';
 import { RotateZStyle } from '../format';
+import AbstractNode from '../node/AbstractNode';
 
 export type RotateData = {
   prev: RotateZStyle;
@@ -8,7 +8,7 @@ export type RotateData = {
 };
 
 class RotateCommand extends UpdateStyleCommand {
-  constructor(nodes: Node[], data: RotateData[]) {
+  constructor(nodes: AbstractNode[], data: RotateData[]) {
     super(nodes, data);
   }
 }

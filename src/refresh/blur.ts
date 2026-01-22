@@ -1,6 +1,6 @@
 import Root from '../node/Root';
 import Node from '../node/Node';
-import { boxesForGauss, gaussKernel, gaussSizeByD } from '../math/blur';
+import { boxesForGauss, gaussKernel, gaussSize, gaussSizeByD, motionSize, radialSize } from '../math/blur';
 import TextureCache from './TextureCache';
 import {
   drawBox,
@@ -31,10 +31,8 @@ export function genGaussBlur(
   sigma: number,
   W: number,
   H: number,
-  willSpread = false,
 ) {
-  const d = gaussKernel(sigma);
-  const spread = willSpread ? gaussSizeByD(d) : 0;
+  const spread = gaussSize(sigma);
   const bboxS = textureTarget.bbox;
   const bboxR = bboxS.slice(0);
   if (spread) {
@@ -223,24 +221,16 @@ export function genRadialBlur(
   center: [number, number], // 中心点
   W: number,
   H: number,
-  willSpread = false,
-  willLimit = false,
 ) {
   const bboxS = textureTarget.bbox;
-  const d = gaussKernel(sigma);
-  const spread = willSpread ? gaussSizeByD(d) : 0;
+  const spread = gaussSize(sigma);
   const bboxR = bboxS.slice(0);
   // 根据center和shader算法得四周扩展，中心点和四边距离是向量长度r，spread*2/diagonal是扩展比例
   const w1 = bboxR[2] - bboxR[0],
     h1 = bboxR[3] - bboxR[1];
   const cx = center[0] * w1,
     cy = center[1] * h1;
-  const diagonal = Math.sqrt(w1 * w1 + h1 * h1);
-  const ratio = spread * 2 / diagonal;
-  const left = Math.ceil(ratio * cx);
-  const right = Math.ceil(ratio * (w1 - cx));
-  const top = Math.ceil(ratio * cy);
-  const bottom = Math.ceil(ratio * (h1 - cy));
+  const { ratio, left, top, right, bottom } = radialSize(sigma, w1, h1, cx, cy);
   bboxR[0] -= left;
   bboxR[1] -= top;
   bboxR[2] += right;
@@ -365,20 +355,15 @@ export function genMotionBlur(
   offset: number,
   W: number,
   H: number,
-  willSpread = false,
   willLimit = false,
 ) {
   const radian = d2r(angle);
-  const spread = willSpread ? sigma * 3 : 0;
-  const kernel = sigma; // 两个方向均分
+  const spread = sigma * 3;
   const bboxS = textureTarget.bbox;
   const bboxR = bboxS.slice(0);
+  const { x: spreadX, y: spreadY } = motionSize(sigma, angle);
   // 运动模糊水平垂直增加尺寸三角函数计算
   if (spread) {
-    const sin = Math.sin(radian);
-    const cos = Math.cos(radian);
-    const spreadY = Math.abs(Math.ceil(sin * spread));
-    const spreadX = Math.abs(Math.ceil(cos * spread));
     bboxR[0] -= spreadX;
     bboxR[1] -= spreadY;
     bboxR[2] += spreadX;
@@ -410,7 +395,7 @@ export function genMotionBlur(
   for (let i = 0, len = listT.length; i < len; i++) {
     const { bbox, w, h, t } = listT[i];
     gl.viewport(0, 0, w, h);
-    const tex = t && drawMotion(gl, motion, t, kernel, radian, offset, w, h, willLimit);
+    const tex = t && drawMotion(gl, motion, t, sigma, radian, offset, w, h, willLimit);
     listR.push({
       bbox: bbox.slice(0),
       w,
@@ -460,7 +445,7 @@ export function genMotionBlur(
       }
       if (hasDraw) {
         CacheProgram.useProgram(gl, motion);
-        item.t = drawMotion(gl, motion, t, kernel, radian, offset, w, h, willLimit);
+        item.t = drawMotion(gl, motion, t, sigma, radian, offset, w, h, willLimit);
       }
       gl.deleteTexture(t);
     }

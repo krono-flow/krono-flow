@@ -1,3 +1,4 @@
+import { NodeType } from './AbstractNode';
 import Node from './Node'
 import { VideoProps } from '../format';
 import TextureCache from '../refresh/TextureCache';
@@ -8,11 +9,12 @@ import CanvasCache from '../refresh/CanvasCache';
 import { Options } from '../animation/AbstractAnimation';
 import TimeAnimation from '../animation/TimeAnimation';
 import config from '../config';
-import { GOPState, VideoDecoderEvent, VideoAudioMeta } from '../codec/define';
+import { GOPState, VideoAudioMeta, VideoDecoderEvent } from '../codec/define';
 import AbstractDecoder from '../codec/AbstractDecoder';
 import codec from '../codec';
 import inject from '../util/inject';
 import { CAN_PLAY, ERROR, META, WAITING } from '../refresh/refreshEvent';
+import { ceilBbox } from '../math/bbox';
 
 class Video extends Node {
   private _src: string;
@@ -29,8 +31,11 @@ class Video extends Node {
   private _volumn: number;
   timeAnimation?: TimeAnimation;
 
+  declare props: VideoProps;
+
   constructor(props: VideoProps) {
     super(props);
+    this.type = NodeType.VIDEO;
     if (props.onMeta) {
       this.onMeta = props.onMeta;
     }
@@ -300,7 +305,7 @@ class Video extends Node {
     // 复合类型
     else {
       super.renderCanvas();
-      const bbox = this._bboxInt || this.bboxInt;
+      const bbox = ceilBbox(this.bbox.slice(0));
       const x = bbox[0],
         y = bbox[1];
       let w = bbox[2] - x,
@@ -460,7 +465,7 @@ class Video extends Node {
   override clone() {
     const props = this.cloneProps();
     const res = new Video(props);
-    return res;
+    return res as this;
   }
 
   get src () {

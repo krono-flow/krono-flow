@@ -1,10 +1,8 @@
-import * as uuid from 'uuid';
-import Event from '../util/Event';
-import Root from './Root';
-import { getDefaultStyle, JStyle, Props } from '../format';
+import AbstractNode, { NodeType } from './AbstractNode';
+import { getDefaultComputedStyle, getDefaultJStyle, JStyle, Props } from '../format';
 import {
   calNormalLineHeight,
-  calSize,
+  calSize, cloneStyle,
   equalStyle,
   getCssFillStroke,
   getCssFilter,
@@ -28,8 +26,8 @@ import {
 } from '../style/define';
 import { Struct } from '../refresh/struct';
 import { RefreshLevel } from '../refresh/level';
-import { ceilBbox } from '../math/bbox';
-import { assignMatrix, calRectPoints, identity, multiply, toE, } from '../math/matrix';
+import { assignBbox, ceilBbox, resetBbox } from '../math/bbox';
+import { assignMatrix, calRectPoints, EMPTY_MATRIX, identity, multiply, toE, } from '../math/matrix';
 import Container from './Container';
 import { LayoutData } from '../refresh/layout';
 import { calMatrixByOrigin, calPerspectiveMatrix, calTransform, } from '../style/transform';
@@ -46,116 +44,110 @@ import { canvasPolygon } from '../refresh/paint';
 import { getConic, getLinear, getRadial } from '../style/gradient';
 import { getCanvasGCO } from '../style/mbm';
 import { JCssAnimations, JRichAnimations, JTimeAnimations } from '../parser/define';
+import { gaussKernel, gaussSize, gaussSizeByD, motionSize, radialSize } from '../math/blur';
 
-let id = 0;
-
-class Node extends Event {
-  id: number;
-  props: Props;
-  uuid: string;
-  name?: string;
-  isLocked: boolean;
-  root?: Root;
-  parent?: Container;
-  prev?: Node;
-  next?: Node;
-  mask?: Node;
-  style: Style;
-  computedStyle: ComputedStyle;
-  struct: Struct;
-  isMounted: boolean; // 是否在dom上
-  isDestroyed: boolean; // 是否永久被销毁，手动调用
-  refreshLevel: RefreshLevel;
+class Node extends AbstractNode {
+  // isLocked: boolean;
+  // root?: Root;
+  // parent?: Container;
+  // prev?: Node;
+  // next?: Node;
+  // mask?: Node;
+  // style: Style;
+  // computedStyle: ComputedStyle;
+  _struct: Struct;
+  // isMounted: boolean; // 是否在dom上
+  // isDestroyed: boolean; // 是否永久被销毁，手动调用
+  // refreshLevel: RefreshLevel;
+  _style: Style;
+  _computedStyle: ComputedStyle;
   _opacity: number; // 世界透明度
-  hasCacheOp: boolean; // 是否计算过世界opacity
-  localOpId: number; // 同下面的matrix
-  parentOpId: number;
-  transform: Float32Array; // 不包含transformOrigin
-  matrix: Float32Array; // 包含transformOrigin
+  // hasCacheOp: boolean; // 是否计算过世界opacity
+  // localOpId: number; // 同下面的matrix
+  // parentOpId: number;
+  _transform: Float32Array; // 不包含transformOrigin
+  _matrix: Float32Array; // 包含transformOrigin
   _matrixWorld: Float32Array; // 世界transform
-  perspectiveMatrix?: Float32Array; // 透视矩阵作用于所有孩子
-  perspectiveMatrixSelf?: Float32Array;
-  hasCacheMw: boolean; // 是否计算过世界matrix
-  localMwId: number; // 当前计算后的世界matrix的id，每次改变自增
-  parentMwId: number; // 父级的id副本，用以对比确认父级是否变动过
-  hasContent: boolean; // 是否有内容需要渲染
-  canvasCache?: CanvasCache; // 先渲染到2d上作为缓存
-  textureCache?: TextureCache; // 从canvasCache生成的纹理缓存
-  textureTotal?: TextureCache; // 局部子树缓存
-  textureFilter?: TextureCache; // 有filter时的缓存
-  textureMask?: TextureCache;
-  textureTarget?: TextureCache; // 指向自身所有缓存中最优先的那个
+  _perspectiveMatrix: Float32Array; // 透视矩阵作用于所有孩子
+  _perspectiveMatrixSelf: Float32Array;
+  // hasCacheMw: boolean; // 是否计算过世界matrix
+  // localMwId: number; // 当前计算后的世界matrix的id，每次改变自增
+  // parentMwId: number; // 父级的id副本，用以对比确认父级是否变动过
+  // hasContent: boolean; // 是否有内容需要渲染
+  canvasCache: CanvasCache | null; // 先渲染到2d上作为缓存
+  textureCache: TextureCache | null; // 从canvasCache生成的纹理缓存
+  textureTotal: TextureCache | null; // 局部子树缓存
+  textureFilter: TextureCache | null; // 有filter时的缓存
+  textureMask: TextureCache | null;
+  textureTarget: TextureCache | null; // 指向自身所有缓存中最优先的那个
   tempOpacity: number; // 局部根节点merge汇总临时用到的2个
   tempMatrix: Float32Array;
-  tempBbox?: Float32Array; // 这个比较特殊，在可视范围外的merge没有变化会一直保存，防止重复计算
-  _rect?: Float32Array; // 真实内容组成的内容框，group/geom特殊计算
-  _bbox?: Float32Array; // 以rect为基础，包含边框包围盒
-  _filterBbox?: Float32Array; // 包含filter/阴影内内容外的包围盒
-  _bboxInt?: Float32Array; // 扩大取整的bbox，渲染不会糊
-  _filterBboxInt?: Float32Array; // 同上
-  animationList: AbstractAnimation[]; // 节点上所有的动画列表
+  tempBbox: Float32Array | null; // 这个比较特殊，在可视范围外的merge没有变化会一直保存，防止重复计算
+  _rect: Float32Array; // 真实内容组成的内容框，group/geom特殊计算
+  _bbox: Float32Array; // 以rect为基础，包含边框包围盒
+  _filterBbox: Float32Array; // 包含filter/阴影内内容外的包围盒
+  // _bboxInt: Float32Array; // 扩大取整的bbox，渲染不会糊
+  // _filterBboxInt: Float32Array; // 同上
+  _animationList: AbstractAnimation[]; // 节点上所有的动画列表
   animationRecords?: (JCssAnimations | JTimeAnimations | JRichAnimations)[];
 
   protected contentLoadingNum: number; // 标识当前一共有多少显示资源在加载中
 
   constructor(props: Props) {
-    super();
-    this.id = id++;
-    this.props = props;
-    this.uuid = props.uuid || uuid.v4();
-    this.name = props.name;
-    this.isLocked = !!props.isLocked;
-    this.style = normalize(getDefaultStyle(props.style));
-    // @ts-ignore
-    this.computedStyle = {};
-    this.struct = {
+    super(props);
+    this.type = NodeType.NODE;
+    this.isNode = true;
+    // this.isLocked = !!props.isLocked;
+    this._style = normalize(getDefaultJStyle(props.style));
+    this._computedStyle = getDefaultComputedStyle();
+    this._struct = {
       node: this,
       num: 0,
       total: 0,
       lv: 0,
       next: 0,
     };
-    this.isMounted = false;
-    this.isDestroyed = false;
-    this.refreshLevel = RefreshLevel.REFLOW;
+    // this.isMounted = false;
+    // this.isDestroyed = false;
+    // this.refreshLevel = RefreshLevel.REFLOW;
     this._opacity = 0;
-    this.hasCacheOp = false;
-    this.localOpId = 0;
-    this.parentOpId = 0;
-    this.transform = identity();
-    this.matrix = identity();
+    // this.hasCacheOp = false;
+    // this.localOpId = 0;
+    // this.parentOpId = 0;
+    this._transform = identity();
+    this._matrix = identity();
     this._matrixWorld = identity();
-    this.hasCacheMw = false;
-    this.localMwId = 0;
-    this.parentMwId = 0;
+    this._perspectiveMatrix = EMPTY_MATRIX;
+    this._perspectiveMatrixSelf = EMPTY_MATRIX;
+    // this.hasCacheMw = false;
+    // this.localMwId = 0;
+    // this.parentMwId = 0;
     this.hasContent = false;
-    this.animationList = [];
+    this._animationList = [];
     this.contentLoadingNum = 0;
+    this.canvasCache = null;
+    this.textureCache = null;
+    this.textureTotal = null;
+    this.textureFilter = null;
+    this.textureMask = null;
+    this.textureTarget = null;
     // merge过程中相对于merge顶点作为局部根节点时暂存的数据
     this.tempOpacity = 1;
     this.tempMatrix = identity();
+    this._rect = new Float32Array([0, 0, 0, 0]);
+    this._bbox = new Float32Array([0, 0, 0, 0]);
+    this._filterBbox = new Float32Array([0, 0, 0, 0]);
+    this.tempBbox = null;
   }
 
-  didMount() {
-    this.isMounted = true;
-    const parent = this.parent;
-    // 只有Root没有parent
-    if (!parent) {
-      return;
-    }
-    this.parentOpId = parent.localOpId;
-    this.parentMwId = parent.localMwId;
-    const root = (this.root = parent.root);
-    const uuid = this.uuid;
-    if (root && uuid) {
-      root.refs[uuid] = this;
-    }
+  override didMount() {
+    super.didMount();
     this.didMountAnimate();
   }
 
   protected didMountAnimate() {
     // 添加dom之前的动画需生效
-    this.animationList.forEach(item => {
+    this._animationList.forEach(item => {
       this.root!.aniController.addAni(item);
       if (item.autoPlay && item.pending) {
         item.play();
@@ -178,25 +170,8 @@ class Node extends Event {
     }
   }
 
-  didUnmount() {
-    // 无论是否真实dom，都清空
-    this.clearTexCache(true);
-    this.isMounted = false;
-    const root = this.root;
-    const uuid = this.uuid;
-    if (root && uuid) {
-      delete root.refs[uuid];
-    }
-    this.animationList.forEach(item => {
-      item.cancel();
-      root!.aniController.removeAni(item);
-    });
-    this.prev = this.next = undefined;
-    this.parent = this.root = undefined;
-  }
-
   structure(lv: number) {
-    const temp = this.struct;
+    const temp = this._struct;
     temp.lv = lv;
     return [temp];
   }
@@ -300,9 +275,9 @@ class Node extends Event {
     // 布局时计算所有样式，更新时根据不同级别调用
     this.calReflowStyle();
     this.lay(data);
+    resetBbox(this._rect, 0, 0, this.computedStyle.width, this.computedStyle.height);
     // repaint和matrix计算需要x/y/width/height
     this.calRepaintStyle(RefreshLevel.REFLOW);
-    this._rect = undefined;
   }
 
   calReflowStyle() {
@@ -374,6 +349,7 @@ class Node extends Event {
     computedStyle.borderBottomRightRadius = style.borderBottomRightRadius.v;
     computedStyle.overflow = style.overflow.v;
     this.clearTexCache(true);
+    this.calBbox();
     // 只有重布局或者改transform才影响，普通repaint不变
     if (lv & RefreshLevel.REFLOW_TRANSFORM) {
       this.calMatrix(lv);
@@ -394,11 +370,48 @@ class Node extends Event {
     if (lv & RefreshLevel.REFLOW_REPAINT_MASK) {
       this.calMask();
     }
-    this._bbox = undefined;
-    this._bboxInt = undefined;
-    this._filterBbox = undefined;
-    this._filterBboxInt = undefined;
-    this.tempBbox = undefined;
+    this.calFilterBbox();
+    this.tempBbox = null;
+  }
+
+  protected calRect() {
+    this._rect[0] = 0;
+    this._rect[1] = 0;
+    this._rect[2] = this.computedStyle.width;
+    this._rect[3] = this.computedStyle.height;
+  }
+
+  protected calBbox() {
+    assignBbox(this._bbox, this._rect);
+  }
+
+  protected calFilterBbox() {
+    const fb = assignBbox(this._filterBbox, this._bbox);
+    const filter = this.computedStyle.filter;
+    filter.forEach(item => {
+      const { u } = item;
+      if (u === StyleUnit.GAUSS_BLUR) {
+        const spread = gaussSize(item.radius);
+        fb[0] -= spread;
+        fb[1] -= spread;
+        fb[2] += spread;
+        fb[3] += spread;
+      }
+      else if (u === StyleUnit.RADIAL_BLUR) {
+        const { left, top, right, bottom } = radialSize(item.radius, fb[2] - fb[0], fb[3] - fb[1], item.center[0], item.center[1]);
+        fb[0] -= left;
+        fb[1] -= top;
+        fb[2] += right;
+        fb[3] += bottom;
+      }
+      else if (u === StyleUnit.MOTION_BLUR) {
+        const { x, y } = motionSize(item.radius, item.angle);
+        fb[0] -= x;
+        fb[1] -= y;
+        fb[2] += x;
+        fb[3] += y;
+      }
+    });
   }
 
   calMask() {
@@ -458,16 +471,15 @@ class Node extends Event {
     computedStyle.filter = calComputedFilter(style.filter, computedStyle.width, computedStyle.height);
     // repaint已经做了
     if (lv < RefreshLevel.REPAINT) {
-      this._filterBbox = undefined;
-      this._filterBboxInt = undefined;
-      this.tempBbox = undefined;
+      this.calFilterBbox();
+      this.tempBbox = null;
       this.textureFilter?.release();
       this.resetTextureTarget();
     }
   }
 
   calMatrix(lv: RefreshLevel) {
-    const { style, computedStyle, matrix, transform } = this;
+    const { style, computedStyle, _matrix: matrix, _transform: transform } = this;
     // 每次更新标识且id++，获取matrixWorld或者每帧渲染会置true，首次0时强制进入，虽然布局过程中会调用，防止手动调用不可预期
     if (this.hasCacheMw || !this.localMwId) {
       this.hasCacheMw = false;
@@ -606,10 +618,10 @@ class Node extends Event {
     computedStyle.perspectiveOrigin = pfo as [number, number];
     computedStyle.perspective = calSize(style.perspective, this.computedStyle.width);
     if (computedStyle.perspective >= 1) {
-      this.perspectiveMatrix = calPerspectiveMatrix(computedStyle.perspective, pfo[0], pfo[1]);
+      this._perspectiveMatrix = calPerspectiveMatrix(computedStyle.perspective, pfo[0], pfo[1]);
     }
     else {
-      this.perspectiveMatrix = undefined;
+      this._perspectiveMatrix = EMPTY_MATRIX;
     }
   }
 
@@ -622,10 +634,10 @@ class Node extends Event {
     computedStyle.perspectiveSelf = calSize(style.perspectiveSelf, this.computedStyle.width);
     if (computedStyle.perspectiveSelf >= 1) {
       const tfo = computedStyle.transformOrigin;
-      this.perspectiveMatrixSelf = calPerspectiveMatrix(computedStyle.perspectiveSelf, tfo[0] + transform[12], tfo[1] + transform[13]);
+      this._perspectiveMatrixSelf = calPerspectiveMatrix(computedStyle.perspectiveSelf, tfo[0] + transform[12], tfo[1] + transform[13]);
     }
     else {
-      this.perspectiveMatrixSelf = undefined;
+      this._perspectiveMatrixSelf = EMPTY_MATRIX;
     }
   }
 
@@ -659,7 +671,7 @@ class Node extends Event {
       canvasCache.release();
     }
     if (this.hasContent) {
-      const bbox = this._bboxInt || this.bboxInt;
+      const bbox = ceilBbox(this.bbox.slice(0));
       const x = bbox[0],
         y = bbox[1];
       const w = bbox[2] - x,
@@ -689,7 +701,7 @@ class Node extends Event {
     if (!coords.length) {
       return;
     }
-    const bbox = this._bboxInt || this.bboxInt;
+    const bbox = ceilBbox(this.bbox.slice(0));
     const x = bbox[0],
       y = bbox[1];
     const w = bbox[2] - x,
@@ -991,11 +1003,11 @@ class Node extends Event {
     this.textureCache?.release();
     const canvasCache = this.canvasCache;
     if (canvasCache?.available) {
-      this.textureTarget = this.textureCache = new TextureCache(gl, this._bboxInt || this.bboxInt, canvasCache);
+      this.textureTarget = this.textureCache = new TextureCache(gl, ceilBbox(this.bbox.slice(0)), canvasCache);
       canvasCache.release();
     }
     else {
-      this.textureTarget = this.textureCache = undefined;
+      this.textureTarget = this.textureCache = null;
     }
   }
 
@@ -1017,7 +1029,7 @@ class Node extends Event {
     return this.updateFormatStyle(formatStyle, cb);
   }
 
-  updateFormatStyle(style: Partial<Style>, cb?: ((sync: boolean) => void)) {
+  updateFormatStyle(style: Partial<Style>, cb?: (sync: boolean) => void) {
     const keys = this.updateFormatStyleData(style);
     // 无变更
     if (!keys.length) {
@@ -1067,12 +1079,10 @@ class Node extends Event {
       let p = this.parent;
       while (p && p !== this.root) {
         p.clearTexCache();
-        p._rect = undefined;
-        p._bbox = undefined;
-        p._bboxInt = undefined;
-        p._filterBbox = undefined;
-        p._filterBboxInt = undefined;
-        p.tempBbox = undefined;
+        p.calRect();
+        p.calBbox();
+        p.calFilterBbox();
+        p.tempBbox = null;
         p = p.parent;
       }
     }
@@ -1118,7 +1128,7 @@ class Node extends Event {
   }
 
   getStyle() {
-    return clone(this.style) as Style;
+    return cloneStyle(this.style) as Style;
   }
 
   getComputedStyle() {
@@ -1140,7 +1150,7 @@ class Node extends Event {
   }
 
   getCssStyle(standard = false) {
-    const { style, computedStyle } = this;
+    const { _style: style, _computedStyle: computedStyle } = this;
     const res: any = {};
     // %单位转换
     [
@@ -1224,105 +1234,105 @@ class Node extends Event {
     return res as JStyle;
   }
 
-  isParent(target: Node) {
-    let p = this.parent;
-    while (p) {
-      if (p === target) {
-        return true;
-      }
-      p = p.parent;
-    }
-    return false;
-  }
+  // isParent(target: Node) {
+  //   let p = this.parent;
+  //   while (p) {
+  //     if (p === target) {
+  //       return true;
+  //     }
+  //     p = p.parent;
+  //   }
+  //   return false;
+  // }
 
-  isChild(target: Node) {
-    return target.isParent(this);
-  }
+  // isChild(target: Node) {
+  //   return target.isParent(this);
+  // }
 
-  // 插入node到自己后面
-  insertAfter(node: Node, cb?: (sync: boolean) => void) {
-    node.remove();
-    const { root, parent } = this;
-    if (!parent) {
-      throw new Error('Can not appendSelf without parent');
-    }
-    node.parent = parent;
-    node.prev = this;
-    if (this.next) {
-      this.next.prev = node;
-    }
-    node.next = this.next;
-    this.next = node;
-    node.root = root;
-    const children = parent.children;
-    const i = children.indexOf(this);
-    children.splice(i + 1, 0, node);
-    if (parent.isDestroyed) {
-      cb && cb(true);
-      return;
-    }
-    parent.insertStruct(node, i + 1);
-    root!.addUpdate(node, [], RefreshLevel.ADD_DOM, cb);
-  }
+  // // 插入node到自己后面
+  // insertAfter(node: Node, cb?: (sync: boolean) => void) {
+  //   node.remove();
+  //   const { root, parent } = this;
+  //   if (!parent) {
+  //     throw new Error('Can not appendSelf without parent');
+  //   }
+  //   node.parent = parent;
+  //   node.prev = this;
+  //   if (this.next) {
+  //     this.next.prev = node;
+  //   }
+  //   node.next = this.next;
+  //   this.next = node;
+  //   node.root = root;
+  //   const children = parent.children;
+  //   const i = children.indexOf(this);
+  //   children.splice(i + 1, 0, node);
+  //   if (parent.isDestroyed) {
+  //     cb && cb(true);
+  //     return;
+  //   }
+  //   parent.insertStruct(node, i + 1);
+  //   root!.addUpdate(node, [], RefreshLevel.ADD_DOM, cb);
+  // }
+  //
+  // // 插入node到自己前面
+  // insertBefore(node: Node, cb?: (sync: boolean) => void) {
+  //   node.remove();
+  //   const { root, parent } = this;
+  //   if (!parent) {
+  //     throw new Error('Can not prependBefore without parent');
+  //   }
+  //   node.parent = parent;
+  //   node.prev = this.prev;
+  //   if (this.prev) {
+  //     this.prev.next = node;
+  //   }
+  //   node.next = this;
+  //   this.prev = node;
+  //   node.root = root;
+  //   const children = parent.children;
+  //   const i = children.indexOf(this);
+  //   children.splice(i, 0, node);
+  //   if (parent.isDestroyed) {
+  //     cb && cb(true);
+  //     return;
+  //   }
+  //   parent.insertStruct(node, i);
+  //   root!.addUpdate(node, [], RefreshLevel.ADD_DOM, cb);
+  // }
 
-  // 插入node到自己前面
-  insertBefore(node: Node, cb?: (sync: boolean) => void) {
-    node.remove();
-    const { root, parent } = this;
-    if (!parent) {
-      throw new Error('Can not prependBefore without parent');
-    }
-    node.parent = parent;
-    node.prev = this.prev;
-    if (this.prev) {
-      this.prev.next = node;
-    }
-    node.next = this;
-    this.prev = node;
-    node.root = root;
-    const children = parent.children;
-    const i = children.indexOf(this);
-    children.splice(i, 0, node);
-    if (parent.isDestroyed) {
-      cb && cb(true);
-      return;
-    }
-    parent.insertStruct(node, i);
-    root!.addUpdate(node, [], RefreshLevel.ADD_DOM, cb);
-  }
-
-  remove(cb?: (sync: boolean) => void) {
-    const { root, parent } = this;
-    if (parent) {
-      const i = parent.children.indexOf(this);
-      if (i === -1) {
-        throw new Error('Invalid index of remove()');
-      }
-      parent.children.splice(i, 1);
-      const { prev, next } = this;
-      if (prev) {
-        prev.next = next;
-      }
-      if (next) {
-        next.prev = prev;
-      }
-      parent.deleteStruct(this);
-    }
-    // 未添加到dom时
-    if (!root || !this.isMounted) {
-      cb && cb(true);
-      return;
-    }
-    root.addUpdate(this, [], RefreshLevel.REMOVE_DOM, cb);
-  }
+  // remove(cb?: (sync: boolean) => void) {
+  //   const { root, parent } = this;
+  //   if (parent) {
+  //     const i = parent.children.indexOf(this);
+  //     if (i === -1) {
+  //       throw new Error('Invalid index of remove()');
+  //     }
+  //     parent.children.splice(i, 1);
+  //     const { prev, next } = this;
+  //     if (prev) {
+  //       prev.next = next;
+  //     }
+  //     if (next) {
+  //       next.prev = prev;
+  //     }
+  //     parent.deleteStruct(this);
+  //   }
+  //   // 未添加到dom时
+  //   if (!root || !this.isMounted) {
+  //     cb && cb(true);
+  //     return;
+  //   }
+  //   root.addUpdate(this, [], RefreshLevel.REMOVE_DOM, cb);
+  // }
 
   // 同dom同名api
   getBoundingClientRect(opt?: {
     includeBbox?: boolean,
   }) {
     const bbox = opt?.includeBbox
-      ? this._bbox || this.bbox
-      : this._rect || this.rect;
+      ? this.bbox
+      : this._rect;
     const t = calRectPoints(bbox[0], bbox[1], bbox[2], bbox[3], this.matrixWorld);
     const x1 = t.x1;
     const y1 = t.y1;
@@ -1388,8 +1398,8 @@ class Node extends Event {
     const {
       width,
       height,
-      style,
-      computedStyle,
+      _style: style,
+      _computedStyle: computedStyle,
       parent,
       isDestroyed,
     } = this;
@@ -1455,8 +1465,8 @@ class Node extends Event {
       translateY,
     } = prev;
     const {
-      style,
-      computedStyle,
+      _style: style,
+      _computedStyle: computedStyle,
       parent,
       width: w,
       height: h,
@@ -1512,7 +1522,11 @@ class Node extends Event {
 
   // 移动过程是用translate加速，结束后要更新TRBL的位置以便后续定位，还要还原translate为原本的%（可能）
   endPosChange(prev: Style, dx: number, dy: number) {
-    const { style, computedStyle, parent } = this;
+    const {
+      _style: style,
+      _computedStyle: computedStyle,
+      parent,
+    } = this;
     // 未添加到dom
     if (!parent) {
       return;
@@ -1576,7 +1590,12 @@ class Node extends Event {
     dx2: number,
     dy2: number,
   ) {
-    const { style, computedStyle, parent, root } = this;
+    const {
+      _style: style,
+      _computedStyle: computedStyle,
+      parent,
+      root,
+    } = this;
     if (!parent || !root || (!dx1 && !dy1 && !dx2 && !dy2)) {
       return;
     }
@@ -1763,13 +1782,11 @@ class Node extends Event {
     this.refreshLevel |= RefreshLevel.TRANSFORM_ALL;
     root.rl |= RefreshLevel.TRANSFORM_ALL;
     this.calMatrix(RefreshLevel.TRANSFORM_ALL);
-    // 记得重置
-    this._rect = undefined;
-    this._bbox = undefined;
-    this._bboxInt = undefined;
-    this._filterBbox = undefined;
-    this._filterBboxInt = undefined;
-    this.tempBbox = undefined;
+    // 记得重置，tempBbox等需赋值，其默认EMPTY_RECT，get获取一次后就变成自己的真实数据替换掉默认
+    this.calRect();
+    this.calBbox();
+    this.calFilterBbox();
+    this.tempBbox = null;
   }
 
   // 节点位置尺寸发生变更后，会递归向上影响，逐步检查，可能在某层没有影响提前跳出中断
@@ -1791,7 +1808,7 @@ class Node extends Event {
   }
 
   protected initAnimate(animation: AbstractAnimation, options: Options) {
-    this.animationList.push(animation);
+    this._animationList.push(animation);
     const root = this.root;
     if (this.isDestroyed || !root) {
       animation.cancel();
@@ -1814,7 +1831,7 @@ class Node extends Event {
 
   release() {
     this.remove();
-    this.animationList.splice(0).forEach(item => item.remove());
+    this._animationList.splice(0).forEach(item => item.remove());
     this.clearTexCache();
   }
 
@@ -1828,15 +1845,27 @@ class Node extends Event {
   clone() {
     const props = this.cloneProps();
     const res = new Node(props);
-    return res;
+    return res as this;
   }
 
-  get width() {
-    return this.computedStyle.width || 0;
+  get struct() {
+    return this._struct;
   }
 
-  get height() {
-    return this.computedStyle.height || 0;
+  get opacity() {
+    return this._opacity;
+  }
+
+  set opacity(v: number) {
+    this._opacity = v;
+  }
+
+  get transform() {
+    return this._transform;
+  }
+
+  get matrix() {
+    return this._matrix;
   }
 
   // 可能在布局后异步渲染前被访问，此时没有这个数据，刷新后就有缓存，变更transform或者reflow无缓存
@@ -1934,52 +1963,36 @@ class Node extends Event {
     return m;
   }
 
+  get perspectiveMatrix() {
+    return this._perspectiveMatrix;
+  }
+
+  get perspectiveMatrixSelf() {
+    return this._perspectiveMatrixSelf;
+  }
+
   get rect() {
-    let res = this._rect;
-    if (!res) {
-      res = this._rect = new Float32Array(4);
-      res[0] = 0;
-      res[1] = 0;
-      res[2] = this.computedStyle.width;
-      res[3] = this.computedStyle.height;
-    }
-    return res;
+    return this._rect;
   }
 
   get bbox() {
-    let res = this._bbox;
-    if (!res) {
-      const rect = this._rect || this.rect;
-      res = this._bbox = rect.slice(0);
-    }
-    return res;
+    return this._bbox;
   }
 
   get filterBbox() {
-    let res = this._filterBbox;
-    if (!res) {
-      const bbox = this._bbox || this.bbox;
-      res = this._filterBbox = bbox.slice(0);
-    }
-    return res;
+    return this._filterBbox;
   }
 
-  get bboxInt() {
-    let res = this._bboxInt;
-    if (!res) {
-      res = this._bboxInt = (this._bbox || this.bbox).slice(0);
-      ceilBbox(res);
-    }
-    return res;
+  get style() {
+    return this._style;
   }
 
-  get filterBboxInt() {
-    let res = this._filterBboxInt;
-    if (!res) {
-      res = this._filterBboxInt = (this._filterBbox || this.filterBbox).slice(0);
-      ceilBbox(res);
-    }
-    return res;
+  get computedStyle() {
+    return this._computedStyle;
+  }
+
+  get animationList() {
+    return this._animationList;
   }
 }
 

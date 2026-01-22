@@ -48,20 +48,22 @@ export function renderWebgl(
     let target = node.textureTarget;
     let isInScreen = false;
     // 有merge的直接判断是否在可视范围内，合成结果在merge中做了，可能超出范围不合成
-    if (target?.available) {
-      isInScreen = checkInScreen(target.bbox, matrix, W, H);
-    }
-    // 无merge的是单个节点，判断是否有内容以及是否在可视范围内，首次渲染或更新后会无target
-    else {
-      isInScreen = checkInScreen(
-        node._filterBbox || node.filterBbox, // 检测用原始的渲染用取整的
-        matrix,
-        W,
-        H,
-      );
-      if (isInScreen && node.hasContent) {
-        node.genTexture(gl);
-        target = node.textureTarget;
+    if (node.hasContent) {
+      if (target?.available) {
+        isInScreen = checkInScreen(target.bbox, matrix, W, H);
+      }
+      // 无merge的是单个节点，判断是否有内容以及是否在可视范围内，首次渲染或更新后会无target
+      else {
+        isInScreen = checkInScreen(
+          node._filterBbox, // 检测用原始的渲染用取整的
+          matrix,
+          W,
+          H,
+        );
+        if (isInScreen && node.hasContent) {
+          node.genTexture(gl);
+          target = node.textureTarget;
+        }
       }
     }
     // console.log(i, node.name, node.hasContent, target?.available, isInScreen)
@@ -91,10 +93,10 @@ export function renderWebgl(
           }
         }
       }
-    }
-    // 有局部子树缓存可以跳过其所有子孙节点
-    if (target?.available && target !== node.textureCache) {
-      i += total + next;
+      // 有局部子树缓存可以跳过其所有子孙节点
+      if (target !== node.textureCache) {
+        i += total + next;
+      }
     }
   }
   // 减少drawCall

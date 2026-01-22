@@ -1,6 +1,6 @@
 import Node from './Node';
 import { LottieMeta, LottieProps } from '../format';
-import { OBJECT_FIT, StyleUnit, VISIBILITY } from '../style/define';
+import { OBJECT_FIT, StyleUnit } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
 import { LayoutData } from '../refresh/layout';
 import CanvasCache from '../refresh/CanvasCache';
@@ -9,6 +9,7 @@ import { canvasPolygon } from '../refresh/paint';
 import { Options } from '../animation/AbstractAnimation';
 import TimeAnimation from '../animation/TimeAnimation';
 import { LOAD, META } from '../refresh/refreshEvent';
+import { ceilBbox } from '../math/bbox';
 
 class Lottie extends Node {
   private _src?: string;
@@ -20,6 +21,8 @@ class Lottie extends Node {
   private _currentTime: number;
   private _metaData?: LottieMeta;
   timeAnimation?: TimeAnimation;
+
+  declare props: LottieProps;
 
   constructor(props: LottieProps) {
     super(props);
@@ -168,7 +171,7 @@ class Lottie extends Node {
   override renderCanvas() {
     const { _json, _currentTime, _metaData, canvas, computedStyle } = this;
     super.renderCanvas();
-    const bbox = this._bboxInt || this.bboxInt;
+    const bbox = ceilBbox(this.bbox.slice(0));
     const x = bbox[0],
       y = bbox[1];
     let w = bbox[2] - x,

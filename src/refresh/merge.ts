@@ -89,7 +89,7 @@ export function genMerge(
       if (!node.next || node.next.computedStyle.breakMask || node.next.computedStyle.maskMode !== MASK.NONE) {
         needMask = false;
         node.textureMask?.release();
-        node.textureMask = undefined;
+        node.textureMask = null;
       }
     }
     if (needTotal || needFilter || needMask) {
@@ -262,7 +262,7 @@ function genBboxTotal(
   merge: Merge,
   mergeHash: Merge[],
 ) {
-  const res = (node.tempBbox || node._bbox || node.bbox).slice(0);
+  const res = (node.tempBbox || node._bbox).slice(0);
   toE(node.tempMatrix);
   // overflow加速
   if (node.computedStyle.overflow === OVERFLOW.HIDDEN || node.computedStyle.overflow === OVERFLOW.CLIP) {
@@ -288,7 +288,7 @@ function genBboxTotal(
       assignMatrix(node2.tempMatrix, t);
       // 合并不能用textureCache，因为如果有shadow的话bbox不正确
       const b = (target && target !== node2.textureCache) ?
-        target.bbox : (node2._filterBboxInt || node2.filterBboxInt);
+        target.bbox : (ceilBbox(node2.filterBbox));
       // 防止空
       if (b[2] - b[0] && b[3] - b[1]) {
         mergeBbox(res, b, m);
@@ -343,12 +343,13 @@ function genTotal(
     }
   }
   const bbox = node.tempBbox!;
-  node.tempBbox = undefined;
+  node.tempBbox = null;
+  // node.tempBbox = undefined;
   ceilBbox(bbox);
   // 单个叶子节点也不需要，就是本身节点的内容
   if (!total && !force) {
     let target = node.textureCache;
-    if (!target?.available && node.hasContent) {
+    if (node.hasContent && !target?.available) {
       node.genTexture(gl);
       target = node.textureCache;
     }
@@ -446,11 +447,11 @@ function genTotal(
     assignMatrix(node2.tempMatrix, matrix);
     let target2 = node2.textureTarget;
     // 可能没生成，存在于一开始在可视范围外的节点情况，且当时也没有进行合成
-    if (!target2?.available && node2.hasContent) {
+    if (node2.hasContent && !target2?.available) {
       node2.genTexture(gl);
       target2 = node2.textureTarget;
     }
-    if (target2 && target2.available) {
+    if (node2.hasContent && target2?.available) {
       const { mixBlendMode } = computedStyle;
       const list2 = target2.list;
       // 内循环目标分块
@@ -564,7 +565,7 @@ function genFilter(
   filter.forEach(item => {
     if (item.u === StyleUnit.GAUSS_BLUR) {
       if (item.radius >= 1) {
-        const t = genGaussBlur(gl, root, node, res || source, item.radius, W, H, true);
+        const t = genGaussBlur(gl, root, node, res || source, item.radius, W, H);
         if (res) {
           res.release();
         }
@@ -710,7 +711,7 @@ export function genMask(
   let frameBuffer: WebGLFramebuffer | undefined;
   const UNIT = config.maxTextureSize;
   // Bitmap/Video有个特点，纯图使用原始图尺寸生成纹理，它一般不和当前缩放匹配，需要多生成一个临时对应的纹理
-  let genImgMask: TextureCache | undefined;
+  let genImgMask: TextureCache | null = null;
   if (needReGen(node, w, h)) {
     node.tempBbox = (node.tempBbox || node._rect || node.rect).slice(0);
     genImgMask = genTotal(gl, root, node, structs, index, total, W, H, true);
@@ -815,11 +816,11 @@ export function genMask(
         // console.log(i, matrix.map(item => toPrecision(item)).join(','))
         let target2 = node2.textureTarget;
         // 可能没生成，存在于一开始在可视范围外的节点情况，且当时也没有进行合成
-        if (!target2?.available && node2.hasContent) {
+        if (node2.hasContent && !target2?.available) {
           node2.genTexture(gl);
           target2 = node2.textureTarget;
         }
-        if (target2?.available) {
+        if (node2.hasContent && target2?.available) {
           const { mixBlendMode } = computedStyle;
           // 整个节点都不在当前块内跳过
           if (!checkInRect(target2.bbox, matrix, x1, y1, width, height)) {
@@ -971,7 +972,9 @@ export function genMask(
   CacheProgram.useProgram(gl, programs.main);
   // 删除fbo恢复
   summary.release();
-  genImgMask && genImgMask.release();
+  if (genImgMask) {
+    genImgMask.release();
+  }
   if (frameBuffer) {
     releaseFrameBuffer(gl, frameBuffer, W, H);
   }

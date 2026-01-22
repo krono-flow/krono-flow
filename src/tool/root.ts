@@ -1,10 +1,10 @@
+import AbstractNode from '../node/AbstractNode';
 import Root from '../node/Root';
-import Node from '../node/Node';
 import Container from '../node/Container';
 import { pointInRect } from '../math/geom';
 import { MASK, VISIBILITY } from '../style/define';
 
-function getChildByPoint(parent: Container, x: number, y: number): Node | undefined {
+function getChildByPoint(parent: Container, x: number, y: number): AbstractNode | undefined {
   const children = parent.children;
   for (let i = children.length - 1; i >= 0; i--) {
     const child = children[i];
@@ -14,7 +14,7 @@ function getChildByPoint(parent: Container, x: number, y: number): Node | undefi
       || !child.computedStyle.pointerEvents) {
       continue;
     }
-    const rect = child._rect || child.rect;
+    const rect = child.rect;
     const inRect = pointInRect(x, y, rect[0], rect[1], rect[2], rect[3], matrixWorld, true);
     // 在范围内继续递归子节点寻找，找不到返回自己
     if (inRect) {
@@ -45,10 +45,10 @@ function getChildByPoint(parent: Container, x: number, y: number): Node | undefi
   }
 }
 
-function isInMask(node: Node, x: number, y: number) {
+function isInMask(node: AbstractNode, x: number, y: number) {
   const computedStyle = node.computedStyle;
   if (computedStyle.maskMode !== MASK.NONE && computedStyle.pointerEvents) {
-    const rect = node._rect || node.rect;
+    const rect = node.rect;
     const matrixWorld = node.matrixWorld;
     return pointInRect(x, y, rect[0], rect[1], rect[2], rect[3], matrixWorld, true);
   }

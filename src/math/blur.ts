@@ -1,3 +1,5 @@
+import { d2r } from './geom';
+
 /**
  * https://www.w3.org/TR/2018/WD-filter-effects-1-20181218/#feGaussianBlurElement
  * 根据模糊参数sigma求卷积核尺寸
@@ -140,11 +142,34 @@ export function n2Weight(sigma: number) {
   return weights.map(item => item / total);
 }
 
+export function radialSize(sigma: number, w: number, h: number, cx: number, cy: number) {
+  const spread = gaussSize(sigma);
+  const diagonal = Math.sqrt(w * w + h * h);
+  const ratio = spread * 2 / diagonal;
+  const left = Math.ceil(ratio * cx);
+  const right = Math.ceil(ratio * (w - cx));
+  const top = Math.ceil(ratio * cy);
+  const bottom = Math.ceil(ratio * (h - cy));
+  return { ratio, left, top, right, bottom };
+}
+
+export function motionSize(sigma: number, angle: number) {
+  const radian = d2r(angle);
+  const spread = sigma * 3;
+  const sin = Math.sin(radian);
+  const cos = Math.cos(radian);
+  const x = Math.abs(Math.ceil(sin * spread));
+  const y = Math.abs(Math.ceil(cos * spread));
+  return { x, y };
+}
+
 export default {
   gaussKernel,
   gaussSize,
   gaussSizeByD,
   gaussianWeight,
+  radialSize,
+  motionSize,
   boxesForGauss,
   dualKawase,
   n2Kernel,

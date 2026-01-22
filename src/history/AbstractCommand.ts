@@ -1,9 +1,9 @@
-import Node from '../node/Node';
+import AbstractNode from '../node/AbstractNode';
 
 abstract class AbstractCommand {
-  nodes: Node[];
+  nodes: AbstractNode[];
 
-  constructor(nodes: Node[]) {
+  constructor(nodes: AbstractNode[]) {
     this.nodes = nodes;
   }
 

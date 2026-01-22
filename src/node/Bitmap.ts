@@ -4,13 +4,14 @@ import CanvasCache from '../refresh/CanvasCache';
 import { loadImg, LoadImgRes, getCacheImg } from '../util/loadImg';
 import TextureCache from '../refresh/TextureCache';
 import { LayoutData } from '../refresh/layout';
-import { OBJECT_FIT, StyleUnit, VISIBILITY } from '../style/define';
+import { OBJECT_FIT, StyleUnit } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
 import { Options } from '../animation/AbstractAnimation';
 import GifAnimation from '../animation/GifAnimation';
 import config from '../config';
 import { canvasPolygon } from '../refresh/paint';
 import { LOAD } from '../refresh/refreshEvent';
+import { ceilBbox } from '../math/bbox';
 
 class Bitmap extends Node {
   _src: string;
@@ -18,6 +19,8 @@ class Bitmap extends Node {
   isPure: boolean;
   private _frameIndex: number;
   onLoad?: () => void;
+
+  declare props: BitmapProps;
 
   constructor(props: BitmapProps) {
     super(props);
@@ -275,7 +278,7 @@ class Bitmap extends Node {
     else {
       super.renderCanvas();
       const computedStyle = this.computedStyle;
-      const bbox = this._bboxInt || this.bboxInt;
+      const bbox = ceilBbox(this.bbox.slice(0));
       const x = bbox[0],
         y = bbox[1];
       let w = bbox[2] - x,
@@ -352,19 +355,19 @@ class Bitmap extends Node {
       if (loader?.success) {
         if (loader.width > config.maxTextureSize || loader.height > config.maxTextureSize) {
           if (canvasCache?.available && TextureCache.hasCanvasCacheInstance(canvasCache)) {
-            const tc = TextureCache.getCanvasCacheInstance(gl, canvasCache, this._rect || this.rect);
+            const tc = TextureCache.getCanvasCacheInstance(gl, canvasCache, this._rect);
             this.textureTarget = this.textureCache = tc;
           }
           else {
             this.renderCanvas();
-            const tc = TextureCache.getCanvasCacheInstance(gl, this.canvasCache!, this._rect || this.rect);
+            const tc = TextureCache.getCanvasCacheInstance(gl, this.canvasCache!, this._rect);
             this.textureTarget = this.textureCache = tc;
             this.canvasCache!.release();
           }
         }
         else {
           let { width, height, objectFit } = this.computedStyle;
-          let r = this._rect || this.rect;
+          let r = this._rect;
           let tc: { x1: number, y1: number, x3: number, y3: number } | undefined;
           const ratio = loader.width / loader.height;
           const ratio2 = width / height;
@@ -442,7 +445,7 @@ class Bitmap extends Node {
   override clone() {
     const props = this.cloneProps();
     const res = new Bitmap(props);
-    return res;
+    return res as this;
   }
 
   get src() {

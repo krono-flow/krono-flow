@@ -1,4 +1,4 @@
-import Node from '../node/Node';
+import AbstractNode from '../node/AbstractNode';
 import Root from '../node/Root';
 import { VISIBILITY } from '../style/define';
 import { calRectPoints, identity, multiply, multiplyScaleX, multiplyScaleY } from '../math/matrix';
@@ -55,12 +55,12 @@ export default class Select {
     dom.appendChild(select);
   }
 
-  showSelect(selected: Node[]) {
+  showSelect(selected: AbstractNode[]) {
     this.updateSelect(selected);
     this.select.style.display = 'block';
   }
 
-  updateSelect(selected: Node[]) {
+  updateSelect(selected: AbstractNode[]) {
     const sub = this.select.querySelector('.sub') as HTMLElement;
     if (selected.length === 1) {
       sub.innerHTML = '';
@@ -83,9 +83,9 @@ export default class Select {
   }
 
   // hover/select时单个节点的位置，包含镜像旋转等在内的transform，换算成dom的实际宽高尺寸
-  calRect(node: Node) {
+  calRect(node: AbstractNode) {
     const canvas = this.root.canvas!;
-    let rect = node._rect || node.rect;
+    let rect = node.rect;
     let matrix = node.matrixWorld;
     const sx = canvas.clientWidth / canvas.width;
     const sy = canvas.clientHeight / canvas.height;

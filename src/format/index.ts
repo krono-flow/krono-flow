@@ -1,5 +1,6 @@
-import { DEFAULT_STYLE } from './dft';
+import { DEFAULT_COMPUTED_STYLE, DEFAULT_STYLE } from './dft';
 import {
+  ComputedStyle,
   CURVE_MODE,
 } from '../style/define';
 import { VideoAudioMeta } from '../codec/define';
@@ -20,6 +21,8 @@ export type RootProps = Props & {
     height: number;
   };
 }
+
+export type ComponentProps = Props & {}
 
 export type JPoint = {
   x: number;
@@ -224,9 +227,52 @@ export type RotateZStyle = Pick<JStyle, 'rotateZ'>;
 
 export type ModifyJRichStyle = Partial<Omit<JRich, 'location' | 'length'>>;
 
-export function getDefaultStyle(v?: Partial<JStyle>): JStyle {
+export function getDefaultJStyle(v?: Partial<JStyle>): JStyle {
   const dft = Object.assign({}, DEFAULT_STYLE);
-  (['transformOrigin', 'perspectiveOrigin', 'color', 'strokeDasharray', 'filter'] as const).forEach(k => {
+  ([
+    'transformOrigin',
+    'perspectiveOrigin',
+    'color',
+    'backgroundColor',
+    'stroke',
+    'strokeWidth',
+    'strokeEnable',
+    'strokeMode',
+    'strokeDasharray',
+    'strokeDasharray',
+    'fill',
+    'fillOpacity',
+    'fillEnable',
+    'fillMode',
+    'filter',
+    'textDecoration',
+  ] as const).forEach(k => {
+    // @ts-ignore
+    dft[k] = dft[k].slice(0);
+  });
+  return Object.assign(dft, v);
+}
+
+export function getDefaultComputedStyle(v?: Partial<ComputedStyle>): ComputedStyle {
+  const dft = Object.assign({}, DEFAULT_COMPUTED_STYLE);
+  ([
+    'transformOrigin',
+    'perspectiveOrigin',
+    'color',
+    'backgroundColor',
+    'stroke',
+    'strokeWidth',
+    'strokeEnable',
+    'strokeMode',
+    'strokeDasharray',
+    'strokeDasharray',
+    'fill',
+    'fillOpacity',
+    'fillEnable',
+    'fillMode',
+    'filter',
+    'textDecoration',
+  ] as const).forEach(k => {
     // @ts-ignore
     dft[k] = dft[k].slice(0);
   });
@@ -234,5 +280,6 @@ export function getDefaultStyle(v?: Partial<JStyle>): JStyle {
 }
 
 export default {
-  getDefaultStyle,
+  getDefaultJStyle,
+  getDefaultComputedStyle,
 };

@@ -1,13 +1,13 @@
 import AbstractCommand from './AbstractCommand';
-import Node from '../node/Node';
 import { ComputedStyle } from '../style/define';
+import AbstractNode from '../node/AbstractNode';
 
 export type MoveData = { dx: number, dy: number };
 
 class MoveCommand extends AbstractCommand {
   data: MoveData[];
 
-  constructor(nodes: Node[], data: MoveData[]) {
+  constructor(nodes: AbstractNode[], data: MoveData[]) {
     super(nodes);
     this.data = data;
   }
@@ -38,7 +38,7 @@ class MoveCommand extends AbstractCommand {
     });
   }
 
-  static operate(node: Node, computedStyle: ComputedStyle, dx: number, dy: number) {
+  static operate(node: AbstractNode, computedStyle: ComputedStyle, dx: number, dy: number) {
     node.updateStyle({
       translateX: computedStyle.translateX + dx,
       translateY: computedStyle.translateY + dy,

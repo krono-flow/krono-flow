@@ -24,6 +24,8 @@ class Audio extends Node {
   private _volumn: number;
   timeAnimation?: TimeAnimation;
 
+  declare props: AudioProps;
+
   constructor(props: AudioProps) {
     super(props);
     if (props.onMeta) {

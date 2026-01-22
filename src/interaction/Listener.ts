@@ -1,4 +1,5 @@
 import Event from '../util/Event';
+import AbstractNode from '../node/AbstractNode';
 import Node from '../node/Node';
 import Text from '../node/Text';
 import Root from '../node/Root';
@@ -47,7 +48,7 @@ class Listener extends Event {
   altKey: boolean;
   eventListenerList: { type: string, cb: any }[];
   history: History;
-  selected: Node[]; // 已选的节点们
+  selected: AbstractNode[]; // 已选的节点们
   select: Select; // 展示的选框dom
   computedStyle: ComputedStyle[]; // 点击按下时已选节点的值样式状态记录初始状态，拖动过程中对比计算
   originStyle: Style[]; // 同上
@@ -740,7 +741,7 @@ class Listener extends Event {
     }
   }
 
-  cancelEditText(node?: Node) {
+  cancelEditText(node?: AbstractNode) {
     if (this.state === State.EDIT_TEXT) {
       const text = (node || this.selected[0]) as Text;
       if (text) {

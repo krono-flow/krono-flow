@@ -1,6 +1,6 @@
 import AbstractCommand from './AbstractCommand';
-import Node from '../node/Node';
 import { JStyle } from '../format';
+import AbstractNode from '../node/AbstractNode';
 
 export type UpdateStyleData = {
   prev: Partial<JStyle>;
@@ -10,7 +10,7 @@ export type UpdateStyleData = {
 class UpdateStyleCommand extends AbstractCommand {
   data: UpdateStyleData[];
 
-  constructor(nodes: Node[], data: UpdateStyleData[]) {
+  constructor(nodes: AbstractNode[], data: UpdateStyleData[]) {
     super(nodes);
     this.data = data;
   }

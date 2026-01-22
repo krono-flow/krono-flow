@@ -1,5 +1,4 @@
 import AbstractCommand from './AbstractCommand';
-import Node from '../node/Node';
 import { ComputedStyle } from '../style/define';
 import {
   getDiagonalAspectRatioIsec,
@@ -26,6 +25,7 @@ import {
 } from '../tool/node';
 import { JStyle, ResizeStyle } from '../format';
 import { Rect } from '../interaction/Select';
+import AbstractNode from '../node/AbstractNode';
 
 export type ResizeData = {
   dx: number;
@@ -55,7 +55,7 @@ export enum CONTROL_TYPE {
 class ResizeCommand extends AbstractCommand {
   data: ResizeData[];
 
-  constructor(nodes: Node[], data: ResizeData[]) {
+  constructor(nodes: AbstractNode[], data: ResizeData[]) {
     super(nodes);
     this.data = data;
   }
@@ -99,7 +99,7 @@ class ResizeCommand extends AbstractCommand {
     });
   }
 
-  static operate(node: Node, computedStyle: ComputedStyle, cssStyle: JStyle, dx: number, dy: number, controlType: CONTROL_TYPE,
+  static operate(node: AbstractNode, computedStyle: ComputedStyle, cssStyle: JStyle, dx: number, dy: number, controlType: CONTROL_TYPE,
                      aspectRatio: boolean, fromCenter = false, widthAuto = false, heightAuto = false) {
     // 由于保持宽高比/中心点调整的存在，可能在调整过程中切换shift/alt键，所以初始化都是原始样式以便切换后恢复
     const next: ResizeStyle = {
@@ -163,7 +163,7 @@ class ResizeCommand extends AbstractCommand {
     node.updateStyle(next);
   }
 
-  static operateMultiAr(node: Node, computedStyle: ComputedStyle, cssStyle: JStyle, dx: number, dy: number, controlType: CONTROL_TYPE,
+  static operateMultiAr(node: AbstractNode, computedStyle: ComputedStyle, cssStyle: JStyle, dx: number, dy: number, controlType: CONTROL_TYPE,
                             clientRect: Rect, selectRect: Rect, aspectRatio: boolean, fromCenter = false, widthAuto = false, heightAuto = false) {
     // 一定是保持宽高比才会进这，每个节点都可能会改变位置，初始值同上单个的情况
     const next: ResizeStyle = {

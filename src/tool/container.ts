@@ -1,10 +1,10 @@
-import Node from '../node/Node';
+import AbstractNode from '../node/AbstractNode';
 import { RemoveData } from '../history/RemoveCommand';
 import { clone } from '../util/type';
 import { StyleUnit } from '../style/define';
 import Container from '../node/Container';
 
-export function appendWithPosAndSize(node: Node, data: RemoveData) {
+export function appendWithPosAndSize(node: AbstractNode, data: RemoveData) {
   const { style, computedStyle } = node;
   const { x, y, parent, index } = data;
   // 原始单位记录下来
@@ -151,7 +151,7 @@ export function appendWithPosAndSize(node: Node, data: RemoveData) {
   }
 }
 
-export function appendWithIndex(parent: Container, node: Node, index: number) {
+export function appendWithIndex(parent: Container, node: AbstractNode, index: number) {
   const children = parent.children;
   if (index <= 0) {
     parent.prependChild(node);

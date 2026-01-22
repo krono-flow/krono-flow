@@ -1267,6 +1267,7 @@ export default {
   normalize,
   equalStyle,
   cloneStyle,
+  cloneStyleItem,
   calSize,
   normalizeRich,
   getCssMbm,

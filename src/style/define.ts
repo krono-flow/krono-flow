@@ -278,7 +278,7 @@ export type ComputedStyle = {
   borderTopRightRadius: number;
   borderBottomLeftRadius: number;
   borderBottomRightRadius: number;
-  overflow: number;
+  overflow: OVERFLOW;
   filter: (ComputedFilter)[];
 };
 

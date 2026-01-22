@@ -1,6 +1,6 @@
 import AbstractCommand from './AbstractCommand';
-import Node from '../node/Node';
 import Container from '../node/Container';
+import AbstractNode from '../node/AbstractNode';
 import { appendWithPosAndSize } from '../tool/container';
 
 export type RemoveData = {
@@ -13,7 +13,7 @@ export type RemoveData = {
 class RemoveCommand extends AbstractCommand {
   data: RemoveData[];
 
-  constructor(nodes: Node[], data: RemoveData[]) {
+  constructor(nodes: AbstractNode[], data: RemoveData[]) {
     super(nodes);
     this.data = data;
   }
@@ -32,7 +32,7 @@ class RemoveCommand extends AbstractCommand {
     });
   }
 
-  static operate(node: Node) {
+  static operate(node: AbstractNode) {
     const parent = node.parent!;
     const index = parent.children.indexOf(node);
     const o: RemoveData = {

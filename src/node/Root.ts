@@ -1,3 +1,4 @@
+import AbstractNode from './AbstractNode';
 import Container from './Container';
 import Node from './Node';
 import { RootProps } from '../format';
@@ -38,8 +39,8 @@ import config from '../config';
 class Root extends Container {
   canvas?: HTMLCanvasElement;
   ctx?: WebGLRenderingContext | WebGL2RenderingContext;
-  isWebgl2?: boolean;
-  refs: Record<string, Node>;
+  isWebgl2: boolean;
+  refs: Record<string, AbstractNode>;
   structs: Struct[]; // 队列代替递归Tree的数据结构
   task: Array<((sync: boolean) => void) | undefined>; // 异步绘制任务回调列表
   aniTask: AbstractAnimation[]; // 动画任务，空占位
@@ -52,7 +53,9 @@ class Root extends Container {
   lastContentLoadingCount: number;
   firstDraw: boolean;
 
-  constructor(props: RootProps, children: Node[] = []) {
+  declare props: RootProps;
+
+  constructor(props: RootProps, children: AbstractNode[] = []) {
     super(props, children);
     this.root = this;
     this.refs = {};
@@ -93,11 +96,12 @@ class Root extends Container {
     this.contentLoadingCount = 0;
     this.lastContentLoadingCount = 0;
     this.firstDraw = true;
+    this.isWebgl2 = false;
   }
 
   appendTo(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    const attributes = Object.assign(ca, (this.props as RootProps).contextAttributes);
+    const attributes = Object.assign(ca, this.props.contextAttributes);
     // gl的初始化和配置
     let gl: WebGL2RenderingContext | WebGLRenderingContext = canvas.getContext('webgl2', attributes) as WebGL2RenderingContext;
     if (gl) {
@@ -170,7 +174,7 @@ class Root extends Container {
    * sync是updateStyle()时没有变化，cb会返回true标明同步执行
    */
   addUpdate(
-    node: Node, // 发生变更的节点
+    node: AbstractNode, // 发生变更的节点
     keys: string[], // 发生变更的样式key
     focus: RefreshLevel = RefreshLevel.NONE, // 初始值默认空，可能图片src变了默认传重绘
     cb?: (sync: boolean) => void,
@@ -196,7 +200,7 @@ class Root extends Container {
   }
 
   calUpdate(
-    node: Node,
+    node: AbstractNode,
     lv: RefreshLevel,
   ) {
     if (lv === RefreshLevel.NONE || !this.isMounted) {
