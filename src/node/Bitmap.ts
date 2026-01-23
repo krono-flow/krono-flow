@@ -1,7 +1,8 @@
+import { NodeType } from './AbstractNode';
 import Node from './Node';
 import { BitmapProps } from '../format';
 import CanvasCache from '../refresh/CanvasCache';
-import { loadImg, LoadImgRes, getCacheImg } from '../util/loadImg';
+import { getCacheImg, loadImg, LoadImgRes } from '../util/loadImg';
 import TextureCache from '../refresh/TextureCache';
 import { LayoutData } from '../refresh/layout';
 import { OBJECT_FIT, StyleUnit } from '../style/define';
@@ -24,6 +25,7 @@ class Bitmap extends Node {
 
   constructor(props: BitmapProps) {
     super(props);
+    this.type = NodeType.BITMAP;
     if (props.onLoad) {
       this.onLoad = props.onLoad;
     }

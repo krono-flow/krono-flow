@@ -1,4 +1,4 @@
-import AbstractNode from './AbstractNode';
+import AbstractNode, { NodeType } from './AbstractNode';
 import Container from './Container';
 import { RootProps } from '../format';
 import ca from '../gl/ca';
@@ -56,6 +56,7 @@ class Root extends Container {
 
   constructor(props: RootProps, children: AbstractNode[] = []) {
     super(props, children);
+    this.type = NodeType.ROOT;
     this.root = this;
     this.refs = {};
     this.structs = [];

@@ -1,11 +1,12 @@
+import { NodeType } from './AbstractNode';
 import Node from './Node';
 import LineBox from './LineBox';
 import { JStyle, ModifyJRichStyle, TextProps } from '../format';
 import { LayoutData } from '../refresh/layout';
 import {
   ComputedGradient,
-  ComputedTextShadow,
   ComputedRich,
+  ComputedTextShadow,
   GRADIENT,
   ModifyRichStyle,
   Rich,
@@ -222,6 +223,7 @@ class Text extends Node {
 
   constructor(props: TextProps) {
     super(props);
+    this.type = NodeType.TEXT;
     this._content = (props.content).toString() || '';
     this.rich = (props.rich?.slice(0) || []).map(item => normalizeRich(item, this.style));
     this.computedRich = this.rich.map(item => this.calComputedRich(item));

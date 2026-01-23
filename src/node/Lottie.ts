@@ -1,3 +1,4 @@
+import { NodeType } from './AbstractNode';
 import Node from './Node';
 import { LottieMeta, LottieProps } from '../format';
 import { OBJECT_FIT, StyleUnit } from '../style/define';
@@ -26,6 +27,7 @@ class Lottie extends Node {
 
   constructor(props: LottieProps) {
     super(props);
+    this.type = NodeType.LOTTIE;
     if (props.onMeta) {
       this.onMeta = props.onMeta;
     }

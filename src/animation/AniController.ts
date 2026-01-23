@@ -3,6 +3,7 @@ import AbstractAnimation from './AbstractAnimation';
 import TimeAnimation from './TimeAnimation';
 import Audio from '../node/Audio';
 import Video from '../node/Video';
+import { NodeType } from '../node/AbstractNode';
 
 class AniController extends Event {
   aniList: AbstractAnimation[];
@@ -178,10 +179,11 @@ function checkPlayAudio(animation: AbstractAnimation) {
     return;
   }
   if (animation instanceof TimeAnimation) {
-    const node = animation.node;
-    if (!(node instanceof Audio) && !(node instanceof Video)) {
+    let node = animation.node;
+    if (node.type !== NodeType.AUDIO && node.type !== NodeType.VIDEO) {
       return;
     }
+    node = node as Video | Audio;
     if (node.gainNode) {
       node.gainNode.disconnect();
       node.gainNode = undefined;
@@ -263,10 +265,11 @@ function checkPlayAudio(animation: AbstractAnimation) {
 
 function checkStopAudio(animation: AbstractAnimation) {
   if (animation instanceof TimeAnimation) {
-    const node = animation.node;
-    if (!(node instanceof Audio) && !(node instanceof Video)) {
+    let node = animation.node;
+    if (node.type !== NodeType.AUDIO && node.type !== NodeType.VIDEO) {
       return;
     }
+    node = node as Video | Audio;
     if (node.gainNode) {
       node.gainNode.disconnect();
       node.gainNode = undefined;

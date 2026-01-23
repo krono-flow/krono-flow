@@ -1,12 +1,14 @@
 import Root from '../node/Root';
-import Lottie from '../node/Lottie';
 import config from '../config';
 import { onMessage } from '../encoder';
 import { CAN_PLAY, REFRESH_COMPLETE } from '../refresh/refreshEvent';
 import TimeAnimation from '../animation/TimeAnimation';
 import { reSample, sliceAudioBuffer } from './sound';
-import { AudioChunk, EncodeOptions, VideoEncoderEvent, EncoderMessageEvent, EncoderMessageType } from './define';
+import { AudioChunk, EncodeOptions, EncoderMessageEvent, EncoderMessageType, VideoEncoderEvent } from './define';
 import AbstractEncoder from './AbstractEncoder';
+import { NodeType } from '../node/AbstractNode';
+import Audio from '../node/Audio';
+import Video from '../node/Video';
 
 let worker: Worker;
 let messageId = 0;
@@ -105,10 +107,10 @@ export class MbVideoEncoder extends AbstractEncoder {
                 && item.currentTime < duration + delay
               ) {
                 const node = item.node;
-                if (node instanceof Lottie || !node.volumn) {
+                if (node.type === NodeType.LOTTIE || !(node as (Video | Audio)).volumn) {
                   continue;
                 }
-                const decoder = node.decoder;
+                const decoder = (node as (Video | Audio)).decoder;
                 if (!decoder) {
                   continue;
                 }
@@ -143,7 +145,7 @@ export class MbVideoEncoder extends AbstractEncoder {
                     timestamp: timestamp + diff,
                     duration: newBuffer.duration * 1e3,
                   },
-                  volume: node.volumn,
+                  volume: (node as (Video | Audio)).volumn,
                 });
               }
             }

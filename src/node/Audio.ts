@@ -1,9 +1,10 @@
+import { NodeType } from './AbstractNode';
 import Node from './Node'
 import { AudioProps } from '../format';
 import { LoadAudioRes } from '../util/loadAudio';
 import { Options } from '../animation/AbstractAnimation';
 import TimeAnimation from '../animation/TimeAnimation';
-import { GOPState, VideoDecoderEvent, VideoAudioMeta } from '../codec/define';
+import { GOPState, VideoAudioMeta, VideoDecoderEvent } from '../codec/define';
 import AbstractDecoder from '../codec/AbstractDecoder';
 import codec from '../codec';
 import inject from '../util/inject';
@@ -28,6 +29,7 @@ class Audio extends Node {
 
   constructor(props: AudioProps) {
     super(props);
+    this.type = NodeType.AUDIO;
     if (props.onMeta) {
       this.onMeta = props.onMeta;
     }

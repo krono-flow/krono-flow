@@ -1,4 +1,4 @@
-import AbstractNode from './AbstractNode';
+import AbstractNode, { NodeType } from './AbstractNode';
 import Node from './Node';
 import { Props } from '../format';
 import { LayoutData } from '../refresh/layout';
@@ -10,6 +10,7 @@ class Container extends Node {
 
   constructor(props: Props, children: AbstractNode[] = []) {
     super(props);
+    this.type = NodeType.CONTAINER;
     this.children = children;
   }
 

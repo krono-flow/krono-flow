@@ -1,5 +1,5 @@
 import Event from '../util/Event';
-import AbstractNode from '../node/AbstractNode';
+import AbstractNode, { NodeType } from '../node/AbstractNode';
 import Node from '../node/Node';
 import Text from '../node/Text';
 import Root from '../node/Root';
@@ -461,9 +461,9 @@ class Listener extends Event {
       this.updateActive(true);
     }
     // 已是唯一节点Text双击后进入编辑模式
-    else if (node instanceof Text) {
-      this.input.show(node, x, y);
-      node.beforeEdit();
+    else if (node.type === NodeType.TEXT) {
+      this.input.show(node as Text, x, y);
+      (node as Text).beforeEdit();
       const old = this.state;
       this.state = State.EDIT_TEXT;
       this.select.select.classList.add('text');

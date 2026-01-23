@@ -33,6 +33,7 @@ export enum NodeType {
   VIDEO = 5,
   LOTTIE = 6,
   ROOT = 7,
+  CONTAINER = 8,
 }
 
 let id = 0;

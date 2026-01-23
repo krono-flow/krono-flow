@@ -4,9 +4,10 @@ import { createTexture, drawTextureCache } from '../gl/webgl';
 import CacheProgram from '../gl/CacheProgram';
 import { genFrameBufferWithTexture } from './fb';
 import { checkInRect } from './check';
+import { NodeType } from '../node/AbstractNode';
 import Video from '../node/Video';
-import Bitmap from '../node/Bitmap';
 import Node from '../node/Node';
+import Bitmap from '../node/Bitmap';
 
 export function createInOverlay(
   gl: WebGLRenderingContext | WebGL2RenderingContext,
@@ -242,16 +243,16 @@ export function drawInSpreadBbox(
 
 // 视频或者图片在isPure的情况下使用共享原始纹理，但尺寸可能不同，不同的情况下还是需要重新生成到对应尺寸以免过大或不匹配
 export function needReGen(node: Node, w: number, h: number) {
-  if (node instanceof Video || node instanceof Bitmap) {
-    if (node.isPure) {
-      if (node instanceof Video) {
-        const meta = node.metaData;
+  if (node.type === NodeType.VIDEO || node.type === NodeType.BITMAP) {
+    if ((node as Video | Bitmap).isPure) {
+      if (node.type === NodeType.VIDEO) {
+        const meta = (node as Video).metaData;
         if (meta?.video?.displayWidth !== w || meta.video.displayHeight !== h) {
           return true;
         }
       }
       else {
-        if (node.loader?.width !== w || node.loader.height !== h) {
+        if ((node as Bitmap).loader && ((node as Bitmap).loader!.width !== w || (node as Bitmap).loader!.height !== h)) {
           return true;
         }
       }
