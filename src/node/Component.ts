@@ -45,6 +45,7 @@ class Component extends AbstractNode {
       }
       else if (sr.isNode) {
         this._shadow = sr as Node;
+        break;
       }
     }
   }
@@ -53,10 +54,10 @@ class Component extends AbstractNode {
   }
 
   didMount() {
-    super.didUnmount();
+    super.didMount();
     if (this._shadowRoot) {
       this._shadowRoot.host = this;
-      this._shadowRoot.didUnmount();
+      this._shadowRoot.didMount();
     }
   }
 
@@ -80,7 +81,11 @@ class Component extends AbstractNode {
     }];
   }
 
-  layout(data: LayoutData) {}
+  layout(data: LayoutData) {
+    if (this._shadow) {
+      this._shadow.layout(data);
+    }
+  }
 
   calReflowStyle() {
     if (this._shadow) {
