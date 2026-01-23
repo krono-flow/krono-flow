@@ -44,36 +44,18 @@ import { canvasPolygon } from '../refresh/paint';
 import { getConic, getLinear, getRadial } from '../style/gradient';
 import { getCanvasGCO } from '../style/mbm';
 import { JCssAnimations, JRichAnimations, JTimeAnimations } from '../parser/define';
-import { gaussKernel, gaussSize, gaussSizeByD, motionSize, radialSize } from '../math/blur';
+import { gaussSize, motionSize, radialSize } from '../math/blur';
 
 class Node extends AbstractNode {
-  // isLocked: boolean;
-  // root?: Root;
-  // parent?: Container;
-  // prev?: Node;
-  // next?: Node;
-  // mask?: Node;
-  // style: Style;
-  // computedStyle: ComputedStyle;
   _struct: Struct;
-  // isMounted: boolean; // 是否在dom上
-  // isDestroyed: boolean; // 是否永久被销毁，手动调用
-  // refreshLevel: RefreshLevel;
   _style: Style;
   _computedStyle: ComputedStyle;
   _opacity: number; // 世界透明度
-  // hasCacheOp: boolean; // 是否计算过世界opacity
-  // localOpId: number; // 同下面的matrix
-  // parentOpId: number;
   _transform: Float32Array; // 不包含transformOrigin
   _matrix: Float32Array; // 包含transformOrigin
   _matrixWorld: Float32Array; // 世界transform
   _perspectiveMatrix: Float32Array; // 透视矩阵作用于所有孩子
   _perspectiveMatrixSelf: Float32Array;
-  // hasCacheMw: boolean; // 是否计算过世界matrix
-  // localMwId: number; // 当前计算后的世界matrix的id，每次改变自增
-  // parentMwId: number; // 父级的id副本，用以对比确认父级是否变动过
-  // hasContent: boolean; // 是否有内容需要渲染
   canvasCache: CanvasCache | null; // 先渲染到2d上作为缓存
   textureCache: TextureCache | null; // 从canvasCache生成的纹理缓存
   textureTotal: TextureCache | null; // 局部子树缓存
@@ -86,8 +68,6 @@ class Node extends AbstractNode {
   _rect: Float32Array; // 真实内容组成的内容框，group/geom特殊计算
   _bbox: Float32Array; // 以rect为基础，包含边框包围盒
   _filterBbox: Float32Array; // 包含filter/阴影内内容外的包围盒
-  // _bboxInt: Float32Array; // 扩大取整的bbox，渲染不会糊
-  // _filterBboxInt: Float32Array; // 同上
   _animationList: AbstractAnimation[]; // 节点上所有的动画列表
   animationRecords?: (JCssAnimations | JTimeAnimations | JRichAnimations)[];
 
@@ -97,7 +77,6 @@ class Node extends AbstractNode {
     super(props);
     this.type = NodeType.NODE;
     this.isNode = true;
-    // this.isLocked = !!props.isLocked;
     this._style = normalize(getDefaultJStyle(props.style));
     this._computedStyle = getDefaultComputedStyle();
     this._struct = {
@@ -107,21 +86,12 @@ class Node extends AbstractNode {
       lv: 0,
       next: 0,
     };
-    // this.isMounted = false;
-    // this.isDestroyed = false;
-    // this.refreshLevel = RefreshLevel.REFLOW;
     this._opacity = 0;
-    // this.hasCacheOp = false;
-    // this.localOpId = 0;
-    // this.parentOpId = 0;
     this._transform = identity();
     this._matrix = identity();
     this._matrixWorld = identity();
     this._perspectiveMatrix = EMPTY_MATRIX;
     this._perspectiveMatrixSelf = EMPTY_MATRIX;
-    // this.hasCacheMw = false;
-    // this.localMwId = 0;
-    // this.parentMwId = 0;
     this.hasContent = false;
     this._animationList = [];
     this.contentLoadingNum = 0;

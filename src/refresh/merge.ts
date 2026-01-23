@@ -445,13 +445,13 @@ function genTotal(
       }
     }
     assignMatrix(node2.tempMatrix, matrix);
-    let target2 = node2.textureTarget;
+    let target2 = node2.textureTarget!;
     // 可能没生成，存在于一开始在可视范围外的节点情况，且当时也没有进行合成
-    if (node2.hasContent && !target2?.available) {
+    if (node2.hasContent && !target2.available) {
       node2.genTexture(gl);
-      target2 = node2.textureTarget;
+      target2 = node2.textureTarget!;
     }
-    if (node2.hasContent && target2?.available) {
+    if (node2.hasContent && target2.available) {
       const { mixBlendMode } = computedStyle;
       const list2 = target2.list;
       // 内循环目标分块
@@ -814,13 +814,13 @@ export function genMask(
         }
         // console.log(i, node2.name, node2.matrix.map(item => toPrecision(item)).join(','))
         // console.log(i, matrix.map(item => toPrecision(item)).join(','))
-        let target2 = node2.textureTarget;
+        let target2 = node2.textureTarget!;
         // 可能没生成，存在于一开始在可视范围外的节点情况，且当时也没有进行合成
-        if (node2.hasContent && !target2?.available) {
+        if (node2.hasContent && !target2.available) {
           node2.genTexture(gl);
-          target2 = node2.textureTarget;
+          target2 = node2.textureTarget!;
         }
-        if (node2.hasContent && target2?.available) {
+        if (node2.hasContent && target2.available) {
           const { mixBlendMode } = computedStyle;
           // 整个节点都不在当前块内跳过
           if (!checkInRect(target2.bbox, matrix, x1, y1, width, height)) {
@@ -889,7 +889,7 @@ export function genMask(
         }
         // 有局部子树缓存可以跳过其所有子孙节点，特殊的shapeGroup是个bo运算组合，已考虑所有子节点的结果
         if (
-          target2?.available && target2 !== node2.textureCache
+          node2.hasContent && target2.available && target2 !== node2.textureCache
           || computedStyle.maskMode
         ) {
           // 有种特殊情况，group没内容且没next，但children有内容，outline蒙版需要渲染出来
