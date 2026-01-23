@@ -45,11 +45,11 @@ export function renderWebgl(
     // 计算后的世界坐标结果
     const opacity = node._opacity;
     const matrix = node._matrixWorld;
-    let target = node.textureTarget!;
+    let target = node.textureTarget;
     let isInScreen = false;
     // 有merge的直接判断是否在可视范围内，合成结果在merge中做了，可能超出范围不合成
     if (node.hasContent) {
-      if (target.available) {
+      if (target?.available) {
         isInScreen = checkInScreen(target.bbox, matrix, W, H);
       }
       // 无merge的是单个节点，判断是否有内容以及是否在可视范围内，首次渲染或更新后会无target
@@ -68,8 +68,8 @@ export function renderWebgl(
     }
     // console.log(i, node.name, node.hasContent, target?.available, isInScreen)
     // 屏幕内有内容渲染
-    if (isInScreen && target.available) {
-      const list = target.list;
+    if (isInScreen && target!.available) {
+      const list = target!.list;
       for (let i = 0, len = list.length; i < len; i++) {
         const { bbox, t, tc } = list[i];
         if (t) {

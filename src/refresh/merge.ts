@@ -445,15 +445,15 @@ function genTotal(
       }
     }
     assignMatrix(node2.tempMatrix, matrix);
-    let target2 = node2.textureTarget!;
+    let target2 = node2.textureTarget;
     // 可能没生成，存在于一开始在可视范围外的节点情况，且当时也没有进行合成
-    if (node2.hasContent && !target2.available) {
+    if (node2.hasContent && !target2?.available) {
       node2.genTexture(gl);
       target2 = node2.textureTarget!;
     }
-    if (node2.hasContent && target2.available) {
+    if (node2.hasContent && target2!.available) {
       const { mixBlendMode } = computedStyle;
-      const list2 = target2.list;
+      const list2 = target2!.list;
       // 内循环目标分块
       for (let j = 0, len = listRect.length; j < len; j++) {
         const rect = listRect[j];
