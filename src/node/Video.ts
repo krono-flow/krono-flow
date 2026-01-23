@@ -256,7 +256,7 @@ class Video extends Node {
   }
 
   override renderCanvas() {
-    const { isPure, videoFrame, computedStyle } = this; console.log('renderCanvas')
+    const { isPure, videoFrame, computedStyle } = this;
     // 纯视频
     if (isPure) {
       this.canvasCache?.release();
