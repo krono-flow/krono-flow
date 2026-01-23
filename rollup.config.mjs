@@ -22,7 +22,7 @@ export const wgsl = {
 };
 
 const publicConfig = {
-  format: 'umd',
+  format: 'iife',
   name: 'kronoFlow',
   sourcemap: true,
 };
@@ -55,7 +55,7 @@ export default [
       wgsl,
       typescript({
         declaration: false,
-        target: "ES5",
+        target: "ES2018",
       }),
       json(),
     ],
@@ -65,13 +65,13 @@ export default [
     output: [
       {
         file: 'dist/decoder.js',
-        format: 'umd',
+        format: 'es',
         name: 'encoder',
         sourcemap: true,
       },
       {
         file: 'dist/decoder.min.js',
-        format: 'umd',
+        format: 'es',
         name: 'encoder',
         sourcemap: true,
         plugins: [
@@ -84,7 +84,7 @@ export default [
       commonjs(),
       typescript({
         declaration: false,
-        target: "ES5",
+        target: "ES2018",
       }),
       json(),
     ],
@@ -94,13 +94,13 @@ export default [
     output: [
       {
         file: 'dist/encoder.js',
-        format: 'umd',
+        format: 'es',
         name: 'encoder',
         sourcemap: true,
       },
       {
         file: 'dist/encoder.min.js',
-        format: 'umd',
+        format: 'es',
         name: 'encoder',
         sourcemap: true,
         plugins: [
@@ -113,7 +113,7 @@ export default [
       commonjs(),
       typescript({
         declaration: false,
-        target: "ES5",
+        target: "ES2018",
       }),
       json(),
     ],

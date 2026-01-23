@@ -7,7 +7,7 @@ import postcss from 'rollup-plugin-postcss';
 import { wgsl } from './rollup.config.mjs';
 
 const publicConfig = {
-  format: 'umd',
+  format: 'iife',
   name: 'kronoFlow',
   sourcemap: true,
 };
@@ -33,7 +33,7 @@ export default [
       wgsl,
       typescript({
         declaration: false,
-        target: "ES5",
+        target: "ES2018",
       }),
       json(),
     ],
@@ -43,7 +43,7 @@ export default [
     output: [
       {
         file: 'dist/decoder.js',
-        format: 'umd',
+        format: 'es',
         name: 'encoder',
         sourcemap: true,
       },
@@ -53,7 +53,7 @@ export default [
       commonjs(),
       typescript({
         declaration: false,
-        target: "ES5",
+        target: "ES2018",
       }),
       json(),
     ],
@@ -63,7 +63,7 @@ export default [
     output: [
       {
         file: 'dist/encoder.js',
-        format: 'umd',
+        format: 'es',
         name: 'encoder',
         sourcemap: true,
       },
@@ -73,7 +73,7 @@ export default [
       commonjs(),
       typescript({
         declaration: false,
-        target: "ES5",
+        target: "ES2018",
       }),
       json(),
     ],

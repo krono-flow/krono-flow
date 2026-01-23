@@ -1,6 +1,6 @@
 {
   "name": "krono-flow",
-  "version": "0.0.10",
+  "version": "0.1.0",
   "maintainers": [
     {
       "name": "army8735",
@@ -44,6 +44,7 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "module": "dist/index.mjs",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
