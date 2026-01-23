@@ -5,9 +5,7 @@ import { JStyle, Props } from '../format';
 import Root from './Root';
 import Container from './Container';
 import { ComputedStyle, Style } from '../style/define';
-import { cloneStyle } from '../style/css';
 import { RefreshLevel } from '../refresh/level';
-import { clone } from '../util/type';
 import AbstractAnimation from '../animation/AbstractAnimation';
 import { Struct } from '../refresh/struct';
 import Component from './Component';
@@ -267,8 +265,6 @@ abstract class AbstractNode extends Event {
   abstract get rect(): Float32Array;
   abstract get bbox(): Float32Array;
   abstract get filterBbox(): Float32Array;
-  // abstract get bboxInt(): Float32Array;
-  // abstract get filterBboxInt(): Float32Array;
   abstract get style(): Style;
   abstract get computedStyle(): ComputedStyle;
   abstract get animationList(): AbstractAnimation[];

@@ -1,3 +1,5 @@
+import AbstractNode, { NodeType } from './AbstractNode';
+import Component, { PLACEHOLDER_NODE } from './Component';
 import Container from './Container';
 import Bitmap from './Bitmap';
 import Node from './Node';
@@ -9,6 +11,8 @@ import Lottie from './Lottie';
 import Polyline from './geom/Polyline';
 
 export default {
+  AbstractNode,
+  Component,
   Container,
   Bitmap,
   Node,
@@ -18,4 +22,6 @@ export default {
   Text,
   Lottie,
   Polyline,
+  PLACEHOLDER_NODE,
+  NodeType,
 };

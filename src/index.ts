@@ -6,6 +6,8 @@ import {
   JRichAnimations as JRichAnimationsType,
 } from './parser/define';
 import nodePkg from './node';
+import { OffsetRect as OffsetRectType, ClientRect as ClientRectType, ClientRect } from './node/AbstractNode';
+import { EditStyle as EditStyleType, Cursor as CursorType } from './node/Text';
 import util from './util';
 import stylePkg from './style';
 import config from './config';
@@ -51,6 +53,8 @@ import { DecoderConstructor as DecoderConstructorType } from './codec/AbstractDe
 import { EncoderConstructor as EncoderConstructorType } from './codec/AbstractEncoder';
 
 export namespace node {
+  export type AbstractNode = InstanceType<typeof nodePkg.AbstractNode>;
+  export type Component = InstanceType<typeof nodePkg.Component>;
   export type Container = InstanceType<typeof nodePkg.Container>;
   export type Bitmap = InstanceType<typeof nodePkg.Bitmap>;
   export type Node = InstanceType<typeof nodePkg.Node>;
@@ -59,6 +63,10 @@ export namespace node {
   export type Audio = InstanceType<typeof nodePkg.Audio>;
   export type Text = InstanceType<typeof nodePkg.Text>;
   export type Lottie = InstanceType<typeof nodePkg.Lottie>;
+  export type OffsetRect = OffsetRectType;
+  export type ClientRect = ClientRectType;
+  export type EditStyle = EditStyleType;
+  export type Cursor = CursorType;
   export namespace geom {
     export type Polyline = InstanceType<typeof nodePkg.Polyline>;
   }
