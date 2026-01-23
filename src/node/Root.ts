@@ -1,6 +1,5 @@
 import AbstractNode from './AbstractNode';
 import Container from './Container';
-import Node from './Node';
 import { RootProps } from '../format';
 import ca from '../gl/ca';
 import inject from '../util/inject';

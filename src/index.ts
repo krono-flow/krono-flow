@@ -6,7 +6,7 @@ import {
   JRichAnimations as JRichAnimationsType,
 } from './parser/define';
 import nodePkg from './node';
-import { OffsetRect as OffsetRectType, ClientRect as ClientRectType, ClientRect } from './node/AbstractNode';
+import { OffsetRect as OffsetRectType, ClientRect as ClientRectType } from './node/AbstractNode';
 import { EditStyle as EditStyleType, Cursor as CursorType } from './node/Text';
 import util from './util';
 import stylePkg from './style';
