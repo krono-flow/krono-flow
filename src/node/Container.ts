@@ -42,32 +42,9 @@ class Container extends Node {
     });
   }
 
-  // override layout(x: number, y: number, w: number, h: number) {
-  //   super.layout(x, y, w, h);
-  //   const { children, style } = this;
-  //   if (style.position.v === POSITION.ABSOLUTE) {
-  //     this.layoutAbs(this, x, y, w, h); // root调用时自己就是parent
-  //   }
-  //   else {
-  //     this.layoutFlow(x, y, w, h);
-  //     // for (let i = 0, len = children.length; i < len; i++) {
-  //     //   const child = children[i];
-  //     //   // if (child.style.position )
-  //     // }
-  //   }
-  //   // 递归下去布局
-  //   // for (let i = 0, len = children.length; i < len; i++) {
-  //   //   const child = children[i];
-  //   //   child.layout({
-  //   //     w: this.computedStyle.width,
-  //   //     h: this.computedStyle.height,
-  //   //   });
-  //   // }
-  // }
-
-  override layoutFlow(x: number, y: number, w: number, h: number) {
-    super.layoutFlow(x, y, w, h);
-    const { children, style } = this;
+  private layoutFA(parent: Container, x: number, y: number, w: number, h: number) {
+    const { children, _style: style } = this;
+    const isNewParent = [POSITION.RELATIVE, POSITION.ABSOLUTE].includes(this._computedStyle.position);
     let hasAbsChild = false;
     let y1 = y;
     for (let i = 0, len = children.length; i < len; i++) {
@@ -76,19 +53,27 @@ class Container extends Node {
         hasAbsChild = true;
       }
       else {
-        child.layoutFlow(x, y1, w, h);
+        child.layoutFlow(isNewParent ? this : parent, x, y1, w, h);
         y1 += child.computedStyle.height;
       }
     }
+    // 自动高要根据flow计算当前高度
     if (style.height.v === StyleUnit.AUTO) {
       this.computedStyle.height = y1 - y;
     }
-    const p = style.position.v;
-    if (hasAbsChild && (p === POSITION.ABSOLUTE || p === POSITION.RELATIVE)) {
+    return hasAbsChild;
+  }
+
+  override layoutFlow(parent: Container, x: number, y: number, w: number, h: number) {
+    super.layoutFlow(parent, x, y, w, h);
+    const { children } = this;
+    const hasAbsChild = this.layoutFA(parent, x, y, w, h);
+    // 自己是新的abs容器上下文才执行
+    if (hasAbsChild) {
       for (let i = 0, len = children.length; i < len; i++) {
         const child = children[i];
         if (child.style.position.v === POSITION.ABSOLUTE) {
-          child.layoutAbs(this, this._x, this._y, this.computedStyle.width, this.computedStyle.height);
+          child.layoutAbs(parent, this._x, this._y, parent.computedStyle.width, parent.computedStyle.height);
         }
       }
     }
@@ -96,9 +81,15 @@ class Container extends Node {
 
   override layoutAbs(parent: Container, x: number, y: number, w: number, h: number) {
     super.layoutAbs(parent, x, y, w, h);
-    const { children, style } = this;
-    for (let i = 0, len = children.length; i < len; i++) {
-      const child = children[i];
+    const { children } = this;
+    const hasAbsChild = this.layoutFA(parent, x, y, w, h);
+    if (hasAbsChild) {
+      for (let i = 0, len = children.length; i < len; i++) {
+        const child = children[i];
+        if (child.style.position.v === POSITION.ABSOLUTE) {
+          child.layoutAbs(this, this._x, this._y, this.computedStyle.width, this.computedStyle.height);
+        }
+      }
     }
   }
 

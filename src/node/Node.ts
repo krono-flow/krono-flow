@@ -162,7 +162,7 @@ class Node extends AbstractNode {
     let fixedBottom = false;
     if (left.u !== StyleUnit.AUTO) {
       fixedLeft = true;
-      computedStyle.left = x + calSize(left, w);
+      this._x = computedStyle.left = x + calSize(left, w);
     }
     if (right.u !== StyleUnit.AUTO) {
       fixedRight = true;
@@ -170,7 +170,7 @@ class Node extends AbstractNode {
     }
     if (top.u !== StyleUnit.AUTO) {
       fixedTop = true;
-      computedStyle.top = y + calSize(top, h);
+      this._y = computedStyle.top = y + calSize(top, h);
     }
     if (bottom.u !== StyleUnit.AUTO) {
       fixedBottom = true;
@@ -242,20 +242,23 @@ class Node extends AbstractNode {
     }
   }
 
-  protected layout(x: number, y: number, w: number, h: number) {
+  protected layoutBefore(x: number, y: number, w: number, h: number) {
     this.refreshLevel = RefreshLevel.REFLOW;
     // 布局时计算所有样式，更新时根据不同级别调用
     this.calReflowStyle();
     this._x = x;
     this._y = y;
     this.lay(x, y, w, h);
-    // resetBbox(this._rect, 0, 0, this.computedStyle.width, this.computedStyle.height);
-    // repaint和matrix计算需要x/y/width/height
-    // this.calRepaintStyle(RefreshLevel.REFLOW);
   }
 
-  layoutFlow(x: number, y: number, w: number, h: number) {
-    this.layout(x, y, w, h);
+  protected layoutAfter() {
+    resetBbox(this._rect, 0, 0, this._computedStyle.width, this._computedStyle.height);
+    // repaint和matrix计算需要x/y/width/height
+    this.calRepaintStyle(RefreshLevel.REFLOW);
+  }
+
+  layoutFlow(parent: Node, x: number, y: number, w: number, h: number) {
+    this.layoutBefore(x, y, w, h);
     const { _style: style, _computedStyle: computedStyle } = this;
     const { display, width } = style;
     if (display.v === DISPLAY.BLOCK) {
@@ -263,13 +266,14 @@ class Node extends AbstractNode {
         computedStyle.width = w;
       }
     }
-    resetBbox(this._rect, 0, 0, this._computedStyle.width, this._computedStyle.height);
-    // repaint和matrix计算需要x/y/width/height
-    this.calRepaintStyle(RefreshLevel.REFLOW);
+    this.layoutAfter();
   }
 
   layoutAbs(parent: Container, x: number, y: number, w: number, h: number) {
-    this.layout(x, y, w, h);
+    this.layoutBefore(x, y, w, h);
+    // absolute强制block
+    this._computedStyle.display = DISPLAY.BLOCK;
+    this.layoutAfter();
   }
 
   calReflowStyle() {
@@ -1022,23 +1026,26 @@ class Node extends AbstractNode {
     return this.updateFormatStyle(formatStyle, cb);
   }
 
-  updateFormatStyle(style: Partial<Style>, cb?: (sync: boolean) => void) {
+  updateFormatStyle(style: Partial<Style>, cb?: (sync: boolean) => void): RefreshLevel {
     const keys = this.updateFormatStyleData(style);
     // 无变更
     if (!keys.length) {
       cb && cb(true);
     }
-    return this.root?.addUpdate(this, keys, undefined, cb);
+    else if (this.root) {
+      return this.root.addUpdate(this, keys, undefined, cb);
+    }
+    return RefreshLevel.NONE;
   }
 
   updateFormatStyleData(style: Partial<Style>) {
-    const keys: string[] = [];
+    const keys: (keyof Style)[] = [];
     for (let k in style) {
       if (style.hasOwnProperty(k)) {
         if (!equalStyle(style, this.style, k as keyof Style)) {
           // @ts-ignore
           this.style[k] = style[k as keyof Style];
-          keys.push(k);
+          keys.push(k as keyof Style);
         }
       }
     }

@@ -6,13 +6,6 @@ import glslify from 'rollup-plugin-glslify';
 import postcss from 'rollup-plugin-postcss';
 import { wgsl } from './rollup.config.mjs';
 import dts from 'rollup-plugin-dts';
-import copy from 'rollup-plugin-copy';
-
-const publicConfig = {
-  format: 'iife',
-  name: 'kronoFlow',
-  sourcemap: true,
-};
 
 export default [
   {
@@ -20,12 +13,14 @@ export default [
     output: [
       {
         file: 'dist/index.js',
-        ...publicConfig,
+        format: 'es',
+        sourcemap: true,
       },
       {
-        file: 'dist/index.mjs',
-        ...publicConfig,
-        format: 'es',
+        file: 'dist/index.iife.js',
+        format: 'iife',
+        sourcemap: true,
+        name: 'kronoFlow',
       },
     ],
     plugins: [
@@ -46,7 +41,7 @@ export default [
       {
         file: 'dist/decoder.js',
         format: 'es',
-        name: 'encoder',
+        name: 'decoder',
         sourcemap: true,
       },
     ],
@@ -102,14 +97,6 @@ export default [
     plugins: [
       // 将类型文件全部集中到一个文件中
       dts(),
-      copy({
-        targets: [{
-          src: 'dist/index.d.ts',
-          dest: 'dist',
-          rename: 'index.d.mts',
-        }],
-        hook: 'writeBundle',
-      }),
     ],
   },
 ];

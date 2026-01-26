@@ -158,8 +158,8 @@ class Video extends Node {
   }
 
   // 自适应尺寸情况下使用图片本身的尺寸
-  override lay(w: number, h: number) {
-    super.lay(w, h);
+  override lay(x: number, y: number, w: number, h: number) {
+    super.lay(x, y, w, h);
     const { style, computedStyle, _metaData } = this;
     const { left, top, right, bottom, width, height } = style;
     if (_metaData?.video) {

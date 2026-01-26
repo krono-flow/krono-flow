@@ -66,7 +66,7 @@ export function renderWebgl(
         }
       }
     }
-    // console.log(i, node.name, node.hasContent, target?.available, isInScreen)
+    // console.log(i, node.name, node.hasContent, target?.available, isInScreen, node.bbox.join(','))
     // 屏幕内有内容渲染
     if (isInScreen && target!.available) {
       const list = target!.list;

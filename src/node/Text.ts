@@ -349,8 +349,8 @@ class Text extends Node {
     }
   }
 
-  override lay(w: number, h: number) {
-    super.lay(w, h);
+  override lay(x: number, y: number, w: number, h: number) {
+    super.lay(x, y, w, h);
     const { computedRich, style, computedStyle, _content: content, lineBoxList } = this;
     const {
       left,
@@ -400,8 +400,8 @@ class Text extends Node {
     let opacity: number;
     let visibility: VISIBILITY;
     let maxW = 0;
-    let x = 0;
-    let y = 0;
+    let x1 = 0;
+    let y1 = 0;
     // 富文本每串不同的需要设置字体测量，这个索引记录每个rich块首字符的start索引，在遍历时到这个字符则重设
     const SET_FONT_INDEX: Record<number, number> = {};
     if (computedRich.length) {
@@ -500,8 +500,8 @@ class Text extends Node {
       // \n，行开头会遇到，需跳过
       if (isEnter(content.charAt(i))) {
         i++;
-        x = 0;
-        y += lineBox.height + paragraphSpacing;
+        x1 = 0;
+        y1 += lineBox.height + paragraphSpacing;
         lineBox.verticalAlign();
         lineBox.endEnter = true;
         lineBox = new LineBox(y, lineHeight, i, true);
@@ -520,9 +520,9 @@ class Text extends Node {
       }
       // 如果无法放下一个字符，且x不是0开头则换行，预估测量里限制了至少有1个字符
       const min = ctx.measureText(content.charAt(i)).width;
-      if (min > W - x + 1e-10 && x) {
-        x = 0;
-        y += lineBox.height;
+      if (min > W - x1 + 1e-10 && x1) {
+        x1 = 0;
+        y1 += lineBox.height;
         if (i < length) {
           lineBox.verticalAlign();
           lineBox = new LineBox(y, lineHeight, i, false);
@@ -535,11 +535,11 @@ class Text extends Node {
         hypotheticalNum: num,
         rw,
         newLine,
-      } = measure(ctx, i, len, content, W - x, perW, letterSpacing);
-      // console.log(i, len, content, W - x, perW, letterSpacing, ';', num, rw, newLine);
+      } = measure(ctx, i, len, content, W - x1, perW, letterSpacing);
+      // console.log(i, len, content, W - x1, perW, letterSpacing, ';', num, rw, newLine);
       const textBox = new TextBox(
-        x,
-        y,
+        x1,
+        y1,
         rw,
         lineHeight,
         baseline,
@@ -562,11 +562,11 @@ class Text extends Node {
       // console.log(i, num, content.slice(i, i + num), letterSpacing, rw, textBox);
       lineBox.add(textBox);
       i += num;
-      maxW = Math.max(maxW, Math.ceil(rw + x));
+      maxW = Math.max(maxW, Math.ceil(rw + x1));
       // 换行则x重置、y增加、新建LineBox，否则继续水平增加x
       if (newLine) {
-        x = 0;
-        y += lineBox.height;
+        x1 = 0;
+        y1 += lineBox.height;
         // 最后一行对齐外面做
         if (i < length) {
           lineBox.verticalAlign();
@@ -575,7 +575,7 @@ class Text extends Node {
         }
       }
       else {
-        x += rw;
+        x1 += rw;
       }
     }
     // 最后一行对齐，以及最后一行循环里没算要再算一次

@@ -11,12 +11,13 @@ export const PLACEHOLDER_NODE = new Node({
   uuid: 'PLACEHOLDER_NODE',
   name: 'PLACEHOLDER_NODE',
   style: {
+    position: 'static',
     display: 'none',
     visibility: 'hidden',
     opacity: 0,
   },
 });
-PLACEHOLDER_NODE.layoutFlow(0, 0, 0, 0);
+PLACEHOLDER_NODE.layoutFlow(PLACEHOLDER_NODE, 0, 0, 0, 0);
 
 class Component extends AbstractNode {
   private readonly _shadowRoot?: AbstractNode;
@@ -80,9 +81,9 @@ class Component extends AbstractNode {
     }];
   }
 
-  layoutFlow(x: number, y: number, w: number, h: number) {
+  layoutFlow(parent: Container, x: number, y: number, w: number, h: number) {
     if (this._shadow) {
-      this._shadow.layoutFlow(x, y, w, h);
+      this._shadow.layoutFlow(parent, x, y, w, h);
     }
   }
 
@@ -160,20 +161,23 @@ class Component extends AbstractNode {
 
   updateStyle(style: Partial<JStyle>, cb?: (sync: boolean) => void) {
     if (this._shadow) {
-      this._shadow.updateStyle(style, cb);
+      return this._shadow.updateStyle(style, cb);
     }
+    return RefreshLevel.NONE;
   }
 
   updateFormatStyle(style: Partial<Style>, cb?: (sync: boolean) => void) {
     if (this._shadow) {
       this._shadow.updateFormatStyle(style, cb);
     }
+    return RefreshLevel.NONE;
   }
 
   updateFormatStyleData(style: Partial<Style>) {
     if (this._shadow) {
       this._shadow.updateFormatStyleData(style);
     }
+    return [];
   }
 
   clearMask() {

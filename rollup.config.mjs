@@ -6,7 +6,6 @@ import glslify from 'rollup-plugin-glslify';
 import postcss from 'rollup-plugin-postcss';
 import terser from '@rollup/plugin-terser';
 import dts from 'rollup-plugin-dts';
-import copy from 'rollup-plugin-copy';
 
 export const wgsl = {
   name: 'wgsl-loader',
@@ -21,28 +20,26 @@ export const wgsl = {
   }
 };
 
-const publicConfig = {
-  format: 'iife',
-  name: 'kronoFlow',
-  sourcemap: true,
-};
-
 export default [
   {
     input: 'src/index.ts',
     output: [
       {
         file: 'dist/index.js',
-        ...publicConfig,
+        format: 'es',
+        sourcemap: true,
       },
       {
-        file: 'dist/index.mjs',
-        ...publicConfig,
-        format: 'es',
+        file: 'dist/index.iife.js',
+        format: 'iife',
+        sourcemap: true,
+        name: 'kronoFlow',
       },
       {
         file: 'dist/index.min.js',
-        ...publicConfig,
+        format: 'iife',
+        sourcemap: true,
+        name: 'kronoFlow',
         plugins: [
           terser(),
         ],
@@ -66,13 +63,13 @@ export default [
       {
         file: 'dist/decoder.js',
         format: 'es',
-        name: 'encoder',
+        name: 'decoder',
         sourcemap: true,
       },
       {
         file: 'dist/decoder.min.js',
         format: 'es',
-        name: 'encoder',
+        name: 'decoder',
         sourcemap: true,
         plugins: [
           terser(),
@@ -153,14 +150,6 @@ export default [
     plugins: [
       // 将类型文件全部集中到一个文件中
       dts(),
-      copy({
-        targets: [{
-          src: 'dist/index.d.ts',
-          dest: 'dist',
-          rename: 'index.d.mts',
-        }],
-        hook: 'writeBundle',
-      }),
     ],
   },
 ];

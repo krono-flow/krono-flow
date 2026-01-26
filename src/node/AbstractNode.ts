@@ -1,6 +1,5 @@
 import * as uuid from 'uuid';
 import Event from '../util/Event';
-import { LayoutData } from '../refresh/layout';
 import { JStyle, Props } from '../format';
 import Root from './Root';
 import Container from './Container';
@@ -120,8 +119,7 @@ abstract class AbstractNode extends Event {
   }
 
   abstract structure(lv: number): Struct[];
-  // abstract layout(x: number, y: number, w: number, h: number): void
-  abstract layoutFlow(x: number, y: number, w: number, h: number): void
+  abstract layoutFlow(parent: Container, x: number, y: number, w: number, h: number): void
   abstract layoutAbs(parent: Container, x: number, y: number, w: number, h: number): void
   abstract calReflowStyle(): void;
   abstract calRepaintStyle(lv: RefreshLevel): void;
@@ -134,9 +132,9 @@ abstract class AbstractNode extends Event {
   abstract calContent(): void;
   abstract calContentLoading(): void;
   abstract renderCanvas(): void;
-  abstract updateStyle(style: Partial<JStyle>, cb?: (sync: boolean) => void): void;
-  abstract updateFormatStyle(style: Partial<Style>, cb?: (sync: boolean) => void): void;
-  abstract updateFormatStyleData(style: Partial<Style>): void;
+  abstract updateStyle(style: Partial<JStyle>, cb?: (sync: boolean) => void): RefreshLevel;
+  abstract updateFormatStyle(style: Partial<Style>, cb?: (sync: boolean) => void): RefreshLevel;
+  abstract updateFormatStyleData(style: Partial<Style>): (keyof Style)[];
   abstract clearMask(): void;
   abstract clearTexCache(includeSelf?: boolean): void;
   abstract clearTexCacheUpward(includeSelf?: boolean): void;

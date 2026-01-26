@@ -3,7 +3,6 @@ import Node from './Node';
 import { LottieMeta, LottieProps } from '../format';
 import { OBJECT_FIT, StyleUnit } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
-import { LayoutData } from '../refresh/layout';
 import CanvasCache from '../refresh/CanvasCache';
 import { color2rgbaStr } from '../style/color';
 import { canvasPolygon } from '../refresh/paint';
@@ -111,8 +110,8 @@ class Lottie extends Node {
   }
 
   // 自适应尺寸情况下使用图片本身的尺寸，只定义了一方的情况下使用等比
-  override lay(w: number, h: number) {
-    super.lay(w, h);
+  override lay(x: number, y: number, w: number, h: number) {
+    super.lay(x, y, w, h);
     const { style, computedStyle, _json } = this;
     const { left, top, right, bottom, width, height } = style;
     if (_json) {

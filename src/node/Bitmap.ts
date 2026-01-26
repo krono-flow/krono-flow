@@ -71,8 +71,8 @@ class Bitmap extends Node {
   }
 
   // 自适应尺寸情况下使用图片本身的尺寸，只定义了一方的情况下使用等比
-  override lay(w: number, h: number) {
-    super.lay(w, h);
+  override lay(x: number, y: number, w: number, h: number) {
+    super.lay(x, y, w, h);
     const { style, computedStyle, loader } = this;
     const { left, top, right, bottom, width, height } = style;
     if (loader) {
