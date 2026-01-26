@@ -1,23 +1,22 @@
 import AbstractNode, { ClientRect, NodeType, OffsetRect } from './AbstractNode';
 import Node from './Node';
-import { LayoutData } from '../refresh/layout';
 import { Struct } from '../refresh/struct';
 import { ComponentProps, JStyle } from '../format';
 import { ComputedStyle, Style } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
 import { EMPTY_RECT } from '../math/bbox';
+import Container from './Container';
 
 export const PLACEHOLDER_NODE = new Node({
   uuid: 'PLACEHOLDER_NODE',
   name: 'PLACEHOLDER_NODE',
   style: {
+    display: 'none',
     visibility: 'hidden',
     opacity: 0,
   },
 });
-PLACEHOLDER_NODE.layout({
-  w: 0, h: 0,
-});
+PLACEHOLDER_NODE.layoutFlow(0, 0, 0, 0);
 
 class Component extends AbstractNode {
   private readonly _shadowRoot?: AbstractNode;
@@ -81,9 +80,15 @@ class Component extends AbstractNode {
     }];
   }
 
-  layout(data: LayoutData) {
+  layoutFlow(x: number, y: number, w: number, h: number) {
     if (this._shadow) {
-      this._shadow.layout(data);
+      this._shadow.layoutFlow(x, y, w, h);
+    }
+  }
+
+  layoutAbs(parent: Container, x: number, y: number, w: number, h: number) {
+    if (this._shadow) {
+      this._shadow.layoutAbs(parent, x, y, w, h);
     }
   }
 
@@ -279,6 +284,20 @@ class Component extends AbstractNode {
 
   get shadow() {
     return this._shadow;
+  }
+
+  get x() {
+    if (this._shadow) {
+      return this._shadow._x;
+    }
+    return 0;
+  }
+
+  get y() {
+    if (this._shadow) {
+      return this._shadow._y;
+    }
+    return 0;
   }
 
   get struct() {

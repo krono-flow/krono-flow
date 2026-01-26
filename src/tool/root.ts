@@ -35,7 +35,7 @@ function getChildByPoint(parent: Container, x: number, y: number, recursionCompo
         return children[i];
       }
       if (child.type === NodeType.CONTAINER) {
-        const res = getChildByPoint(child as Container, x, y);
+        const res = getChildByPoint(child as Container, x, y, recursionComponent);
         if (res) {
           return res;
         }
@@ -50,13 +50,10 @@ function getChildByPoint(parent: Container, x: number, y: number, recursionCompo
       return child;
     }
     // 范围外也需要遍历子节点，子节点可能超出范围
-    else {
+    else if (!isComponent || recursionComponent) {
       if (child.type === NodeType.CONTAINER) {
-        const res = getChildByPoint(child as Container, x, y, isComponent);
+        const res = getChildByPoint(child as Container, x, y, recursionComponent);
         if (res) {
-          if (isComponent) {
-            return children[i];
-          }
           return res;
         }
       }

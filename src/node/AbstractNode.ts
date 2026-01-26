@@ -120,7 +120,9 @@ abstract class AbstractNode extends Event {
   }
 
   abstract structure(lv: number): Struct[];
-  abstract layout(data: LayoutData): void
+  // abstract layout(x: number, y: number, w: number, h: number): void
+  abstract layoutFlow(x: number, y: number, w: number, h: number): void
+  abstract layoutAbs(parent: Container, x: number, y: number, w: number, h: number): void
   abstract calReflowStyle(): void;
   abstract calRepaintStyle(lv: RefreshLevel): void;
   abstract calMask(): void;
@@ -246,6 +248,9 @@ abstract class AbstractNode extends Event {
   abstract adjustPosAndSizeSelf(dx1: number, dy1: number, dx2: number, dy2: number): void;
   abstract checkPosSizeUpward(): void;
   abstract adjustPosAndSize(): boolean;
+
+  abstract get x(): number;
+  abstract get y(): number;
 
   get width() {
     return this.computedStyle.width || 0;

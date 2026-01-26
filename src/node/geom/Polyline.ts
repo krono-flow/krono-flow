@@ -25,8 +25,8 @@ class Polyline extends Node {
     this.isClosed = props.isClosed || false;
   }
 
-  override lay(data: LayoutData) {
-    super.lay(data);
+  override lay(w: number, h: number) {
+    super.lay(w, h);
     this.coords = undefined;
   }
 

@@ -1,9 +1,10 @@
 import AbstractNode, { NodeType } from './AbstractNode';
 import Node from './Node';
 import { Props } from '../format';
-import { LayoutData } from '../refresh/layout';
+import { POSITION } from '../layout/define';
 import { RefreshLevel } from '../refresh/level';
 import inject from '../util/inject';
+import { StyleUnit } from '../style/define';
 
 class Container extends Node {
   children: AbstractNode[];
@@ -41,16 +42,63 @@ class Container extends Node {
     });
   }
 
-  override layout(data: LayoutData) {
-    super.layout(data);
-    const { children } = this;
-    // 递归下去布局
+  // override layout(x: number, y: number, w: number, h: number) {
+  //   super.layout(x, y, w, h);
+  //   const { children, style } = this;
+  //   if (style.position.v === POSITION.ABSOLUTE) {
+  //     this.layoutAbs(this, x, y, w, h); // root调用时自己就是parent
+  //   }
+  //   else {
+  //     this.layoutFlow(x, y, w, h);
+  //     // for (let i = 0, len = children.length; i < len; i++) {
+  //     //   const child = children[i];
+  //     //   // if (child.style.position )
+  //     // }
+  //   }
+  //   // 递归下去布局
+  //   // for (let i = 0, len = children.length; i < len; i++) {
+  //   //   const child = children[i];
+  //   //   child.layout({
+  //   //     w: this.computedStyle.width,
+  //   //     h: this.computedStyle.height,
+  //   //   });
+  //   // }
+  // }
+
+  override layoutFlow(x: number, y: number, w: number, h: number) {
+    super.layoutFlow(x, y, w, h);
+    const { children, style } = this;
+    let hasAbsChild = false;
+    let y1 = y;
     for (let i = 0, len = children.length; i < len; i++) {
       const child = children[i];
-      child.layout({
-        w: this.computedStyle.width,
-        h: this.computedStyle.height,
-      });
+      if (child.style.position.v === POSITION.ABSOLUTE) {
+        hasAbsChild = true;
+      }
+      else {
+        child.layoutFlow(x, y1, w, h);
+        y1 += child.computedStyle.height;
+      }
+    }
+    if (style.height.v === StyleUnit.AUTO) {
+      this.computedStyle.height = y1 - y;
+    }
+    const p = style.position.v;
+    if (hasAbsChild && (p === POSITION.ABSOLUTE || p === POSITION.RELATIVE)) {
+      for (let i = 0, len = children.length; i < len; i++) {
+        const child = children[i];
+        if (child.style.position.v === POSITION.ABSOLUTE) {
+          child.layoutAbs(this, this._x, this._y, this.computedStyle.width, this.computedStyle.height);
+        }
+      }
+    }
+  }
+
+  override layoutAbs(parent: Container, x: number, y: number, w: number, h: number) {
+    super.layoutAbs(parent, x, y, w, h);
+    const { children, style } = this;
+    for (let i = 0, len = children.length; i < len; i++) {
+      const child = children[i];
     }
   }
 

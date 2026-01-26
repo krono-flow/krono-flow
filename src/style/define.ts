@@ -1,4 +1,5 @@
 import { RichIndex } from '../format';
+import { DISPLAY, POSITION } from '../layout/define';
 
 export enum StyleUnit {
   AUTO = 0,
@@ -156,7 +157,19 @@ export type TextShadow = {
 
 export type ComputedTextShadow = TextShadow;
 
+export type StyleDisplayValue = {
+  v: DISPLAY;
+  u: StyleUnit.NUMBER;
+};
+
+export type StylePositionValue = {
+  v: POSITION,
+  u: StyleUnit.NUMBER;
+};
+
 export type Style = {
+  position: StylePositionValue;
+  display: StyleDisplayValue;
   top: StyleNumValue;
   right: StyleNumValue;
   bottom: StyleNumValue;
@@ -219,7 +232,11 @@ export type Style = {
   filter: (StyleFilter)[];
 };
 
+export { DISPLAY, POSITION };
+
 export type ComputedStyle = {
+  position: POSITION;
+  display: DISPLAY;
   top: number;
   right: number;
   bottom: number;

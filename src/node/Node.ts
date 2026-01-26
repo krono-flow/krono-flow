@@ -2,7 +2,8 @@ import AbstractNode, { NodeType } from './AbstractNode';
 import { getDefaultComputedStyle, getDefaultJStyle, JStyle, Props } from '../format';
 import {
   calNormalLineHeight,
-  calSize, cloneStyle,
+  calSize,
+  cloneStyle,
   equalStyle,
   getCssFillStroke,
   getCssFilter,
@@ -14,6 +15,7 @@ import {
 import {
   ComputedGradient,
   ComputedStyle,
+  DISPLAY,
   FILL_RULE,
   GRADIENT,
   MIX_BLEND_MODE,
@@ -29,7 +31,6 @@ import { RefreshLevel } from '../refresh/level';
 import { assignBbox, ceilBbox, resetBbox } from '../math/bbox';
 import { assignMatrix, calRectPoints, EMPTY_MATRIX, identity, multiply, toE, } from '../math/matrix';
 import Container from './Container';
-import { LayoutData } from '../refresh/layout';
 import { calMatrixByOrigin, calPerspectiveMatrix, calTransform, } from '../style/transform';
 import { d2r, H } from '../math/geom';
 import CanvasCache from '../refresh/CanvasCache';
@@ -47,9 +48,11 @@ import { JCssAnimations, JRichAnimations, JTimeAnimations } from '../parser/defi
 import { gaussSize, motionSize, radialSize } from '../math/blur';
 
 class Node extends AbstractNode {
-  _struct: Struct;
+  _x: number;
+  _y: number;
   _style: Style;
   _computedStyle: ComputedStyle;
+  _struct: Struct;
   _opacity: number; // 世界透明度
   _transform: Float32Array; // 不包含transformOrigin
   _matrix: Float32Array; // 包含transformOrigin
@@ -77,6 +80,8 @@ class Node extends AbstractNode {
     super(props);
     this.type = NodeType.NODE;
     this.isNode = true;
+    this._x = 0;
+    this._y = 0;
     this._style = normalize(getDefaultJStyle(props.style));
     this._computedStyle = getDefaultComputedStyle();
     this._struct = {
@@ -146,9 +151,9 @@ class Node extends AbstractNode {
     return [temp];
   }
 
-  // 特殊子节点复写如Text、Img自适应尺寸
-  protected lay(data: LayoutData) {
-    const { style, computedStyle } = this;
+  // x/y是布局时递归下来的绝对世界坐标，w/h是父节点尺寸（abs布局是相对父节点）；特殊子节点复写如Text、Img自适应尺寸
+  protected lay(x: number, y: number, w: number, h: number) {
+    const { style, _computedStyle: computedStyle } = this;
     const { left, top, right, bottom, width, height } = style;
     // 检查是否按相对边固定（px/%）还是尺寸固定，如左右vs宽度
     let fixedLeft = false;
@@ -157,101 +162,120 @@ class Node extends AbstractNode {
     let fixedBottom = false;
     if (left.u !== StyleUnit.AUTO) {
       fixedLeft = true;
-      computedStyle.left = calSize(left, data.w);
+      computedStyle.left = x + calSize(left, w);
     }
     if (right.u !== StyleUnit.AUTO) {
       fixedRight = true;
-      computedStyle.right = calSize(right, data.w);
+      computedStyle.right = calSize(right, w);
     }
     if (top.u !== StyleUnit.AUTO) {
       fixedTop = true;
-      computedStyle.top = calSize(top, data.h);
+      computedStyle.top = y + calSize(top, h);
     }
     if (bottom.u !== StyleUnit.AUTO) {
       fixedBottom = true;
-      computedStyle.bottom = calSize(bottom, data.h);
+      computedStyle.bottom = calSize(bottom, h);
     }
     // 左右决定width
     if (fixedLeft && fixedRight) {
-      computedStyle.width = Math.max(0, data.w - computedStyle.left - computedStyle.right);
+      computedStyle.width = Math.max(0, w - computedStyle.left - computedStyle.right);
     }
     else if (fixedLeft) {
       if (width.u !== StyleUnit.AUTO) {
-        computedStyle.width = Math.max(0, calSize(width, data.w));
+        computedStyle.width = Math.max(0, calSize(width, w));
       }
       else {
         computedStyle.width = 0;
       }
-      computedStyle.right = data.w - computedStyle.left - computedStyle.width;
+      computedStyle.right = w - computedStyle.left - computedStyle.width;
     }
     else if (fixedRight) {
       if (width.u !== StyleUnit.AUTO) {
-        computedStyle.width = Math.max(0, calSize(width, data.w));
+        computedStyle.width = Math.max(0, calSize(width, w));
       }
       else {
         computedStyle.width = 0;
       }
-      computedStyle.left = data.w - computedStyle.right - computedStyle.width;
+      computedStyle.left = w - computedStyle.right - computedStyle.width - x;
     }
     else {
       if (width.u !== StyleUnit.AUTO) {
-        computedStyle.width = Math.max(0, calSize(width, data.w));
+        computedStyle.width = Math.max(0, calSize(width, w));
       }
       else {
         computedStyle.width = 0;
       }
-      computedStyle.left = 0;
-      computedStyle.right = data.w - computedStyle.width;
+      computedStyle.left = x;
+      computedStyle.right = w - computedStyle.width;
     }
     // 上下决定height
     if (fixedTop && fixedBottom) {
-      computedStyle.height = Math.max(0, data.h - computedStyle.top - computedStyle.bottom);
+      computedStyle.height = Math.max(0, h - computedStyle.top - computedStyle.bottom);
     }
     else if (fixedTop) {
       if (height.u !== StyleUnit.AUTO) {
-        computedStyle.height = Math.max(0, calSize(height, data.h));
+        computedStyle.height = Math.max(0, calSize(height, h));
       }
       else {
         computedStyle.height = 0;
       }
-      computedStyle.bottom = data.h - computedStyle.top - computedStyle.height;
+      computedStyle.bottom = h - computedStyle.top - computedStyle.height;
     }
     else if (fixedBottom) {
       if (height.u !== StyleUnit.AUTO) {
-        computedStyle.height = Math.max(0, calSize(height, data.h));
+        computedStyle.height = Math.max(0, calSize(height, h));
       }
       else {
         computedStyle.height = 0;
       }
-      computedStyle.top = data.h - computedStyle.bottom - computedStyle.height;
+      computedStyle.top = h - computedStyle.bottom - computedStyle.height - y;
     }
     else {
       if (height.u !== StyleUnit.AUTO) {
-        computedStyle.height = Math.max(0, calSize(height, data.h));
+        computedStyle.height = Math.max(0, calSize(height, h));
       }
       else {
         computedStyle.height = 0;
       }
-      computedStyle.top = 0;
-      computedStyle.bottom = data.h - computedStyle.height;
+      computedStyle.top = y;
+      computedStyle.bottom = h - computedStyle.height;
     }
   }
 
-  layout(data: LayoutData) {
-    if (this.isDestroyed) {
-      throw new Error('Node is destroyed');
-    }
+  protected layout(x: number, y: number, w: number, h: number) {
     this.refreshLevel = RefreshLevel.REFLOW;
     // 布局时计算所有样式，更新时根据不同级别调用
     this.calReflowStyle();
-    this.lay(data);
-    resetBbox(this._rect, 0, 0, this.computedStyle.width, this.computedStyle.height);
+    this._x = x;
+    this._y = y;
+    this.lay(x, y, w, h);
+    // resetBbox(this._rect, 0, 0, this.computedStyle.width, this.computedStyle.height);
+    // repaint和matrix计算需要x/y/width/height
+    // this.calRepaintStyle(RefreshLevel.REFLOW);
+  }
+
+  layoutFlow(x: number, y: number, w: number, h: number) {
+    this.layout(x, y, w, h);
+    const { _style: style, _computedStyle: computedStyle } = this;
+    const { display, width } = style;
+    if (display.v === DISPLAY.BLOCK) {
+      if (width.u === StyleUnit.AUTO) {
+        computedStyle.width = w;
+      }
+    }
+    resetBbox(this._rect, 0, 0, this._computedStyle.width, this._computedStyle.height);
     // repaint和matrix计算需要x/y/width/height
     this.calRepaintStyle(RefreshLevel.REFLOW);
   }
 
+  layoutAbs(parent: Container, x: number, y: number, w: number, h: number) {
+    this.layout(x, y, w, h);
+  }
+
   calReflowStyle() {
-    const { style, computedStyle, parent } = this;
+    const { _style: style, _computedStyle: computedStyle, parent } = this;
+    computedStyle.position = style.position.v;
+    computedStyle.display = style.display.v;
     computedStyle.fontFamily = style.fontFamily.v;
     computedStyle.fontSize = style.fontSize.v;
     computedStyle.fontWeight = style.fontWeight.v;
@@ -290,7 +314,7 @@ class Node extends AbstractNode {
   }
 
   calRepaintStyle(lv: RefreshLevel) {
-    const { style, computedStyle } = this;
+    const { _style: style, _computedStyle: computedStyle } = this;
     computedStyle.visibility = style.visibility.v;
     computedStyle.textDecoration = style.textDecoration.map(item => item.v);
     computedStyle.textShadow = style.textShadow.v;
@@ -347,8 +371,8 @@ class Node extends AbstractNode {
   protected calRect() {
     this._rect[0] = 0;
     this._rect[1] = 0;
-    this._rect[2] = this.computedStyle.width;
-    this._rect[3] = this.computedStyle.height;
+    this._rect[2] = this._computedStyle.width;
+    this._rect[3] = this._computedStyle.height;
   }
 
   protected calBbox() {
@@ -357,7 +381,7 @@ class Node extends AbstractNode {
 
   protected calFilterBbox() {
     const fb = assignBbox(this._filterBbox, this._bbox);
-    const filter = this.computedStyle.filter;
+    const filter = this._computedStyle.filter;
     filter.forEach(item => {
       const { u } = item;
       if (u === StyleUnit.GAUSS_BLUR) {
@@ -385,7 +409,7 @@ class Node extends AbstractNode {
   }
 
   calMask() {
-    const { style, computedStyle } = this;
+    const { _style: style, _computedStyle: computedStyle } = this;
     computedStyle.maskMode = style.maskMode.v;
     computedStyle.breakMask = style.breakMask.v;
     // append时还得看prev的情况，如果自己也是mask，下面会修正，merge也会判断
@@ -437,7 +461,7 @@ class Node extends AbstractNode {
   }
 
   calFilter(lv: RefreshLevel) {
-    const { style, computedStyle } = this;
+    const { _style: style, _computedStyle: computedStyle } = this;
     computedStyle.filter = calComputedFilter(style.filter, computedStyle.width, computedStyle.height);
     // repaint已经做了
     if (lv < RefreshLevel.REPAINT) {
@@ -449,7 +473,7 @@ class Node extends AbstractNode {
   }
 
   calMatrix(lv: RefreshLevel) {
-    const { style, computedStyle, _matrix: matrix, _transform: transform } = this;
+    const { _style: style, _computedStyle: computedStyle, _matrix: matrix, _transform: transform } = this;
     // 每次更新标识且id++，获取matrixWorld或者每帧渲染会置true，首次0时强制进入，虽然布局过程中会调用，防止手动调用不可预期
     if (this.hasCacheMw || !this.localMwId) {
       this.hasCacheMw = false;
@@ -577,7 +601,7 @@ class Node extends AbstractNode {
 
   // 和matrix计算很像，但没有特殊优化，同样影响matrixWorld
   calPerspective() {
-    const { style, computedStyle } = this;
+    const { _style: style, _computedStyle: computedStyle } = this;
     if (this.hasCacheMw || !this.localMwId) {
       this.hasCacheMw = false;
       this.localMwId++;
@@ -596,7 +620,7 @@ class Node extends AbstractNode {
   }
 
   calPerspectiveSelf() {
-    const { style, computedStyle, transform } = this;
+    const { _style: style, _computedStyle: computedStyle, transform } = this;
     if (this.hasCacheMw || !this.localMwId) {
       this.hasCacheMw = false;
       this.localMwId++;
@@ -612,7 +636,7 @@ class Node extends AbstractNode {
   }
 
   calOpacity() {
-    const { style, computedStyle } = this;
+    const { _style: style, _computedStyle: computedStyle } = this;
     if (this.hasCacheOp || !this.localOpId) {
       this.hasCacheOp = false;
       this.localOpId++;
@@ -622,13 +646,12 @@ class Node extends AbstractNode {
 
   // 是否有内容，由各个子类自己实现
   calContent() {
-    const { computedStyle } = this;
-    this.hasContent = computedStyle.backgroundColor[3] > 0;
+    this.hasContent = this._computedStyle.backgroundColor[3] > 0;
     return this.hasContent;
   }
 
   calContentLoading() {
-    const computedStyle = this.computedStyle;
+    const computedStyle = this._computedStyle;
     if (!computedStyle.width || !computedStyle.height) {
       return 0;
     }
@@ -653,7 +676,7 @@ class Node extends AbstractNode {
   }
 
   renderCanvasBgc(canvasCache: CanvasCache) {
-    const backgroundColor = this.computedStyle.backgroundColor;
+    const backgroundColor = this._computedStyle.backgroundColor;
     if (backgroundColor[3] > 0) {
       const coords = this.getBackgroundCoords(-canvasCache.dx, -canvasCache.dy);
       canvasCache.list.forEach(item => {
@@ -667,7 +690,7 @@ class Node extends AbstractNode {
     }
   }
 
-  renderFillStroke(coords: number[][][], isClosed = true, computedStyle = this.computedStyle) {
+  renderFillStroke(coords: number[][][], isClosed = true, computedStyle = this._computedStyle) {
     if (!coords.length) {
       return;
     }
@@ -1063,7 +1086,7 @@ class Node extends AbstractNode {
   }
 
   getBackgroundCoords(x = 0, y = 0) {
-    const computedStyle = this.computedStyle;
+    const computedStyle = this._computedStyle;
     const { borderTopLeftRadius, borderTopRightRadius, borderBottomLeftRadius, borderBottomRightRadius } = computedStyle;
     // 限制圆角半径，不能超过宽高一半
     const min = Math.min(computedStyle.width * 0.5, computedStyle.height * 0.5);
@@ -1102,7 +1125,7 @@ class Node extends AbstractNode {
   }
 
   getComputedStyle() {
-    const res: ComputedStyle = Object.assign({}, this.computedStyle);
+    const res: ComputedStyle = Object.assign({}, this._computedStyle);
     if (this.isMounted) {
       res.color = res.color.slice(0);
       res.backgroundColor = res.backgroundColor.slice(0);
@@ -1139,6 +1162,7 @@ class Node extends AbstractNode {
         res[k] = o.v;
       }
     });
+    res.display = ['none', 'block', 'inline', 'inlineBlock', 'flex'][style.display.v] || 'none';
     res.opacity = style.opacity.v;
     res.visibility = style.visibility.v === VISIBILITY.VISIBLE ? 'visible' : 'hidden';
     res.color = color2rgbaStr(style.color.v);
@@ -1254,7 +1278,7 @@ class Node extends AbstractNode {
 
   // 相对parent不考虑旋转rect只考虑自身width/height
   getOffsetRect() {
-    const computedStyle = this.computedStyle;
+    const computedStyle = this._computedStyle;
     const left = computedStyle.left + computedStyle.translateX;
     const top = computedStyle.top + computedStyle.translateY;
     return {
@@ -1279,9 +1303,9 @@ class Node extends AbstractNode {
       _style: style,
       _computedStyle: computedStyle,
       parent,
-      isDestroyed,
+      isMounted,
     } = this;
-    if (isDestroyed || !parent) {
+    if (!isMounted || !parent) {
       throw new Error('Can not resize a destroyed Node or Root');
     }
     const {
@@ -1688,7 +1712,7 @@ class Node extends AbstractNode {
   protected initAnimate(animation: AbstractAnimation, options: Options) {
     this._animationList.push(animation);
     const root = this.root;
-    if (this.isDestroyed || !root) {
+    if (!this.isMounted || !root) {
       animation.cancel();
       return animation;
     }
@@ -1724,6 +1748,14 @@ class Node extends AbstractNode {
     const props = this.cloneProps();
     const res = new Node(props);
     return res as this;
+  }
+
+  get x() {
+    return this._x;
+  }
+
+  get y() {
+    return this._y;
   }
 
   get struct() {

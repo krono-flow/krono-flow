@@ -7,6 +7,8 @@ import {
   ComputedRich,
   ComputedStyle,
   CURVE_MODE,
+  POSITION,
+  DISPLAY,
   FILL_RULE,
   FONT_STYLE,
   Gradient,
@@ -79,6 +81,38 @@ export function normalize(style: Partial<JStyle>) {
     }
     res[k] = n;
   });
+  if (style.position !== undefined) {
+    let v = POSITION.ABSOLUTE;
+    if (style.position === 'static') {
+      v = POSITION.STATIC;
+    }
+    else if (style.position === 'relative') {
+      v = POSITION.RELATIVE;
+    }
+    res.position = {
+      v,
+      u: StyleUnit.NUMBER,
+    };
+  }
+  if (style.display !== undefined) {
+    let v = DISPLAY.BLOCK;
+    if (style.display === 'none') {
+      v = DISPLAY.NONE;
+    }
+    else if (style.display === 'inline') {
+      v = DISPLAY.INLINE;
+    }
+    else if (style.display === 'inlineBlock') {
+      v = DISPLAY.INLINE_BLOCK;
+    }
+    else if (style.display === 'flex') {
+      v = DISPLAY.FLEX;
+    }
+    res.display = {
+      v,
+      u: StyleUnit.NUMBER,
+    };
+  }
   if (style.lineHeight !== undefined) {
     const lineHeight = style.lineHeight;
     if (isNil(lineHeight) || lineHeight === 'normal') {

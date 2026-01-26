@@ -1,4 +1,6 @@
 import {
+  POSITION,
+  DISPLAY,
   FILL_RULE,
   FONT_STYLE,
   MASK,
@@ -9,10 +11,12 @@ import {
   STROKE_LINE_JOIN,
   TEXT_ALIGN,
   TEXT_VERTICAL_ALIGN,
-  VISIBILITY
+  VISIBILITY,
 } from '../style/define';
 
 export const DEFAULT_STYLE = {
+  position: 'absolute',
+  display: 'block',
   left: 'auto',
   top: 'auto',
   right: 'auto',
@@ -76,6 +80,8 @@ export const DEFAULT_STYLE = {
 };
 
 export const DEFAULT_COMPUTED_STYLE = {
+  position: POSITION.ABSOLUTE,
+  display: DISPLAY.BLOCK,
   left: 0,
   top: 0,
   right: 0,

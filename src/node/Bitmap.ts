@@ -4,7 +4,6 @@ import { BitmapProps } from '../format';
 import CanvasCache from '../refresh/CanvasCache';
 import { getCacheImg, loadImg, LoadImgRes } from '../util/loadImg';
 import TextureCache from '../refresh/TextureCache';
-import { LayoutData } from '../refresh/layout';
 import { OBJECT_FIT, StyleUnit } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
 import { Options } from '../animation/AbstractAnimation';
@@ -72,8 +71,8 @@ class Bitmap extends Node {
   }
 
   // 自适应尺寸情况下使用图片本身的尺寸，只定义了一方的情况下使用等比
-  override lay(data: LayoutData) {
-    super.lay(data);
+  override lay(w: number, h: number) {
+    super.lay(w, h);
     const { style, computedStyle, loader } = this;
     const { left, top, right, bottom, width, height } = style;
     if (loader) {
@@ -88,13 +87,13 @@ class Bitmap extends Node {
         }
         if (left.u === StyleUnit.AUTO && right.u === StyleUnit.AUTO) {
           computedStyle.left = 0;
-          computedStyle.right = data.w - computedStyle.width;
+          computedStyle.right = w - computedStyle.width;
         }
         else if (left.u === StyleUnit.AUTO) {
-          computedStyle.left = data.w - computedStyle.right - computedStyle.width;
+          computedStyle.left = w - computedStyle.right - computedStyle.width;
         }
         else if (right.u === StyleUnit.AUTO) {
-          computedStyle.right = data.w - computedStyle.left - computedStyle.width;
+          computedStyle.right = w - computedStyle.left - computedStyle.width;
         }
       }
       if (autoH) {
@@ -106,13 +105,13 @@ class Bitmap extends Node {
         }
         if (top.u === StyleUnit.AUTO && bottom.u === StyleUnit.AUTO) {
           computedStyle.top = 0;
-          computedStyle.bottom = data.h - computedStyle.height;
+          computedStyle.bottom = h - computedStyle.height;
         }
         else if (top.u === StyleUnit.AUTO) {
-          computedStyle.top = data.h - computedStyle.bottom - computedStyle.height;
+          computedStyle.top = h - computedStyle.bottom - computedStyle.height;
         }
         else if (bottom.u === StyleUnit.AUTO) {
-          computedStyle.bottom = data.h - computedStyle.top - computedStyle.height;
+          computedStyle.bottom = h - computedStyle.top - computedStyle.height;
         }
       }
     }

@@ -5,6 +5,8 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import glslify from 'rollup-plugin-glslify';
 import postcss from 'rollup-plugin-postcss';
 import { wgsl } from './rollup.config.mjs';
+import dts from 'rollup-plugin-dts';
+import copy from 'rollup-plugin-copy';
 
 const publicConfig = {
   format: 'iife',
@@ -89,5 +91,25 @@ export default [
         extract: true,
       }),
     ],
-  }
+  },
+  // 归并 .d.ts 文件
+  {
+    input: 'types/index.d.ts',
+    output: {
+      file: 'dist/index.d.ts',
+      format: 'es',
+    },
+    plugins: [
+      // 将类型文件全部集中到一个文件中
+      dts(),
+      copy({
+        targets: [{
+          src: 'dist/index.d.ts',
+          dest: 'dist',
+          rename: 'index.d.mts',
+        }],
+        hook: 'writeBundle',
+      }),
+    ],
+  },
 ];

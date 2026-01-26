@@ -139,6 +139,8 @@ export type JRich = Partial<Pick<JStyle,
 type Origin = number | 'left' | 'right' | 'top' | 'bottom' | 'center' | string;
 
 export type JStyle = {
+  position: 'static' | 'relative' | 'absolute';
+  display: 'none' | 'block' | 'inline' | 'inlineBlock' | 'flex';
   top: number | string;
   right: number | string;
   bottom: number | string;

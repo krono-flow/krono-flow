@@ -3,7 +3,7 @@ import Container from './Container';
 import { RootProps } from '../format';
 import ca from '../gl/ca';
 import inject from '../util/inject';
-import { renderWebgl, Struct } from '../refresh/struct';
+import { calWorldMatrixAndOpacity, renderWebgl, Struct } from '../refresh/struct';
 import frame from '../animation/frame';
 import { StyleUnit, VISIBILITY } from '../style/define';
 import { getLevel, isReflow, RefreshLevel } from '../refresh/level';
@@ -137,12 +137,33 @@ class Root extends Container {
     this.asyncDraw();
   }
 
+  appendToHeadless() {
+    this.reLayout();
+    this.didMount();
+    this.structs = this.structure(0);
+    for (let i = 0, len = this.structs.length; i < len; i++) {
+      const { node } = this.structs[i];
+      node.calContent();
+      calWorldMatrixAndOpacity(node, i, node.parent);
+    }
+  }
+
   reLayout() {
     this.checkRoot();
-    this.layout({
-      w: this.computedStyle.width,
-      h: this.computedStyle.height,
-    });
+    this.layoutFlow(0, 0, this._computedStyle.width, this._computedStyle.height);
+    this.layoutAbs(this, 0, 0, this._computedStyle.width, this._computedStyle.height);
+    // this.layout({
+    //   x: 0,
+    //   y: 0,
+    //   w: this.computedStyle.width,
+    //   h: this.computedStyle.height,
+    // });
+    // this.layoutAbs(this, {
+    //   x: 0,
+    //   y: 0,
+    //   w: this.computedStyle.width,
+    //   h: this.computedStyle.height,
+    // });
   }
 
   private checkRoot() {
@@ -151,22 +172,28 @@ class Root extends Container {
     if (width.u === StyleUnit.AUTO) {
       if (canvas) {
         width.u = StyleUnit.PX;
-        this.computedStyle.width = width.v = Math.max(1, canvas.width);
+        this._computedStyle.width = width.v = Math.max(1, canvas.width);
+      }
+      else {
+        this._computedStyle.width = 1;
       }
     }
     else {
-      this.computedStyle.width = Math.max(1, this.style.width.v as number);
+      this._computedStyle.width = Math.max(1, this.style.width.v as number);
     }
     if (height.u === StyleUnit.AUTO) {
       if (canvas) {
         height.u = StyleUnit.PX;
-        this.computedStyle.height = height.v = Math.max(1, canvas.height);
+        this._computedStyle.height = height.v = Math.max(1, canvas.height);
+      }
+      else {
+        this._computedStyle.height = 1;
       }
     }
     else {
-      this.computedStyle.height = Math.max(1, this.style.height.v as number);
+      this._computedStyle.height = Math.max(1, this.style.height.v as number);
     }
-    this.ctx?.viewport(0, 0, this.computedStyle.width, this.computedStyle.height);
+    this.ctx?.viewport(0, 0, this._computedStyle.width, this._computedStyle.height);
   }
 
   /**

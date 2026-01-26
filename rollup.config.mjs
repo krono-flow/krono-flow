@@ -6,7 +6,7 @@ import glslify from 'rollup-plugin-glslify';
 import postcss from 'rollup-plugin-postcss';
 import terser from '@rollup/plugin-terser';
 import dts from 'rollup-plugin-dts';
-import del from 'rollup-plugin-delete';
+import copy from 'rollup-plugin-copy';
 
 export const wgsl = {
   name: 'wgsl-loader',
@@ -153,10 +153,13 @@ export default [
     plugins: [
       // 将类型文件全部集中到一个文件中
       dts(),
-      // 在构建完成后，删除 types 文件夹
-      del({
-        targets: 'types',
-        hook: 'buildEnd',
+      copy({
+        targets: [{
+          src: 'dist/index.d.ts',
+          dest: 'dist',
+          rename: 'index.d.mts',
+        }],
+        hook: 'writeBundle',
       }),
     ],
   },

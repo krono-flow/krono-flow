@@ -2,7 +2,6 @@ import { NodeType } from './AbstractNode';
 import Node from './Node';
 import LineBox from './LineBox';
 import { JStyle, ModifyJRichStyle, TextProps } from '../format';
-import { LayoutData } from '../refresh/layout';
 import {
   ComputedGradient,
   ComputedRich,
@@ -350,8 +349,8 @@ class Text extends Node {
     }
   }
 
-  override lay(data: LayoutData) {
-    super.lay(data);
+  override lay(w: number, h: number) {
+    super.lay(w, h);
     const { computedRich, style, computedStyle, _content: content, lineBoxList } = this;
     const {
       left,

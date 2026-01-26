@@ -60,7 +60,10 @@ export function parseRoot(json: ItemRoot, options?: ParserOptions) {
   const root = new Root(json.props, (json.children || []).map(item => {
     return parseJSON(item);
   }));
-  if (options?.gl) {
+  if (options?.headless) {
+    root.appendToHeadless();
+  }
+  else if (options?.gl) {
     root.appendToGl(options.gl);
   }
   else if (options?.dom) {
@@ -78,9 +81,7 @@ export function parseRoot(json: ItemRoot, options?: ParserOptions) {
   return root;
 }
 
-export function parse(json: Item | ItemRoot, options?: {
-  dom?: HTMLElement;
-}) {
+export function parse(json: Item | ItemRoot, options?: ParserOptions) {
   if (json.tagName === 'root') {
     return parseRoot(json, options);
   }

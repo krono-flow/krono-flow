@@ -107,7 +107,7 @@ export function renderWebgl(
   }
 }
 
-function calWorldMatrixAndOpacity(node: Node, i: number, parent?: Container) {
+export function calWorldMatrixAndOpacity(node: Node, i: number, parent?: Container) {
   // 世界opacity和matrix不一定需要重算，有可能之前调用算过了有缓存
   let hasCacheOp = false;
   let hasCacheMw = false;

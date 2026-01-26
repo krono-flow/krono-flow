@@ -2,7 +2,6 @@ import { NodeType } from './AbstractNode';
 import Node from './Node'
 import { VideoProps } from '../format';
 import TextureCache from '../refresh/TextureCache';
-import { LayoutData } from '../refresh/layout';
 import { OBJECT_FIT, StyleUnit } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
 import CanvasCache from '../refresh/CanvasCache';
@@ -159,8 +158,8 @@ class Video extends Node {
   }
 
   // 自适应尺寸情况下使用图片本身的尺寸
-  override lay(data: LayoutData) {
-    super.lay(data);
+  override lay(w: number, h: number) {
+    super.lay(w, h);
     const { style, computedStyle, _metaData } = this;
     const { left, top, right, bottom, width, height } = style;
     if (_metaData?.video) {
@@ -175,13 +174,13 @@ class Video extends Node {
         }
         if (left.u === StyleUnit.AUTO && right.u === StyleUnit.AUTO) {
           computedStyle.left = 0;
-          computedStyle.right = data.w - computedStyle.width;
+          computedStyle.right = w - computedStyle.width;
         }
         else if (left.u === StyleUnit.AUTO) {
-          computedStyle.left = data.w - computedStyle.right - computedStyle.width;
+          computedStyle.left = w - computedStyle.right - computedStyle.width;
         }
         else if (right.u === StyleUnit.AUTO) {
-          computedStyle.right = data.w - computedStyle.left - computedStyle.width;
+          computedStyle.right = w - computedStyle.left - computedStyle.width;
         }
       }
       if (autoH) {
@@ -193,13 +192,13 @@ class Video extends Node {
         }
         if (top.u === StyleUnit.AUTO && bottom.u === StyleUnit.AUTO) {
           computedStyle.top = 0;
-          computedStyle.bottom = data.h - computedStyle.height;
+          computedStyle.bottom = h - computedStyle.height;
         }
         else if (top.u === StyleUnit.AUTO) {
-          computedStyle.top = data.h - computedStyle.bottom - computedStyle.height;
+          computedStyle.top = h - computedStyle.bottom - computedStyle.height;
         }
         else if (bottom.u === StyleUnit.AUTO) {
-          computedStyle.bottom = data.h - computedStyle.top - computedStyle.height;
+          computedStyle.bottom = h - computedStyle.top - computedStyle.height;
         }
       }
     }
