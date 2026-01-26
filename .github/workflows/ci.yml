@@ -4,11 +4,11 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: 20
       - name: npm install
@@ -17,4 +17,5 @@ jobs:
         run: npm run build
       - name: npm test
         run: npm run test
-  
+        env:
+          NODE_OPTIONS: "--loader ts-node/esm --no-warnings"
