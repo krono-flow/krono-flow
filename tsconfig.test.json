@@ -1,8 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJS",           // 重点：强制转为 CJS
-    "moduleResolution": "Node",     // 重点：允许自动寻找 index.ts
+    "module": "NodeNext",           // 重点：强制转为 CJS
+    "moduleResolution": "NodeNext",     // 重点：允许自动寻找 index.ts
+    "target": "ESNext",
     "esModuleInterop": true,
     "allowJs": true,
     "noEmit": false,
