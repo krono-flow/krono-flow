@@ -10,6 +10,10 @@
       "mocha",
     ]
   },
+  "ts-node": {
+    "esm": true,                // 关键：开启 ESM 模式支持
+    "experimentalSpecifierResolution": "node" // 允许不写 .js 后缀
+  },
   "include": [
     "test/**/*"
   ],
