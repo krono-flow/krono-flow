@@ -6,7 +6,7 @@ export function checkReflow(node: AbstractNode, lv: RefreshLevel) {
   if (lv & RefreshLevel.REMOVE_DOM) {
     node.didUnmount();
   }
-  else if (lv & RefreshLevel.ADD_DOM) {
+  else {
     const root = node.root!;
     let parent = node.parent!;
     while (parent && parent !== root) {
@@ -20,12 +20,9 @@ export function checkReflow(node: AbstractNode, lv: RefreshLevel) {
     else {
       node.layoutFlow(parent, parent.x, parent.y, parent.computedStyle.width, parent.computedStyle.height, false);
     }
-    node.didMount();
-  }
-  // 后续支持 TODO
-  else {
-    // const prevPosition = node.computedStyle.position;
-    // const nextPosition = node.style.position.v;
+    if (lv & RefreshLevel.ADD_DOM) {
+      node.didMount();
+    }
   }
 }
 
