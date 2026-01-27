@@ -1,5 +1,4 @@
 import { RichIndex } from '../format';
-import { DISPLAY, POSITION } from '../layout/define';
 
 export enum StyleUnit {
   AUTO = 0,
@@ -157,10 +156,25 @@ export type TextShadow = {
 
 export type ComputedTextShadow = TextShadow;
 
+export enum DISPLAY {
+  NONE = 0,
+  BLOCK = 1,
+  INLINE = 2,
+  INLINE_BLOCK = 3,
+  FLEX = 4,
+  GRID = 5,
+}
+
 export type StyleDisplayValue = {
   v: DISPLAY;
   u: StyleUnit.NUMBER;
 };
+
+export enum POSITION {
+  STATIC = 0,
+  RELATIVE = 1,
+  ABSOLUTE = 2,
+}
 
 export type StylePositionValue = {
   v: POSITION,
@@ -231,8 +245,6 @@ export type Style = {
   overflow: StyleOverflowValue;
   filter: (StyleFilter)[];
 };
-
-export { DISPLAY, POSITION };
 
 export type ComputedStyle = {
   position: POSITION;

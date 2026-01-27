@@ -257,16 +257,18 @@ class Node extends AbstractNode {
     this.calRepaintStyle(RefreshLevel.REFLOW);
   }
 
-  layoutFlow(parent: Node, x: number, y: number, w: number, h: number) {
+  layoutFlow(parent: Node, x: number, y: number, w: number, h: number, isMeasure = false) {
     this.layoutBefore(x, y, w, h);
-    const { _style: style, _computedStyle: computedStyle } = this;
-    const { display, width } = style;
-    if (display.v === DISPLAY.BLOCK) {
-      if (width.u === StyleUnit.AUTO) {
-        computedStyle.width = w;
+    if (!isMeasure) {
+      const { _style: style, _computedStyle: computedStyle } = this;
+      const { display, width } = style;
+      if (display.v === DISPLAY.BLOCK) {
+        if (width.u === StyleUnit.AUTO) {
+          computedStyle.width = w;
+        }
       }
+      this.layoutAfter();
     }
-    this.layoutAfter();
   }
 
   layoutAbs(parent: Container, x: number, y: number, w: number, h: number) {

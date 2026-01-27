@@ -15,7 +15,7 @@ import {
 } from '../style/define';
 
 export const DEFAULT_STYLE = {
-  position: 'absolute',
+  position: 'static',
   display: 'block',
   left: 'auto',
   top: 'auto',

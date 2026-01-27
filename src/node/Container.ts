@@ -1,10 +1,9 @@
 import AbstractNode, { NodeType } from './AbstractNode';
 import Node from './Node';
 import { Props } from '../format';
-import { POSITION } from '../layout/define';
 import { RefreshLevel } from '../refresh/level';
 import inject from '../util/inject';
-import { StyleUnit } from '../style/define';
+import { POSITION, StyleUnit } from '../style/define';
 
 class Container extends Node {
   children: AbstractNode[];
@@ -42,32 +41,43 @@ class Container extends Node {
     });
   }
 
-  private layoutFA(parent: Container, x: number, y: number, w: number, h: number) {
+  private layoutFA(parent: Container, x: number, y: number, w: number, h: number, isMeasure = false) {
     const { children, _style: style } = this;
     const isNewParent = [POSITION.RELATIVE, POSITION.ABSOLUTE].includes(this._computedStyle.position);
     let hasAbsChild = false;
     let y1 = y;
+    let maxWidth = 0;
     for (let i = 0, len = children.length; i < len; i++) {
       const child = children[i];
       if (child.style.position.v === POSITION.ABSOLUTE) {
         hasAbsChild = true;
       }
       else {
-        child.layoutFlow(isNewParent ? this : parent, x, y1, w, h);
+        child.layoutFlow(isNewParent ? this : parent, x, y1, w, h, isMeasure);
         y1 += child.computedStyle.height;
+        maxWidth = Math.max(maxWidth, child.computedStyle.width);
       }
     }
-    // 自动高要根据flow计算当前高度
+    // 自动要根据flow计算当前高度
+    let after = false;
+    if (style.width.v === StyleUnit.AUTO && style.position.v === POSITION.ABSOLUTE) {
+      this._computedStyle.width = maxWidth;
+      after = true;
+    }
     if (style.height.v === StyleUnit.AUTO) {
-      this.computedStyle.height = y1 - y;
+      this._computedStyle.height = y1 - y;
+      after = true;
+    }
+    if (!isMeasure && after) {
+      this.layoutAfter();
     }
     return hasAbsChild;
   }
 
-  override layoutFlow(parent: Container, x: number, y: number, w: number, h: number) {
-    super.layoutFlow(parent, x, y, w, h);
+  override layoutFlow(parent: Container, x: number, y: number, w: number, h: number, isMeasure = false) {
+    super.layoutFlow(parent, x, y, w, h, isMeasure);
     const { children } = this;
-    const hasAbsChild = this.layoutFA(parent, x, y, w, h);
+    const hasAbsChild = this.layoutFA(parent, x, y, w, h, isMeasure);
     // 自己是新的abs容器上下文才执行
     if (hasAbsChild) {
       for (let i = 0, len = children.length; i < len; i++) {
@@ -81,8 +91,12 @@ class Container extends Node {
 
   override layoutAbs(parent: Container, x: number, y: number, w: number, h: number) {
     super.layoutAbs(parent, x, y, w, h);
-    const { children } = this;
-    const hasAbsChild = this.layoutFA(parent, x, y, w, h);
+    const { children, _computedStyle: computedStyle } = this;
+    const hasAbsChild = this.layoutFA(parent, x, y, w, h, true);
+    const width = computedStyle.width;
+    this.layoutFA(parent, x, y, w, h, false);
+    computedStyle.width = width;
+    this.layoutAfter();
     if (hasAbsChild) {
       for (let i = 0, len = children.length; i < len; i++) {
         const child = children[i];

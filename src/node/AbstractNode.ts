@@ -119,7 +119,7 @@ abstract class AbstractNode extends Event {
   }
 
   abstract structure(lv: number): Struct[];
-  abstract layoutFlow(parent: Container, x: number, y: number, w: number, h: number): void
+  abstract layoutFlow(parent: Container, x: number, y: number, w: number, h: number, isMeasure: boolean): void
   abstract layoutAbs(parent: Container, x: number, y: number, w: number, h: number): void
   abstract calReflowStyle(): void;
   abstract calRepaintStyle(lv: RefreshLevel): void;

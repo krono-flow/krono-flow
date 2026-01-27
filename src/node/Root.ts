@@ -150,7 +150,7 @@ class Root extends Container {
 
   reLayout() {
     this.checkRoot();
-    this.layoutFlow(this, 0, 0, this._computedStyle.width, this._computedStyle.height);
+    this.layoutFlow(this, 0, 0, this._computedStyle.width, this._computedStyle.height, false);
     // this.layoutAbs(this, 0, 0, this._computedStyle.width, this._computedStyle.height);
     // this.layout({
     //   x: 0,
