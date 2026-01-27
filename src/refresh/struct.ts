@@ -35,13 +35,12 @@ export function renderWebgl(
     if (shouldIgnore(computedStyle)) {
       for (let j = i + 1; j < i + total; j++) {
         const node = structs[j].node;
-        calWorldMatrixAndOpacity(node, j, node.parent);
+        calWorldMatrixAndOpacity(node, j, node.parent || node.host?.parent);
       }
       i += total + next;
       continue;
     }
-    const { parent } = node;
-    calWorldMatrixAndOpacity(node, i, parent);
+    calWorldMatrixAndOpacity(node, i, node.parent || node.host?.parent);
     // 计算后的世界坐标结果
     const opacity = node._opacity;
     const matrix = node._matrixWorld;

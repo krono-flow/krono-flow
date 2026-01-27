@@ -3,11 +3,12 @@ import Event from '../util/Event';
 import { JStyle, Props } from '../format';
 import Root from './Root';
 import Container from './Container';
+import Component from './Component';
 import { ComputedStyle, Style } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
-import AbstractAnimation from '../animation/AbstractAnimation';
 import { Struct } from '../refresh/struct';
-import Component from './Component';
+import AbstractAnimation, { Options } from '../animation/AbstractAnimation';
+import { JKeyFrame } from '../animation/CssAnimation';
 
 export type ClientRect = OffsetRect & {
   width: number;
@@ -87,18 +88,20 @@ abstract class AbstractNode extends Event {
 
   didMount() {
     this.isMounted = true;
-    const parent = this.parent;
-    const host = this.host;
-    // 只有Root没有parent
-    if (!parent && !host) {
-      return;
+    let parent = this.parent;
+    let host = this.host;
+    if (!parent && host) {
+      parent = host.parent;
     }
-    this.parentOpId = (parent || host)!.localOpId;
-    this.parentMwId = (parent || host)!.localMwId;
-    const root = (this.root = (parent || host)!.root);
-    const uuid = this.uuid;
-    if (root && uuid) {
-      root.refs[uuid] = this;
+    // 只有Root没有parent没有host
+    if (parent) {
+      this.parentOpId = parent.localOpId;
+      this.parentMwId = parent.localMwId;
+      const root = (this.root = parent.root);
+      const uuid = this.uuid;
+      if (root && uuid) {
+        root.refs[uuid] = this;
+      }
     }
   }
 
@@ -247,6 +250,8 @@ abstract class AbstractNode extends Event {
   abstract adjustPosAndSizeSelf(dx1: number, dy1: number, dx2: number, dy2: number): void;
   abstract checkPosSizeUpward(): void;
   abstract adjustPosAndSize(): boolean;
+
+  abstract animate(keyFrames: JKeyFrame[], options: Options): AbstractAnimation;
 
   abstract get x(): number;
   abstract get y(): number;

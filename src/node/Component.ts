@@ -6,6 +6,8 @@ import { ComputedStyle, Style } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
 import { EMPTY_RECT } from '../math/bbox';
 import Container from './Container';
+import { JKeyFrame } from '../animation/CssAnimation';
+import AbstractAnimation, { Options } from '../animation/AbstractAnimation';
 
 export const PLACEHOLDER_NODE = new Node({
   uuid: 'PLACEHOLDER_NODE',
@@ -30,6 +32,7 @@ class Component extends AbstractNode {
   private readonly _clientRect!: ClientRect;
   private readonly _offsetRect!: OffsetRect;
   private readonly _struct!: Struct;
+  private readonly _abstractAnimation!: AbstractAnimation;
 
   declare props: ComponentProps;
 
@@ -280,6 +283,13 @@ class Component extends AbstractNode {
       return this._shadow.adjustPosAndSize();
     }
     return false;
+  }
+
+  animate(keyFrames: JKeyFrame[], options: Options) {
+    if (this._shadow) {
+      return this._shadow.animate(keyFrames, options);
+    }
+    return this._abstractAnimation;
   }
 
   get shadowRoot() {
