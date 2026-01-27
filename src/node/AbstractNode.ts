@@ -88,13 +88,14 @@ abstract class AbstractNode extends Event {
   didMount() {
     this.isMounted = true;
     const parent = this.parent;
+    const host = this.host;
     // 只有Root没有parent
-    if (!parent) {
+    if (!parent && !host) {
       return;
     }
-    this.parentOpId = parent.localOpId;
-    this.parentMwId = parent.localMwId;
-    const root = (this.root = parent.root);
+    this.parentOpId = (parent || host)!.localOpId;
+    this.parentMwId = (parent || host)!.localMwId;
+    const root = (this.root = (parent || host)!.root);
     const uuid = this.uuid;
     if (root && uuid) {
       root.refs[uuid] = this;
