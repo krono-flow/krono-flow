@@ -61,6 +61,7 @@ describe('Layout', () => {
           props: {
             uuid: 'c1',
             style: {
+              position: 'absolute',
               left: 10,
               top: 20,
               width: 30,
@@ -73,6 +74,7 @@ describe('Layout', () => {
           props: {
             uuid: 'c2',
             style: {
+              position: 'absolute',
               left: 10,
               top: 20,
               height: '10%',
