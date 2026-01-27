@@ -1,6 +1,5 @@
 import Event from '../util/Event';
 import AbstractNode, { NodeType } from '../node/AbstractNode';
-import Node from '../node/Node';
 import Text from '../node/Text';
 import Root from '../node/Root';
 import Select, { Rect } from './Select';
@@ -685,7 +684,7 @@ class Listener extends Event {
     }
   }
 
-  active(nodes: Node[]) {
+  active(nodes: AbstractNode[]) {
     const selected = this.selected;
     let diff = false;
     if (nodes.length !== selected.length) {
