@@ -467,7 +467,7 @@ class Text extends Node {
       // @ts-ignore
       ctx.letterSpacing = letterSpacing + 'px';
     }
-    let lineBox = new LineBox(y, lineHeight, i, false);
+    let lineBox = new LineBox(y1, lineHeight, i, false);
     lineBoxList.splice(0);
     lineBoxList.push(lineBox);
     // 布局考虑几种情况，是否自动宽和自动高，目前暂无自动宽+固定高
@@ -504,7 +504,7 @@ class Text extends Node {
         y1 += lineBox.height + paragraphSpacing;
         lineBox.verticalAlign();
         lineBox.endEnter = true;
-        lineBox = new LineBox(y, lineHeight, i, true);
+        lineBox = new LineBox(y1, lineHeight, i, true);
         lineBoxList.push(lineBox);
         continue;
       }
@@ -525,7 +525,7 @@ class Text extends Node {
         y1 += lineBox.height;
         if (i < length) {
           lineBox.verticalAlign();
-          lineBox = new LineBox(y, lineHeight, i, false);
+          lineBox = new LineBox(y1, lineHeight, i, false);
           lineBoxList.push(lineBox);
         }
         continue;
@@ -570,7 +570,7 @@ class Text extends Node {
         // 最后一行对齐外面做
         if (i < length) {
           lineBox.verticalAlign();
-          lineBox = new LineBox(y, lineHeight, i, false);
+          lineBox = new LineBox(y1, lineHeight, i, false);
           lineBoxList.push(lineBox);
         }
       }

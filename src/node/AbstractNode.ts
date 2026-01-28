@@ -93,14 +93,20 @@ abstract class AbstractNode extends Event {
     if (!parent && host) {
       parent = host.parent;
     }
+    const uuid = this.uuid;
     // 只有Root没有parent没有host
     if (parent) {
       this.parentOpId = parent.localOpId;
       this.parentMwId = parent.localMwId;
       const root = (this.root = parent.root);
-      const uuid = this.uuid;
-      if (root && uuid) {
+      if (!host && parent.host) {
+        host = this.host = parent.host;
+      }
+      if (root && uuid && (!host || !host.isShadowDom)) {
         root.refs[uuid] = this;
+      }
+      if (host) {
+        host.refs[uuid] = this;
       }
     }
   }

@@ -73,6 +73,7 @@ class Node extends AbstractNode {
   _filterBbox: Float32Array; // 包含filter/阴影内内容外的包围盒
   _animationList: AbstractAnimation[]; // 节点上所有的动画列表
   animationRecords?: (JCssAnimations | JTimeAnimations | JRichAnimations)[];
+  private measured: boolean;
 
   protected contentLoadingNum: number; // 标识当前一共有多少显示资源在加载中
 
@@ -113,6 +114,7 @@ class Node extends AbstractNode {
     this._bbox = new Float32Array([0, 0, 0, 0]);
     this._filterBbox = new Float32Array([0, 0, 0, 0]);
     this.tempBbox = null;
+    this.measured = false;
   }
 
   override didMount() {
@@ -162,7 +164,8 @@ class Node extends AbstractNode {
     let fixedBottom = false;
     if (left.u !== StyleUnit.AUTO) {
       fixedLeft = true;
-      this._x = computedStyle.left = x + calSize(left, w);
+      computedStyle.left = calSize(left, w);
+      this._x = x + computedStyle.left;
     }
     if (right.u !== StyleUnit.AUTO) {
       fixedRight = true;
@@ -170,7 +173,8 @@ class Node extends AbstractNode {
     }
     if (top.u !== StyleUnit.AUTO) {
       fixedTop = true;
-      this._y = computedStyle.top = y + calSize(top, h);
+      computedStyle.top = calSize(top, h);
+      this._y = computedStyle.top + y;
     }
     if (bottom.u !== StyleUnit.AUTO) {
       fixedBottom = true;
@@ -259,15 +263,17 @@ class Node extends AbstractNode {
 
   layoutFlow(parent: Node, x: number, y: number, w: number, h: number, isMeasure = false) {
     this.layoutBefore(x, y, w, h);
-    if (!isMeasure) {
+    if (isMeasure) {
+      this.measured = true;
+    }
+    else {
       const { _style: style, _computedStyle: computedStyle } = this;
       const { display, width } = style;
-      if (display.v === DISPLAY.BLOCK) {
-        if (width.u === StyleUnit.AUTO) {
-          computedStyle.width = w;
-        }
+      if (!this.measured && display.v === DISPLAY.BLOCK && width.u === StyleUnit.AUTO) {
+        computedStyle.width = w;
       }
       this.layoutAfter();
+      this.measured = false;
     }
   }
 

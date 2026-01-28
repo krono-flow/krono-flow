@@ -23,9 +23,10 @@ PLACEHOLDER_NODE.layoutFlow(PLACEHOLDER_NODE, 0, 0, 0, 0);
 
 class Component<T extends ComponentProps = ComponentProps> extends AbstractNode {
   children: AbstractNode[];
+  refs: Record<string, AbstractNode>;
+  private readonly _isShadowDom: boolean;
   private readonly _shadowRoot?: AbstractNode;
   private readonly _shadow?: Node;
-  refs: Record<string, AbstractNode>;
   private readonly _float32Array!: Float32Array;
   private readonly _jStyle!: JStyle;
   private readonly _style!: Style;
@@ -43,6 +44,7 @@ class Component<T extends ComponentProps = ComponentProps> extends AbstractNode 
     this.isComponent = true;
     this.children = children;
     this.refs = {};
+    this._isShadowDom = !!props.isShadowDom;
     let sr = this._shadowRoot = this.render() || undefined;
     while (sr) {
       if (sr.isComponent) {
@@ -411,6 +413,10 @@ class Component<T extends ComponentProps = ComponentProps> extends AbstractNode 
       return this._shadow._animationList;
     }
     return [];
+  }
+
+  get isShadowDom() {
+    return this._isShadowDom;
   }
 }
 

@@ -5,20 +5,22 @@ import { pointInRect } from '../math/geom';
 import { MASK, VISIBILITY } from '../style/define';
 import Component from '../node/Component';
 
-function getChildByPoint(parent: Container, x: number, y: number, recursionComponent = false): AbstractNode | undefined {
+function getChildByPoint(parent: Container, x: number, y: number, recursionComponent?: boolean): AbstractNode | undefined {
   const children = parent.children;
   for (let i = children.length - 1; i >= 0; i--) {
     let child = children[i];
     let isComponent = false;
     if (child.type === NodeType.COMPONENT) {
-      child = (child as Component).shadow!;
+      const shadow = (child as Component).shadow!;
       // 可能为空，上面!只是防止报错
-      if (!child) {
-        if (!recursionComponent) {
-          break;
-        }
+      if (!shadow && !recursionComponent) {
         continue;
       }
+      // 一般shadowDom不递归，除非强制
+      if ((child as Component).isShadowDom && recursionComponent !== true) {
+        continue;
+      }
+      child = shadow;
       isComponent = true;
     }
     const { matrixWorld } = child;

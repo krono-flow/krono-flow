@@ -96,7 +96,6 @@ class Container extends Node {
     const width = computedStyle.width;
     this.layoutFA(parent, x, y, w, h, false);
     computedStyle.width = width;
-    this.layoutAfter();
     if (hasAbsChild) {
       for (let i = 0, len = children.length; i < len; i++) {
         const child = children[i];
