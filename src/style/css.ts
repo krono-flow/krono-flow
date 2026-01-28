@@ -137,7 +137,7 @@ export function normalize(style: Partial<JStyle>) {
       v: style.fontFamily
         .trim()
         .replace(/['"]/g, '')
-        .replace(/\s*,\s*/g, ','),
+        .replace(/\s*,\s*/g, ',') || config.defaultFontFamily,
       u: StyleUnit.STRING,
     };
   }

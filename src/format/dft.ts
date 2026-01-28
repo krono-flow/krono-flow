@@ -13,6 +13,7 @@ import {
   TEXT_VERTICAL_ALIGN,
   VISIBILITY,
 } from '../style/define';
+import config from '../config';
 
 export const DEFAULT_STYLE = {
   position: 'static',
@@ -24,8 +25,8 @@ export const DEFAULT_STYLE = {
   width: 'auto',
   height: 'auto',
   lineHeight: 'normal',
-  fontFamily: 'Arial',
-  fontSize: 16,
+  fontFamily: config.defaultFontFamily,
+  fontSize: config.defaultFontSize,
   fontWeight: 400,
   fontStyle: 'normal',
   letterSpacing: 0,

@@ -22,7 +22,9 @@ export type RootProps = Props & {
   };
 }
 
-export type ComponentProps = Props & {}
+export type ComponentProps = Props & {
+  isShadowDom?: boolean;
+}
 
 export type JPoint = {
   x: number;

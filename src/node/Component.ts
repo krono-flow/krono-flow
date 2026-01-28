@@ -21,7 +21,7 @@ export const PLACEHOLDER_NODE = new Node({
 });
 PLACEHOLDER_NODE.layoutFlow(PLACEHOLDER_NODE, 0, 0, 0, 0);
 
-class Component extends AbstractNode {
+class Component<T extends ComponentProps = ComponentProps> extends AbstractNode {
   private readonly _shadowRoot?: AbstractNode;
   private readonly _shadow?: Node;
   refs: Record<string, AbstractNode>;
@@ -34,9 +34,9 @@ class Component extends AbstractNode {
   private readonly _struct!: Struct;
   private readonly _abstractAnimation!: AbstractAnimation;
 
-  declare props: ComponentProps;
+  declare props: T;
 
-  constructor(props: ComponentProps) {
+  constructor(props: T) {
     super(props);
     this.type = NodeType.COMPONENT;
     this.isComponent = true;
