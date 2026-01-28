@@ -60,11 +60,11 @@ class Container extends Node {
     }
     // 自动要根据flow计算当前高度
     let after = false;
-    if (style.width.v === StyleUnit.AUTO && style.position.v === POSITION.ABSOLUTE) {
+    if (style.width.u === StyleUnit.AUTO && (style.position.v === POSITION.ABSOLUTE || isMeasure)) {
       this._computedStyle.width = maxWidth;
       after = true;
     }
-    if (style.height.v === StyleUnit.AUTO) {
+    if (style.height.u === StyleUnit.AUTO) {
       this._computedStyle.height = y1 - y;
       after = true;
     }
@@ -94,7 +94,7 @@ class Container extends Node {
     const { children, _computedStyle: computedStyle } = this;
     const hasAbsChild = this.layoutFA(parent, x, y, w, h, true);
     const width = computedStyle.width;
-    this.layoutFA(parent, x, y, w, h, false);
+    this.layoutFA(parent, x, y, width, computedStyle.height, false);
     computedStyle.width = width;
     if (hasAbsChild) {
       for (let i = 0, len = children.length; i < len; i++) {

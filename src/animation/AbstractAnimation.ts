@@ -9,7 +9,7 @@ export type Options = {
   fill?: 'none' | 'forwards' | 'backwards' | 'both';
   delay?: number;
   endDelay?: number;
-  easing?: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut' | number[] | ((v: number) => number);
+  easing?: string | number[] | ((v: number) => number);
   iterations?: number;
   iterationStart?: number;
   playbackRate?: number;
