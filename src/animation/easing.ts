@@ -3,6 +3,7 @@
  * BezierEasing - use bezier curve for transition easing function
  * by Gaëtan Renaudeau 2014 - 2015 – MIT License
  */
+import { isFunction, isString } from '../util/type';
 
 // These values are established by empiricism with tests (tradeoff: performance VS precision)
 let NEWTON_ITERATIONS = 4;
@@ -115,6 +116,67 @@ function bezier(mX1: number, mY1: number, mX2: number, mY2: number) {
   };
 }
 
+function getSteps(number: number, direction: 'end' | 'start' | 'none' | 'both' = 'end') {
+  return function(p: number) {
+    if (p < 0) {
+      return 0;
+    }
+    if (p >= 1) {
+      return 1;
+    }
+    if (direction === 'end') {
+      return Math.min(1, Math.floor(p * number) / number);
+    }
+    else if (direction === 'start') {
+      return Math.min(1, (Math.floor(p * number) + 1) / number);
+    }
+    else if (direction === 'none' && number >= 2) {
+      return Math.min(1, Math.floor(p * (number - 1)) / (number - 1));
+    }
+    else if (direction === 'both') {
+      return Math.min(1, Math.floor(p * (number + 1) + 1) / (number + 1));
+    }
+    return p;
+  }
+}
+
+export function normalizeEasing(ea: string | number[] | ((v: number) => number)) {
+  if (isFunction(ea)) {
+    return ea as (v: number) => number;
+  }
+  else if (Array.isArray(ea)) {
+    return bezier(ea[0], ea[1], ea[2], ea[3]);
+  }
+  else if (isString(ea)) {
+    if (ea === 'linear' || ea === 'easeIn' || ea === 'easeOut' || ea === 'easeInOut') {
+      return easing[ea];
+    }
+    const m = /steps\s*\((\d+\.?\d*)\s*(?:,\s*([\w-]+)\s*)?\s*\)/.exec(ea as string);
+    if (m && m.length) {
+      const number = parseInt(m[1]);
+      if (number >= 1) {
+        let direction: 'end' | 'start' | 'none' | 'both' = 'end';
+        if (/start/.test(m[2])) {
+          direction = 'start';
+        }
+        else if (/none/.test(m[2])) {
+          direction = 'none';
+        }
+        else if (/both/.test(m[2])) {
+          direction = 'both';
+        }
+        return getSteps(number, direction);
+      }
+    }
+  }
+  else if (ea === 'stepStart') {
+    return getSteps(1, 'start');
+  }
+  else if (ea === 'stepEnd') {
+    return getSteps(1, 'end');
+  }
+}
+
 const easing = {
   linear: bezier(1, 1, 0, 0),
   easeIn: bezier(0.42, 0, 1, 1),
@@ -122,23 +184,7 @@ const easing = {
   ease: bezier(0.25, 0.1, 0.25, 1),
   easeInOut: bezier(0.42, 0, 0.58, 1),
   cubicBezier: bezier,
-  getEasing(v: number | number[], v1?: number, v2?: number, v3?: number) {
-    if(arguments.length === 4) {
-      return bezier(v as number, v1!, v2!, v3!);
-    }
-    else if(Array.isArray(v) && v.length === 4) {
-      return bezier(v[0], v[1], v[2], v[3]);
-    }
-    else if(v) {
-      const vs = v.toString();
-      let timingFunction;
-      if(/^\s*(?:cubic-bezier\s*)?\(\s*[\d.]+\s*,\s*[-\d.]+\s*,\s*[\d.]+\s*,\s*[-\d.]+\s*\)\s*$/i.test(vs)) {
-        const m = vs.match(/[\d.]+/g)!;
-        timingFunction = bezier(parseFloat(m[0]), parseFloat(m[1]), parseFloat(m[2]), parseFloat(m[3]));
-      }
-      return timingFunction;
-    }
-  },
+  normalizeEasing,
 };
 
 export default easing;

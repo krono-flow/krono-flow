@@ -1,6 +1,5 @@
 import Event from '../util/Event';
 import Node from '../node/Node';
-import { isFunction } from '../util/type';
 import easing from './easing';
 import { BEGIN, END, FRAME } from './animationEvent';
 
@@ -50,15 +49,7 @@ abstract class AbstractAnimation extends Event {
     this.delay = Math.max(0, options.delay || 0);
     this.endDelay = Math.max(0, options.endDelay || 0);
     if (options.easing) {
-      if (isFunction(options.easing)) {
-        this.easing = options.easing as (v: number) => number;
-      }
-      else if (Array.isArray(options.easing)) {
-        this.easing = easing.getEasing(options.easing as number[]);
-      }
-      else {
-        this.easing = easing[options.easing as 'linear' | 'easeIn' | 'easeOut' | 'easeInOut'];
-      }
+      this.easing = easing.normalizeEasing(options.easing);
     }
     this.iterations = options.iterations || 1;
     this.playbackRate = options.playbackRate || 1;

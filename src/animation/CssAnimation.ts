@@ -2,7 +2,7 @@ import AbstractAnimation, { Options } from './AbstractAnimation';
 import Node from '../node/Node';
 import { JStyle } from '../format';
 import easing from './easing';
-import { isFunction, isNumber, isString } from '../util/type';
+import { isNumber } from '../util/type';
 import {
   Bloom,
   GaussBlur,
@@ -341,7 +341,7 @@ function parseKeyFrames(node: Node, jKeyFrames: JKeyFrame[], duration: number, e
       fixed: [],
     };
     if (item.easing) {
-      o.easing = normalizeEasing(item.easing);
+      o.easing = easing.normalizeEasing(item.easing);
     }
     keyFrames.push(o);
   }
@@ -450,18 +450,6 @@ export function normalizeKeyFramesOsEs(jKeyFrames: JOsEs[]) {
     }
   }
   return list;
-}
-
-export function normalizeEasing(ea: string | number[] | ((v: number) => number)) {
-  if (isFunction(ea)) {
-    return ea as (v :number) => number;
-  }
-  else if (Array.isArray(ea)) {
-    return easing.getEasing(ea as number[]);
-  }
-  else if (isString(ea)) {
-    return easing[ea as 'linear' | 'easeIn' | 'easeOut' | 'easeInOut'];
-  }
 }
 
 export function getCurrentFrames<KF>(direction: string, playCount: number, keyFrames: KF[], keyFramesR: KF[]) {

@@ -4,7 +4,6 @@ import {
   getCurrentFrames,
   getPercent,
   GradientTransition,
-  normalizeEasing,
   normalizeKeyFramesOsEs,
   TextShadowTransition,
 } from './CssAnimation';
@@ -20,6 +19,7 @@ import {
   StyleUnit,
 } from '../style/define';
 import { cloneStyle, cloneStyleItem, normalizeRich } from '../style/css';
+import easing from './easing';
 
 export type JKeyFrameRich = {
   rich: JRich[],
@@ -282,7 +282,7 @@ function parseKeyFrames(node: Text, jKeyFrames: JKeyFrameRich[], duration: numbe
       fixed: [],
     };
     if (item.easing) {
-      o.easing = normalizeEasing(item.easing);
+      o.easing = easing.normalizeEasing(item.easing);
     }
     keyFrames.push(o);
     for (let j = 0, len2 = item.rich.length; j < len2; j++) {
