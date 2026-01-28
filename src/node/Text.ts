@@ -690,14 +690,6 @@ class Text extends Node {
     }
   }
 
-  // override layoutFlow(parent: Node, x: number, y: number, w: number, h: number, isMeasure = false) {
-  //   super.layoutFlow(parent, x, y, w, h, isMeasure);
-  //   if (isMeasure) {
-  //     const lineBoxList = this.lineBoxList;
-  //     console.log(lineBoxList);
-  //   }
-  // }
-
   // 删除一段文字内容并修改移除对应的rich，一般是选区删除时引发的
   private cutRich(start: number, end: number) {
     const rich = this.rich;

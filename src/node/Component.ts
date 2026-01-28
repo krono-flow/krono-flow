@@ -22,6 +22,7 @@ export const PLACEHOLDER_NODE = new Node({
 PLACEHOLDER_NODE.layoutFlow(PLACEHOLDER_NODE, 0, 0, 0, 0);
 
 class Component<T extends ComponentProps = ComponentProps> extends AbstractNode {
+  children: AbstractNode[];
   private readonly _shadowRoot?: AbstractNode;
   private readonly _shadow?: Node;
   refs: Record<string, AbstractNode>;
@@ -36,10 +37,11 @@ class Component<T extends ComponentProps = ComponentProps> extends AbstractNode 
 
   declare props: T;
 
-  constructor(props: T) {
+  constructor(props: T, children: AbstractNode[] = []) {
     super(props);
     this.type = NodeType.COMPONENT;
     this.isComponent = true;
+    this.children = children;
     this.refs = {};
     let sr = this._shadowRoot = this.render() || undefined;
     while (sr) {

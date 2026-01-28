@@ -8,21 +8,31 @@ import Root from '../node/Root';
 import Lottie from '../node/Lottie';
 import Polyline from '../node/geom/Polyline';
 import { Item, ItemRoot, ParserOptions } from './define';
+import AbstractNode from '../node/AbstractNode';
+import Component from '../node/Component';
 
-export function parseJSON(json: Item | Node) {
-  if (json instanceof Node) {
+export function parseJSON(json: Item | AbstractNode) {
+  if (json instanceof AbstractNode) {
     return json;
   }
   const { tagName, props, animations } = json;
   if (!tagName) {
     throw new Error('Missing tagName');
   }
-  let node: Node;
+  let node: AbstractNode;
   if (tagName === 'container') {
     if(json.children && !Array.isArray(json.children)) {
       throw new Error('Children must be an array');
     }
     node = new Container(props, (json.children || []).map(item => {
+      return parseJSON(item);
+    }));
+  }
+  else if (tagName === 'component') {
+    if(json.children && !Array.isArray(json.children)) {
+      throw new Error('Children must be an array');
+    }
+    node = new Component(props, (json.children || []).map(item => {
       return parseJSON(item);
     }));
   }
@@ -51,7 +61,15 @@ export function parseJSON(json: Item | Node) {
     if (!Array.isArray(animations)) {
       throw new Error('Animations must be an array');
     }
-    node.animationRecords = animations;
+    if (node.isComponent) {
+      const shadow = (node as Component).shadow;
+      if (shadow) {
+        shadow.animationRecords = animations;
+      }
+    }
+    else {
+      (node as Node).animationRecords = animations;
+    }
   }
   return node;
 }

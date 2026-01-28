@@ -3,7 +3,7 @@ import { JKeyFrame } from '../animation/CssAnimation';
 import { JKeyFrameRich } from '../animation/RichAnimation';
 import {
   AudioProps,
-  BitmapProps,
+  BitmapProps, ComponentProps,
   LottieProps,
   PolylineProps,
   Props,
@@ -11,7 +11,7 @@ import {
   TextProps,
   VideoProps
 } from '../format';
-import Node from '../node/Node';
+import AbstractNode from '../node/AbstractNode';
 
 export type JCssAnimations = {
   keyframes: JKeyFrame[];
@@ -31,7 +31,7 @@ export type JRichAnimations = {
 export type Item = {
   tagName: 'container';
   props: Props;
-  children?: (Item | Node)[];
+  children?: (Item | AbstractNode)[];
   animations?: JCssAnimations[];
 } | {
   tagName: 'img';
@@ -57,12 +57,17 @@ export type Item = {
   tagName: 'polyline';
   props: PolylineProps;
   animations?: JCssAnimations[];
+} | {
+  tagName: 'component';
+  props: ComponentProps;
+  children?: (Item | AbstractNode)[];
+  animations?: JCssAnimations[];
 };
 
 export type ItemRoot = {
   tagName: 'root',
   props: RootProps,
-  children?: (Item | Node)[],
+  children?: (Item | AbstractNode)[],
 };
 
 export type ParserOptions = {
