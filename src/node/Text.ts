@@ -45,6 +45,7 @@ import { calPoint, inverse4 } from '../math/matrix';
 import { JKeyFrameRich, RichAnimation } from '../animation/RichAnimation';
 import { Options } from '../animation/AbstractAnimation';
 import { ceilBbox } from '../math/bbox';
+import { CONTENT_CHANGE } from './textEvent';
 
 export type EditStyle = {
   isLeft: boolean;
@@ -3343,6 +3344,7 @@ class Text extends Node {
     if (this._content !== v) {
       this._content = v;
       this.refresh(RefreshLevel.REFLOW);
+      this.emit(CONTENT_CHANGE);
     }
   }
 }

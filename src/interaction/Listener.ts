@@ -122,9 +122,9 @@ class Listener extends Event {
     this.originStyle = selected.map((item) => item.getStyle());
   }
 
-  getNode(x: number, y: number) {
+  getNode(x: number, y: number, isDbl = false) {
     let meta = this.metaKey || isWin && this.ctrlKey;
-    return getNodeByPoint(this.root, x, y, meta);
+    return getNodeByPoint(this.root, x, y, meta, this.selected, isDbl);
   }
 
   onMouseDown(e: MouseEvent) {

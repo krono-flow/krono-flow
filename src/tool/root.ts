@@ -5,7 +5,7 @@ import { pointInRect } from '../math/geom';
 import { MASK, VISIBILITY } from '../style/define';
 import Component from '../node/Component';
 
-function getChildByPoint(parent: Container, x: number, y: number, recursionComponent?: boolean): AbstractNode | undefined {
+function getChildByPoint(parent: Container, x: number, y: number, recursionComponent = false): AbstractNode | undefined {
   const children = parent.children;
   for (let i = children.length - 1; i >= 0; i--) {
     let child = children[i];
@@ -16,8 +16,8 @@ function getChildByPoint(parent: Container, x: number, y: number, recursionCompo
       if (!shadow && !recursionComponent) {
         continue;
       }
-      // 一般shadowDom不递归，除非强制
-      if ((child as Component).isShadowDom && recursionComponent !== true) {
+      // shadowDom不递归
+      if ((child as Component).isShadowDom) {
         continue;
       }
       child = shadow;
@@ -73,8 +73,9 @@ function isInMask(node: AbstractNode, x: number, y: number) {
   return false;
 }
 
-export function getNodeByPoint(root: Root, x: number, y: number, metaKey = false) {
-  const res = getChildByPoint(root, x, y);
+export function getNodeByPoint(root: Root, x: number, y: number, metaKey = false, selected: AbstractNode[], isDbl = false) {
+  // meta尝试选择叶子结点
+  const res = getChildByPoint(root, x, y, metaKey);
   if (metaKey) {}
   return res;
 }
