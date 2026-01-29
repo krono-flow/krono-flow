@@ -4,11 +4,12 @@ import { onMessage } from '../encoder';
 import { CAN_PLAY, REFRESH_COMPLETE } from '../refresh/refreshEvent';
 import TimeAnimation from '../animation/TimeAnimation';
 import { reSample, sliceAudioBuffer } from './sound';
-import { AudioChunk, EncodeOptions, EncoderMessageEvent, EncoderMessageType, VideoEncoderEvent } from './define';
+import { AudioChunk, EncodeOptions, EncoderMessageEvent, EncoderMessageType } from './define';
 import AbstractEncoder from './AbstractEncoder';
 import { NodeType } from '../node/AbstractNode';
 import Audio from '../node/Audio';
 import Video from '../node/Video';
+import { START, PROGRESS, FINISH, ERROR } from './encoderEvent';
 
 let worker: Worker;
 let messageId = 0;
@@ -81,14 +82,14 @@ export class MbVideoEncoder extends AbstractEncoder {
     else {
       await onMessage({ data: mes } as any);
     }
-    this.emit(VideoEncoderEvent.START, num);
+    this.emit(START, num);
     // 记录每个node的当前时间的音频有没有提取过，避免encode重复，已node的id+时间做key
     const audioRecord: Record<string, true> = {};
     for (let i = 0; i < num; i++) {
       const timestamp = (i + begin) * spf;
       // console.warn('encode>>>>>>>>>>>>>>>>', i, num, timestamp);
       root.aniController.gotoAndStop(timestamp);
-      this.emit(VideoEncoderEvent.PROGRESS, i, num, true);
+      this.emit(PROGRESS, i, num, true);
       await new Promise<void>((resolve, reject) => {
         const frameCb = async () => {
           const bitmap = await createImageBitmap(root.canvas!);
@@ -157,11 +158,11 @@ export class MbVideoEncoder extends AbstractEncoder {
           }>) => {
             if (e.data.type === EncoderMessageEvent.PROGRESS) {
               resolve();
-              this.emit(VideoEncoderEvent.PROGRESS, i, num, false);
+              this.emit(PROGRESS, i, num, false);
             }
             else {
               reject(e.data.error);
-              this.emit(VideoEncoderEvent.ERROR, e.data.error);
+              this.emit(ERROR, e.data.error);
             }
           };
           const mes = {
@@ -214,7 +215,7 @@ export class MbVideoEncoder extends AbstractEncoder {
         if (e.data.type === EncoderMessageEvent.FINISH) {
           resolve(e.data.buffer);
         }
-        this.emit(VideoEncoderEvent.FINISH);
+        this.emit(FINISH);
       };
       const mes = {
         type: EncoderMessageType.END,

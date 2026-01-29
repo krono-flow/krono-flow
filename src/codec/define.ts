@@ -96,15 +96,6 @@ export type VideoAudioMeta = {
   fileSize: number;
 };
 
-export enum VideoDecoderEvent {
-  META = 'meta',
-  LOADED = 'loaded',
-  ERROR = 'error',
-  PROGRESS = 'progress',
-  CANPLAY = 'canplay',
-  AUDIO_BUFFER = 'audio_buffer',
-}
-
 export enum CacheState {
   NONE = 0,
   LOADING_META = 1,
@@ -135,13 +126,6 @@ export type CacheGOP = SimpleGOP & {
   users: AbstractDecoder[],
 };
 
-export enum VideoEncoderEvent {
-  START = 'start',
-  PROGRESS = 'progress',
-  FINISH = 'finish',
-  ERROR = 'error',
-}
-
 export type EncodeOptions = {
   timestamp?: number;
   duration?: number;
@@ -155,7 +139,5 @@ export default {
   EncoderMessageType,
   EncoderMessageEvent,
   GOPState,
-  VideoDecoderEvent,
-  VideoEncoderEvent,
   CacheState,
 };

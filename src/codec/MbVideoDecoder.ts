@@ -6,12 +6,12 @@ import {
   DecoderMessageEvent,
   DecoderMessageType,
   GOPState,
-  VideoDecoderEvent,
   SimpleGOP,
 } from './define';
 import { onMessage } from '../decoder';
 import config from '../config';
 import AbstractDecoder from './AbstractDecoder';
+import { META, CANPLAY, AUDIO_BUFFER, ERROR } from './decoderEvent';
 
 const HASH: Record<string, Cache> = {};
 
@@ -67,7 +67,7 @@ export class MbVideoDecoder extends AbstractDecoder {
         cache.metaList.splice(0).forEach(item => {
           // 设置gopIndex
           item.start(item.currentTime);
-          item.emit(VideoDecoderEvent.META, data.meta);
+          item.emit(META, data.meta);
         });
       }
       // 一个gop解码完成
@@ -102,11 +102,11 @@ export class MbVideoDecoder extends AbstractDecoder {
           }
           gop.users.forEach(item => {
             if (item.gopIndex === gop.index) {
-              item.emit(VideoDecoderEvent.CANPLAY, gop);
+              item.emit(CANPLAY, gop);
             }
             // 后续的gop音频添加通知
             if (gop.audioBuffer && item.gopIndex < gop.index) {
-              item.emit(VideoDecoderEvent.AUDIO_BUFFER, gop);
+              item.emit(AUDIO_BUFFER, gop);
             }
           });
         }
@@ -114,7 +114,7 @@ export class MbVideoDecoder extends AbstractDecoder {
       else if (type === DecoderMessageEvent.ERROR) {
         cache.metaList.forEach(item => {
           item.error = true;
-          item.emit(VideoDecoderEvent.ERROR, data);
+          item.emit(ERROR, data);
         });
       }
     };
@@ -150,12 +150,12 @@ export class MbVideoDecoder extends AbstractDecoder {
         if (!cache.loadList.includes(this)) {
           cache.loadList.push(this);
           cache.count++;
-          this.emit(VideoDecoderEvent.META, cache.meta);
+          this.emit(META, cache.meta);
         }
         this.process(time);
       }
       else if (cache.state === CacheState.ERROR) {
-        this.emit(VideoDecoderEvent.ERROR, cache.error);
+        this.emit(ERROR, cache.error);
       }
       return;
     }
@@ -348,7 +348,7 @@ export class MbVideoDecoder extends AbstractDecoder {
     // 线程异步可能别的gop解码完成了，也可能自己解码完成，播放时不停调用
     if (gop.state === GOPState.DECODED) {
       if (isNewer) {
-        this.emit(VideoDecoderEvent.CANPLAY, gop);
+        this.emit(CANPLAY, gop);
       }
       return;
     }

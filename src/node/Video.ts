@@ -8,7 +8,8 @@ import CanvasCache from '../refresh/CanvasCache';
 import { Options } from '../animation/AbstractAnimation';
 import TimeAnimation from '../animation/TimeAnimation';
 import config from '../config';
-import { GOPState, VideoAudioMeta, VideoDecoderEvent } from '../codec/define';
+import { GOPState, VideoAudioMeta } from '../codec/define';
+import decoderEvent from '../codec/decoderEvent';
 import AbstractDecoder from '../codec/AbstractDecoder';
 import codec from '../codec';
 import inject from '../util/inject';
@@ -57,7 +58,7 @@ class Video extends Node {
       }
       const DC = codec.getDecoder();
       const decoder = this._decoder = new DC(src);
-      decoder.on(VideoDecoderEvent.META, e => {
+      decoder.on(decoderEvent.META, e => {
         this._metaData = e;
         if (this._currentTime >= 0 && this._currentTime < e.duration) {
           this.contentLoadingNum = 1;
@@ -79,7 +80,7 @@ class Video extends Node {
         }
         this.emit(META, e);
       });
-      decoder.on(VideoDecoderEvent.ERROR, e => {
+      decoder.on(decoderEvent.ERROR, e => {
         inject.error(e);
         this.contentLoadingNum = 0;
         if (this.onError) {
@@ -88,7 +89,7 @@ class Video extends Node {
         this.emit(ERROR, e);
         this.refresh();
       });
-      decoder.on(VideoDecoderEvent.CANPLAY, gop => {
+      decoder.on(decoderEvent.CANPLAY, gop => {
         const frame = decoder.getFrameByTime(this._currentTime);
         this.videoFrame = frame;
         this.contentLoadingNum = 0;
@@ -98,7 +99,7 @@ class Video extends Node {
         this.emit(CAN_PLAY);
         this.refresh();
       });
-      decoder.on([VideoDecoderEvent.CANPLAY, VideoDecoderEvent.AUDIO_BUFFER], gop => {
+      decoder.on([decoderEvent.CANPLAY, decoderEvent.AUDIO_BUFFER], gop => {
         const root = this.root;
         if (!root || !gop.audioBuffer) {
           return;
