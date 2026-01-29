@@ -3,7 +3,7 @@ import Node from './Node';
 import { Props } from '../format';
 import { RefreshLevel } from '../refresh/level';
 import inject from '../util/inject';
-import { POSITION, StyleUnit } from '../style/define';
+import { Position, StyleUnit } from '../style/define';
 
 class Container extends Node {
   children: AbstractNode[];
@@ -43,13 +43,13 @@ class Container extends Node {
 
   private layoutFA(parent: Container, x: number, y: number, w: number, h: number, isMeasure = false) {
     const { children, _style: style } = this;
-    const isNewParent = [POSITION.RELATIVE, POSITION.ABSOLUTE].includes(this._computedStyle.position);
+    const isNewParent = [Position.RELATIVE, Position.ABSOLUTE].includes(this._computedStyle.position);
     let hasAbsChild = false;
     let y1 = y;
     let maxWidth = 0;
     for (let i = 0, len = children.length; i < len; i++) {
       const child = children[i];
-      if (child.style.position.v === POSITION.ABSOLUTE) {
+      if (child.style.position.v === Position.ABSOLUTE) {
         hasAbsChild = true;
       }
       else {
@@ -60,7 +60,7 @@ class Container extends Node {
     }
     // 自动要根据flow计算当前高度
     let after = false;
-    if (style.width.u === StyleUnit.AUTO && (style.position.v === POSITION.ABSOLUTE || isMeasure)) {
+    if (style.width.u === StyleUnit.AUTO && (style.position.v === Position.ABSOLUTE || isMeasure)) {
       this._computedStyle.width = maxWidth;
       after = true;
     }
@@ -82,7 +82,7 @@ class Container extends Node {
     if (hasAbsChild) {
       for (let i = 0, len = children.length; i < len; i++) {
         const child = children[i];
-        if (child.style.position.v === POSITION.ABSOLUTE) {
+        if (child.style.position.v === Position.ABSOLUTE) {
           child.layoutAbs(parent, this._x, this._y, parent.computedStyle.width, parent.computedStyle.height);
         }
       }
@@ -99,7 +99,7 @@ class Container extends Node {
     if (hasAbsChild) {
       for (let i = 0, len = children.length; i < len; i++) {
         const child = children[i];
-        if (child.style.position.v === POSITION.ABSOLUTE) {
+        if (child.style.position.v === Position.ABSOLUTE) {
           child.layoutAbs(this, this._x, this._y, this.computedStyle.width, this.computedStyle.height);
         }
       }

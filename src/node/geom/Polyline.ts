@@ -5,7 +5,7 @@ import { LayoutData } from '../../refresh/layout';
 import { RefreshLevel } from '../../refresh/level';
 import { buildPoints } from './point';
 import { getPointsRect, resetBbox } from '../../math/bbox';
-import { STROKE_POSITION } from '../../style/define';
+import { StrokePosition } from '../../style/define';
 import { lineCap, lineJoin } from './border';
 
 class Polyline extends Node {
@@ -101,10 +101,10 @@ class Polyline extends Node {
     strokeWidth.forEach((item, i) => {
       if (strokeEnable[i]) {
         // line很特殊，没有粗细高度，描边固定等同于center
-        if (strokePosition[i] === STROKE_POSITION.OUTSIDE && isClosed) {
+        if (strokePosition[i] === StrokePosition.OUTSIDE && isClosed) {
           border = Math.max(border, item);
         }
-        else if (strokePosition[i] === STROKE_POSITION.CENTER || !isClosed) {
+        else if (strokePosition[i] === StrokePosition.CENTER || !isClosed) {
           border = Math.max(border, item * 0.5);
         }
       }

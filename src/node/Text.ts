@@ -5,20 +5,20 @@ import { JStyle, ModifyJRichStyle, TextProps } from '../format';
 import {
   ComputedGradient,
   ComputedRich,
-  ComputedTextShadow,
-  GRADIENT,
+  ComputedShadow,
+  GradientType,
   ModifyRichStyle,
   Rich,
   RICH_KEYS,
-  STROKE_LINE_CAP,
-  STROKE_LINE_JOIN,
-  STROKE_POSITION,
+  StrokeLineCap,
+  StrokeLineJoin,
+  StrokePosition,
   Style,
   StyleUnit,
-  TEXT_ALIGN,
-  TEXT_DECORATION,
-  TEXT_VERTICAL_ALIGN,
-  VISIBILITY,
+  TextAlign,
+  TextDecoration,
+  TextVerticalAlign,
+  Visibility,
 } from '../style/define';
 import inject from '../util/inject';
 import { color2rgbaStr } from '../style/color';
@@ -277,12 +277,12 @@ class Text extends Node {
         oldRect.left = computedStyle.left + calSize(style.translateX, oldWidth);
         oldRect.right = oldRect.left + oldWidth;
         let textAlign = computedStyle.textAlign;
-        if (textAlign === TEXT_ALIGN.LEFT) {
+        if (textAlign === TextAlign.LEFT) {
           const v = d * transformOrigin[0].v * 0.01;
           this.adjustPosAndSizeSelf(v, 0, v, 0);
           reset = true;
         }
-        else if (textAlign === TEXT_ALIGN.RIGHT) {
+        else if (textAlign === TextAlign.RIGHT) {
           const v = d * transformOrigin[0].v * 0.01;
           this.adjustPosAndSizeSelf(-v, 0, -v, 0);
           reset = true;
@@ -311,12 +311,12 @@ class Text extends Node {
         oldRect.top = computedStyle.top + calSize(style.translateY, oldHeight);
         oldRect.bottom = oldRect.top + oldHeight;
         let textVerticalAlign = computedStyle.textVerticalAlign;
-        if (textVerticalAlign === TEXT_VERTICAL_ALIGN.TOP) {
+        if (textVerticalAlign === TextVerticalAlign.TOP) {
           const v = d * transformOrigin[1].v * 0.01;
           this.adjustPosAndSizeSelf(0, v, 0, v);
           reset = true;
         }
-        else if (textVerticalAlign === TEXT_VERTICAL_ALIGN.BOTTOM) {
+        else if (textVerticalAlign === TextVerticalAlign.BOTTOM) {
           const v = d * transformOrigin[1].v * 0.01;
           this.adjustPosAndSizeSelf(0, -v, 0, -v);
           reset = true;
@@ -393,13 +393,13 @@ class Text extends Node {
     let fontFamily: string;
     let fontSize: number;
     let color: string;
-    let textDecoration: TEXT_DECORATION[];
-    let textShadow: ComputedTextShadow | undefined;
+    let textDecoration: TextDecoration[];
+    let textShadow: ComputedShadow | undefined;
     let stroke: (number[] | ComputedGradient)[];
     let strokeWidth: number[];
     let strokeEnable: boolean[];
     let opacity: number;
-    let visibility: VISIBILITY;
+    let visibility: Visibility;
     let maxW = 0;
     let x1 = 0;
     let y1 = 0;
@@ -640,13 +640,13 @@ class Text extends Node {
           }
         }
         // 非\n而是布局宽度造成的换行，自动沿用之前的
-        if (textAlign === TEXT_ALIGN.CENTER) {
+        if (textAlign === TextAlign.CENTER) {
           const d = this.width - lineBox.width;
           if (d) {
             lineBox.offsetX(d * 0.5);
           }
         }
-        else if (textAlign === TEXT_ALIGN.RIGHT) {
+        else if (textAlign === TextAlign.RIGHT) {
           const d = this.width - lineBox.width;
           if (d) {
             lineBox.offsetX(d);
@@ -654,17 +654,17 @@ class Text extends Node {
         }
       }
     }
-    else if (content && computedStyle.textAlign !== TEXT_ALIGN.LEFT) {
+    else if (content && computedStyle.textAlign !== TextAlign.LEFT) {
       for (let i = 0, len = lineBoxList.length; i < len; i++) {
         const lineBox = lineBoxList[i];
         // 非\n而是布局宽度造成的换行，自动沿用之前的
-        if (computedStyle.textAlign === TEXT_ALIGN.CENTER) {
+        if (computedStyle.textAlign === TextAlign.CENTER) {
           const d = this.width - lineBox.width;
           if (d) {
             lineBox.offsetX(d * 0.5);
           }
         }
-        else if (computedStyle.textAlign === TEXT_ALIGN.RIGHT) {
+        else if (computedStyle.textAlign === TextAlign.RIGHT) {
           const d = this.width - lineBox.width;
           if (d) {
             lineBox.offsetX(d);
@@ -676,13 +676,13 @@ class Text extends Node {
     const dh = this.height - lineBox.y - lineBox.height;
     if (dh) {
       const textVerticalAlign = computedStyle.textVerticalAlign;
-      if (textVerticalAlign === TEXT_VERTICAL_ALIGN.MIDDLE) {
+      if (textVerticalAlign === TextVerticalAlign.MIDDLE) {
         for (let i = 0, len = lineBoxList.length; i < len; i++) {
           const lineBox = lineBoxList[i];
           lineBox.offsetY(dh * 0.5);
         }
       }
-      else if (textVerticalAlign === TEXT_VERTICAL_ALIGN.BOTTOM) {
+      else if (textVerticalAlign === TextVerticalAlign.BOTTOM) {
         for (let i = 0, len = lineBoxList.length; i < len; i++) {
           const lineBox = lineBoxList[i];
           lineBox.offsetY(dh);
@@ -1167,19 +1167,19 @@ class Text extends Node {
       ctx.miterLimit = 1;
       ctx.fillStyle = 'transparent';
       ctx.setLineDash(strokeDasharray);
-      if (strokeLinecap === STROKE_LINE_CAP.ROUND) {
+      if (strokeLinecap === StrokeLineCap.ROUND) {
         ctx.lineCap = 'round';
       }
-      else if (strokeLinecap === STROKE_LINE_CAP.SQUARE) {
+      else if (strokeLinecap === StrokeLineCap.SQUARE) {
         ctx.lineCap = 'square';
       }
       else {
         ctx.lineCap = 'butt';
       }
-      if (strokeLinejoin === STROKE_LINE_JOIN.ROUND) {
+      if (strokeLinejoin === StrokeLineJoin.ROUND) {
         ctx.lineJoin = 'round';
       }
-      else if (strokeLinejoin === STROKE_LINE_JOIN.BEVEL) {
+      else if (strokeLinejoin === StrokeLineJoin.BEVEL) {
         ctx.lineJoin = 'bevel';
       }
       else {
@@ -1197,7 +1197,7 @@ class Text extends Node {
         const len = list.length;
         for (let i = 0; i < len; i++) {
           const textBox = list[i];
-          if (textBox.visibility === VISIBILITY.HIDDEN) {
+          if (textBox.visibility === Visibility.HIDDEN) {
             continue;
           }
           const { textDecoration, textShadow, stroke, strokeWidth, strokeEnable } = textBox;
@@ -1213,7 +1213,7 @@ class Text extends Node {
             }
             // 或者渐变
             else {
-              if (s.t === GRADIENT.LINEAR) {
+              if (s.t === GradientType.LINEAR) {
                 const gd = getLinear(s.stops, s.d, dx2, dy2, w - dx * 2, h - dy * 2);
                 const lg = ctx.createLinearGradient(gd.x1, gd.y1, gd.x2, gd.y2);
                 gd.stop.forEach((item) => {
@@ -1221,7 +1221,7 @@ class Text extends Node {
                 });
                 ctx.strokeStyle = lg;
               }
-              else if (s.t === GRADIENT.RADIAL) {
+              else if (s.t === GradientType.RADIAL) {
                 const gd = getRadial(s.stops, s.d, dx2, dy2, w - dx * 2, h - dy * 2);
                 const rg = ctx.createRadialGradient(
                   gd.cx,
@@ -1262,7 +1262,7 @@ class Text extends Node {
                   ctx.strokeStyle = rg;
                 }
               }
-              else if (s.t === GRADIENT.CONIC) {
+              else if (s.t === GradientType.CONIC) {
                 const gd = getConic(s.stops, s.d, dx2, dy2, w - dx * 2, h - dy * 2);
                 const cg = ctx.createConicGradient(gd.angle, gd.cx + dx2, gd.cy + dy2);
                 gd.stop.forEach((item) => {
@@ -1304,7 +1304,7 @@ class Text extends Node {
           ctx.shadowColor = 'transparent';
           if (textDecoration.length) {
             textDecoration.forEach(item => {
-              if (item === TEXT_DECORATION.UNDERLINE) {
+              if (item === TextDecoration.UNDERLINE) {
                 const h = Math.min(3, textBox.lineHeight * 0.05);
                 ctx.fillRect(
                   textBox.x + dx2,
@@ -1313,7 +1313,7 @@ class Text extends Node {
                   h,
                 );
               }
-              else if (item === TEXT_DECORATION.LINE_THROUGH) {
+              else if (item === TextDecoration.LINE_THROUGH) {
                 const h = Math.min(3, textBox.lineHeight * 0.05);
                 ctx.fillRect(
                   textBox.x + dx2,
@@ -1533,7 +1533,7 @@ class Text extends Node {
     // 非固定尺寸时，需还原tx到left/right上
     const isFixedWidth = left.u !== StyleUnit.AUTO && right.u !== StyleUnit.AUTO
       || width.u !== StyleUnit.AUTO;
-    const isLeft = textAlign.v === TEXT_ALIGN.LEFT
+    const isLeft = textAlign.v === TextAlign.LEFT
       && !isFixedWidth
       && (
         left.u !== StyleUnit.AUTO
@@ -1542,16 +1542,16 @@ class Text extends Node {
         || right.u !== StyleUnit.AUTO // 特殊情况，虽然right定位了，但是左对齐，视觉只会认为应该右边变
       );
     // 类似left，但考虑translate是否-50%，一般都是，除非人工脏数据
-    const isCenter = textAlign.v === TEXT_ALIGN.CENTER
+    const isCenter = textAlign.v === TextAlign.CENTER
       && !isFixedWidth
       && (translateX.v !== -50 || translateX.u !== StyleUnit.PERCENT);
     // right比较绕，定宽或者右定位都无效，提取规则发现需要right为auto
-    const isRight = textAlign.v === TEXT_ALIGN.RIGHT
+    const isRight = textAlign.v === TextAlign.RIGHT
       && right.u === StyleUnit.AUTO;
     // 同水平
     const isFixedHeight = top.u !== StyleUnit.AUTO && bottom.u !== StyleUnit.AUTO
       || height.u !== StyleUnit.AUTO;
-    const isTop = textVerticalAlign.v === TEXT_VERTICAL_ALIGN.TOP
+    const isTop = textVerticalAlign.v === TextVerticalAlign.TOP
       && !isFixedHeight
       && (
         top.u !== StyleUnit.AUTO
@@ -1559,10 +1559,10 @@ class Text extends Node {
         && translateY.u === StyleUnit.PERCENT
         || bottom.u !== StyleUnit.AUTO
       );
-    const isMiddle = textVerticalAlign.v === TEXT_VERTICAL_ALIGN.MIDDLE
+    const isMiddle = textVerticalAlign.v === TextVerticalAlign.MIDDLE
       && !isFixedHeight
       && (translateY.v !== -50 || translateY.u !== StyleUnit.PERCENT);
-    const isBottom = textVerticalAlign.v === TEXT_VERTICAL_ALIGN.BOTTOM
+    const isBottom = textVerticalAlign.v === TextVerticalAlign.BOTTOM
       && !isFixedHeight
       && bottom.u === StyleUnit.AUTO;
     const { width: pw, height: ph } = parent;
@@ -2035,10 +2035,10 @@ class Text extends Node {
     }
     else {
       const textAlign = this.computedStyle.textAlign;
-      if (textAlign === TEXT_ALIGN.CENTER) {
+      if (textAlign === TextAlign.CENTER) {
         this.tempCursorX = this.width * 0.5;
       }
-      else if (textAlign === TEXT_ALIGN.RIGHT) {
+      else if (textAlign === TextAlign.RIGHT) {
         this.tempCursorX = this.width;
       }
       else {
@@ -2154,10 +2154,10 @@ class Text extends Node {
     if (!list.length) {
       const textAlign = this.computedStyle.textAlign;
       let x = 0;
-      if (textAlign === TEXT_ALIGN.CENTER) {
+      if (textAlign === TextAlign.CENTER) {
         x = this.width * 0.5;
       }
-      else if (textAlign === TEXT_ALIGN.RIGHT) {
+      else if (textAlign === TextAlign.RIGHT) {
         x = this.width;
       }
       const p = calPoint({ x, y: lineBox.y }, m);
@@ -2561,10 +2561,10 @@ class Text extends Node {
     }
     else {
       const textAlign = this.computedStyle.textAlign;
-      if (textAlign === TEXT_ALIGN.CENTER) {
+      if (textAlign === TextAlign.CENTER) {
         this.tempCursorX = this.width * 0.5;
       }
-      else if (textAlign === TEXT_ALIGN.RIGHT) {
+      else if (textAlign === TextAlign.RIGHT) {
         this.tempCursorX = this.width;
       }
       else {
@@ -2936,10 +2936,10 @@ class Text extends Node {
         cursor.start = lineBox.index;
       }
       const textAlign = this.computedStyle.textAlign;
-      if (textAlign === TEXT_ALIGN.CENTER) {
+      if (textAlign === TextAlign.CENTER) {
         rx = this.width * 0.5;
       }
-      else if (textAlign === TEXT_ALIGN.RIGHT) {
+      else if (textAlign === TextAlign.RIGHT) {
         rx = this.width;
       }
     }
@@ -3157,7 +3157,7 @@ class Text extends Node {
               break;
             }
           }
-          else if (a.u === StyleUnit.GRADIENT && b.u === StyleUnit.GRADIENT) {}
+          else if (a.u === StyleUnit.GradientType && b.u === StyleUnit.GradientType) {}
           else {
             isDiff = true;
             break;
@@ -3318,10 +3318,10 @@ class Text extends Node {
     let border = 0;
     strokeWidth.forEach((item, i) => {
       if (strokeEnable[i]) {
-        if (strokePosition[i] === STROKE_POSITION.INSIDE) {
+        if (strokePosition[i] === StrokePosition.INSIDE) {
           // 0
         }
-        else if (strokePosition[i] === STROKE_POSITION.OUTSIDE) {
+        else if (strokePosition[i] === StrokePosition.OUTSIDE) {
           border = Math.max(border, item * 2);
         }
         else {

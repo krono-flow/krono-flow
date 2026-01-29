@@ -12,10 +12,10 @@ import { JRich, RichIndex } from '../format';
 import {
   ModifyRichStyle,
   Rich,
-  StyleColorValue,
-  StyleGradientValue,
-  StyleNumValue,
-  StyleTextShadowValue,
+  StyleColor,
+  StyleGradient,
+  StyleNum,
+  StyleShadow,
   StyleUnit,
 } from '../style/define';
 import { cloneStyle, cloneStyleItem, normalizeRich } from '../style/css';
@@ -146,19 +146,19 @@ export class RichAnimation extends AbstractAnimation {
             || key === 'letterSpacing'
             || key === 'paragraphSpacing'
           ) {
-            const o = cloneStyleItem(key, rich[i][key]!) as StyleNumValue;
+            const o = cloneStyleItem(key, rich[i][key]!) as StyleNum;
             o.v += (diff as number) * percent;
             update[key] = o;
           }
           else if (key === 'color') {
-            const o = cloneStyleItem(key, rich[i][key]!) as StyleColorValue;
+            const o = cloneStyleItem(key, rich[i][key]!) as StyleColor;
             for (let i = 0; i < 4; i++) {
               o.v[i] += (diff as [number, number, number, number])[i] * percent;
             }
             update[key] = o;
           }
           else if (key === 'textShadow') {
-            const o = cloneStyleItem(key, rich[i][key]!) as StyleTextShadowValue;
+            const o = cloneStyleItem(key, rich[i][key]!) as StyleShadow;
             o.v.x += (diff as TextShadowTransition).x * percent;
             o.v.y += (diff as TextShadowTransition).y * percent;
             o.v.blur += (diff as TextShadowTransition).blur * percent;
@@ -168,7 +168,7 @@ export class RichAnimation extends AbstractAnimation {
             update[key] = o;
           }
           else if (key === 'stroke') {
-            const o = cloneStyleItem(key, rich[i][key]!) as (StyleColorValue | StyleGradientValue)[];
+            const o = cloneStyleItem(key, rich[i][key]!) as (StyleColor | StyleGradient)[];
             for (let i = 0; i < Math.min(o.length, (diff as (number[] | GradientTransition | undefined)[]).length); i++) {
               const item = o[i];
               const df = (diff as (number[] | GradientTransition | undefined)[])[i];
@@ -179,7 +179,7 @@ export class RichAnimation extends AbstractAnimation {
                   item.v[2] += (df as number[])[2] * percent;
                   item.v[3] += (df as number[])[3] * percent;
                 }
-                else if (item.u === StyleUnit.GRADIENT) {
+                else if (item.u === StyleUnit.GradientType) {
                   for (let j = 0; j < (df as GradientTransition).d.length; j++) {
                     item.v.d[j] += (df as GradientTransition).d[j] * percent;
                   }
@@ -196,7 +196,7 @@ export class RichAnimation extends AbstractAnimation {
             update[key] = o;
           }
           else if (key === 'strokeWidth') {
-            const o = cloneStyleItem(key, rich[i][key]!) as StyleNumValue[];
+            const o = cloneStyleItem(key, rich[i][key]!) as StyleNum[];
             o.forEach((item, i) => {
               item.v += (diff as number[])[i] * percent;
             });
@@ -361,13 +361,13 @@ function calTransition(node: Text, keyFrames: KeyFrameRich[], keys: (keyof Rich)
         ) {
           prev.transition[j].push({
             key,
-            diff: (n as StyleNumValue).v - (p as StyleNumValue).v,
+            diff: (n as StyleNum).v - (p as StyleNum).v,
           });
         }
         else if (key === 'color') {
           const diff: [number, number, number, number] = [0, 0, 0, 0];
           for (let i = 0; i < 4; i++) {
-            diff[i] = (n as StyleColorValue).v[i] - (p as StyleColorValue).v[i];
+            diff[i] = (n as StyleColor).v[i] - (p as StyleColor).v[i];
           }
           prev.transition[j].push({
             key,
@@ -375,8 +375,8 @@ function calTransition(node: Text, keyFrames: KeyFrameRich[], keys: (keyof Rich)
           });
         }
         else if (key === 'textShadow') {
-          const pv = (p as StyleTextShadowValue).v;
-          const nv = (n as StyleTextShadowValue).v;
+          const pv = (p as StyleShadow).v;
+          const nv = (n as StyleShadow).v;
           prev.transition[j].push({
             key,
             diff: {
@@ -393,8 +393,8 @@ function calTransition(node: Text, keyFrames: KeyFrameRich[], keys: (keyof Rich)
           });
         }
         else if (key === 'stroke') {
-          const pv = p as (StyleColorValue | StyleGradientValue)[];
-          const nv = n as (StyleColorValue | StyleGradientValue)[];
+          const pv = p as (StyleColor | StyleGradient)[];
+          const nv = n as (StyleColor | StyleGradient)[];
           const diff: (number[] | GradientTransition | undefined)[] = [];
           for (let i = 0; i < Math.min(pv.length, nv.length); i++) {
             const pi = pv[i];
@@ -407,7 +407,7 @@ function calTransition(node: Text, keyFrames: KeyFrameRich[], keys: (keyof Rich)
                 ni.v[3] - pi.v[3],
               ]);
             }
-            else if (pi.u === StyleUnit.GRADIENT && ni.u === StyleUnit.GRADIENT) {
+            else if (pi.u === StyleUnit.GradientType && ni.u === StyleUnit.GradientType) {
               if (pi.v.t === ni.v.t) {
                 const d: number[] = [];
                 for (let j = 0; j < Math.min(ni.v.d.length, pi.v.d.length); j++) {
@@ -446,8 +446,8 @@ function calTransition(node: Text, keyFrames: KeyFrameRich[], keys: (keyof Rich)
           });
         }
         else if (key === 'strokeWidth') {
-          const pv = p as StyleNumValue[];
-          const nv = n as StyleNumValue[];
+          const pv = p as StyleNum[];
+          const nv = n as StyleNum[];
           const diff: number[] = [];
           for (let i = 0; i < Math.min(pv.length, nv.length); i++) {
             diff.push(nv[i].v - pv[i].v);

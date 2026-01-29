@@ -5,7 +5,7 @@ import ca from '../gl/ca';
 import inject from '../util/inject';
 import { calWorldMatrixAndOpacity, renderWebgl, Struct } from '../refresh/struct';
 import frame from '../animation/frame';
-import { StyleUnit, VISIBILITY } from '../style/define';
+import { StyleUnit, Visibility } from '../style/define';
 import { getLevel, isReflow, RefreshLevel } from '../refresh/level';
 import { checkReflow } from '../refresh/reflow';
 import { initShaders } from '../gl/webgl';
@@ -266,11 +266,11 @@ class Root extends Container {
         if (lv & RefreshLevel.FILTER) {
           node.calFilter(lv);
         }
-        if (lv & RefreshLevel.MIX_BLEND_MODE) {
+        if (lv & RefreshLevel.MixBlendMode) {
           computedStyle.mixBlendMode = style.mixBlendMode.v;
         }
         let cleared = false;
-        if (lv & RefreshLevel.MASK) {
+        if (lv & RefreshLevel.Mask) {
           node.clearMask();
           cleared = true;
           node.calMask();
@@ -317,12 +317,12 @@ class Root extends Container {
     this.rl |= lv;
     let mask = node.mask;
     // 检查mask影响，这里是作为被遮罩对象存在的关系检查，不会有连续，mask不能同时被mask
-    if (mask && !(lv & RefreshLevel.MASK) && !(lv & RefreshLevel.BREAK_MASK)) {
+    if (mask && !(lv & RefreshLevel.Mask) && !(lv & RefreshLevel.BREAK_MASK)) {
       mask.clearMask();
     }
     let parent = node.parent;
     while (parent) {
-      if (parent.computedStyle.visibility === VISIBILITY.HIDDEN) {
+      if (parent.computedStyle.visibility === Visibility.HIDDEN) {
         return false;
       }
       parent = parent.parent;

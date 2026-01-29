@@ -1,7 +1,7 @@
 import { RefreshLevel } from './level';
 import AbstractNode from '../node/AbstractNode';
 import Component from '../node/Component';
-import { POSITION } from '../style/define';
+import { Position } from '../style/define';
 
 export function checkReflow(node: AbstractNode, lv: RefreshLevel) {
   if (lv & RefreshLevel.REMOVE_DOM) {
@@ -15,11 +15,11 @@ export function checkReflow(node: AbstractNode, lv: RefreshLevel) {
     const root = node.root!;
     let parent = node.parent!;
     while (parent && parent !== root) {
-      if ([POSITION.ABSOLUTE, POSITION.RELATIVE].includes(parent._computedStyle.position)) {
+      if ([Position.ABSOLUTE, Position.RELATIVE].includes(parent._computedStyle.position)) {
         break;
       }
     }
-    if (node.style.position.v === POSITION.ABSOLUTE) {
+    if (node.style.position.v === Position.ABSOLUTE) {
       node.layoutAbs(parent, parent.x, parent.y, parent.computedStyle.width, parent.computedStyle.height);
     }
     else {

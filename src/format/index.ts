@@ -1,7 +1,7 @@
 import { DEFAULT_COMPUTED_STYLE, DEFAULT_STYLE } from './dft';
 import {
   ComputedStyle,
-  CURVE_MODE,
+  CurveMode,
 } from '../style/define';
 import { VideoAudioMeta } from '../codec/define';
 import { JCssAnimations } from '../parser/define';
@@ -40,7 +40,7 @@ export type JPoint = {
 };
 
 export type Point = Omit<JPoint, 'curveMode'> & {
-  curveMode: CURVE_MODE;
+  curveMode: CurveMode;
   cornerRadius: number;
   fx: number;
   fy: number;

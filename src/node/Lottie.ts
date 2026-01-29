@@ -1,7 +1,7 @@
 import { NodeType } from './AbstractNode';
 import Node from './Node';
 import { LottieMeta, LottieProps } from '../format';
-import { OBJECT_FIT, StyleUnit } from '../style/define';
+import { ObjectFit, StyleUnit } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
 import CanvasCache from '../refresh/CanvasCache';
 import { color2rgbaStr } from '../style/color';
@@ -182,7 +182,7 @@ class Lottie extends Node {
     if (_json && canvas && _metaData && _currentTime >= 0 && _currentTime < _metaData.duration) {
       const ratio = _json.w / _json.h;
       const ratio2 = width / height;
-      if (objectFit === OBJECT_FIT.CONTAIN) {
+      if (objectFit === ObjectFit.CONTAIN) {
         if (ratio2 > ratio) {
           const w = height * ratio;
           const d = (width - w) * 0.5;
@@ -196,7 +196,7 @@ class Lottie extends Node {
           height = h;
         }
       }
-      else if (objectFit === OBJECT_FIT.COVER) {
+      else if (objectFit === ObjectFit.COVER) {
         if (ratio2 > ratio) {
           const h = width / ratio;
           dy = (height - h) * 0.5;

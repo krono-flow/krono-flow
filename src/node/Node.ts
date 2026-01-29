@@ -15,16 +15,16 @@ import {
 import {
   ComputedGradient,
   ComputedStyle,
-  DISPLAY,
-  FILL_RULE,
-  GRADIENT,
-  MIX_BLEND_MODE,
-  STROKE_LINE_CAP,
-  STROKE_LINE_JOIN,
-  STROKE_POSITION,
+  Display,
+  FillRule,
+  GradientType,
+  MixBlendMode,
+  StrokeLineCap,
+  StrokeLineJoin,
+  StrokePosition,
   Style,
   StyleUnit,
-  VISIBILITY,
+  Visibility,
 } from '../style/define';
 import { Struct } from '../refresh/struct';
 import { RefreshLevel } from '../refresh/level';
@@ -266,7 +266,7 @@ class Node extends AbstractNode {
     else {
       const { _style: style, _computedStyle: computedStyle } = this;
       const { display, width } = style;
-      if (display.v === DISPLAY.BLOCK && width.u === StyleUnit.AUTO) {
+      if (display.v === Display.BLOCK && width.u === StyleUnit.AUTO) {
         computedStyle.width = w;
       }
       this.layoutAfter();
@@ -276,7 +276,7 @@ class Node extends AbstractNode {
   layoutAbs(parent: Container, x: number, y: number, w: number, h: number) {
     this.layoutBefore(x, y, w, h);
     // absolute强制block
-    this._computedStyle.display = DISPLAY.BLOCK;
+    this._computedStyle.display = Display.BLOCK;
     this.layoutAfter();
   }
 
@@ -763,7 +763,7 @@ class Node extends AbstractNode {
           // 渐变
           {
             f = f as ComputedGradient;
-            if (f.t === GRADIENT.LINEAR) {
+            if (f.t === GradientType.LINEAR) {
               const gd = getLinear(f.stops, f.d, 0, 0, w - dx * 2, h - dy * 2);
               const lg = ctx.createLinearGradient(gd.x1 + dx2, gd.y1 + dy2, gd.x2 + dx2, gd.y2 + dy2);
               gd.stop.forEach((item) => {
@@ -771,7 +771,7 @@ class Node extends AbstractNode {
               });
               ctx.fillStyle = lg;
             }
-            else if (f.t === GRADIENT.RADIAL) {
+            else if (f.t === GradientType.RADIAL) {
               const gd = getRadial(f.stops, f.d, 0, 0, w - dx * 2, h - dy * 2);
               const rg = ctx.createRadialGradient(
                 gd.cx + dx2,
@@ -799,13 +799,13 @@ class Node extends AbstractNode {
                 ctx2.clip();
                 ctx2.fillStyle = rg;
                 ctx2.setTransform(m[0], m[1], m[4], m[5], m[12], m[13]);
-                ctx2.fill(fillRule === FILL_RULE.EVEN_ODD ? 'evenodd' : 'nonzero');
+                ctx2.fill(fillRule === FillRule.EVEN_ODD ? 'evenodd' : 'nonzero');
               }
               else {
                 ctx.fillStyle = rg;
               }
             }
-            else if (f.t === GRADIENT.CONIC) {
+            else if (f.t === GradientType.CONIC) {
               const gd = getConic(f.stops, f.d, 0, 0, w - dx * 2, h - dy * 2);
               const cg = ctx.createConicGradient(gd.angle, gd.cx + dx2, gd.cy + dy2);
               gd.stop.forEach((item) => {
@@ -815,7 +815,7 @@ class Node extends AbstractNode {
             }
           }
         }
-        if (mode !== MIX_BLEND_MODE.NORMAL) {
+        if (mode !== MixBlendMode.NORMAL) {
           ctx.globalCompositeOperation = getCanvasGCO(mode);
         }
         if (ellipse) {
@@ -823,9 +823,9 @@ class Node extends AbstractNode {
           ellipse.release();
         }
         else {
-          ctx.fill(fillRule === FILL_RULE.EVEN_ODD ? 'evenodd' : 'nonzero');
+          ctx.fill(fillRule === FillRule.EVEN_ODD ? 'evenodd' : 'nonzero');
         }
-        if (mode !== MIX_BLEND_MODE.NORMAL) {
+        if (mode !== MixBlendMode.NORMAL) {
           ctx.globalCompositeOperation = 'source-over';
         }
       }
@@ -833,19 +833,19 @@ class Node extends AbstractNode {
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
       // 线帽设置
-      if (strokeLinecap === STROKE_LINE_CAP.ROUND) {
+      if (strokeLinecap === StrokeLineCap.ROUND) {
         ctx.lineCap = 'round';
       }
-      else if (strokeLinecap === STROKE_LINE_CAP.SQUARE) {
+      else if (strokeLinecap === StrokeLineCap.SQUARE) {
         ctx.lineCap = 'square';
       }
       else {
         ctx.lineCap = 'butt';
       }
-      if (strokeLinejoin === STROKE_LINE_JOIN.ROUND) {
+      if (strokeLinejoin === StrokeLineJoin.ROUND) {
         ctx.lineJoin = 'round';
       }
-      else if (strokeLinejoin === STROKE_LINE_JOIN.BEVEL) {
+      else if (strokeLinejoin === StrokeLineJoin.BEVEL) {
         ctx.lineJoin = 'bevel';
       }
       else {
@@ -866,7 +866,7 @@ class Node extends AbstractNode {
         }
         // 或者渐变
         else {
-          if (s.t === GRADIENT.LINEAR) {
+          if (s.t === GradientType.LINEAR) {
             const gd = getLinear(s.stops, s.d, 0, 0, w + x * 2, h+ y * 2);
             const lg = ctx.createLinearGradient(gd.x1 + dx2, gd.y1 + dy2, gd.x2 + dx2, gd.y2 + dy2);
             gd.stop.forEach((item) => {
@@ -874,7 +874,7 @@ class Node extends AbstractNode {
             });
             ctx.strokeStyle = lg;
           }
-          else if (s.t === GRADIENT.RADIAL) {
+          else if (s.t === GradientType.RADIAL) {
             const gd = getRadial(s.stops, s.d, 0, 0, w - dx * 2, h - dy * 2);
             const rg = ctx.createRadialGradient(
               gd.cx + dx2,
@@ -905,14 +905,14 @@ class Node extends AbstractNode {
               if (isClosed) {
                 ctx2.closePath();
               }
-              if (p === STROKE_POSITION.INSIDE && isClosed) {
+              if (p === StrokePosition.INSIDE && isClosed) {
                 ctx2.lineWidth = strokeWidth[j] * 2;
                 ctx2.save();
                 ctx2.clip();
                 ctx2.stroke();
                 ctx2.restore();
               }
-              else if (p === STROKE_POSITION.OUTSIDE && isClosed) {
+              else if (p === StrokePosition.OUTSIDE && isClosed) {
                 ctx2.lineWidth = strokeWidth[j] * 2;
                 ctx2.stroke();
                 ctx2.save();
@@ -937,7 +937,7 @@ class Node extends AbstractNode {
               ctx.strokeStyle = rg;
             }
           }
-          else if (s.t === GRADIENT.CONIC) {
+          else if (s.t === GradientType.CONIC) {
             const gd = getConic(s.stops, s.d, 0, 0, w - dx * 2, h - dy * 2);
             const cg = ctx.createConicGradient(gd.angle, gd.cx + dx2, gd.cy + dy2);
             gd.stop.forEach((item) => {
@@ -948,10 +948,10 @@ class Node extends AbstractNode {
         }
         // 注意canvas只有居中描边，内部需用clip模拟，外部比较复杂需离屏擦除
         let os: OffScreen | undefined, ctx2: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | undefined;
-        if (p === STROKE_POSITION.INSIDE && isClosed) {
+        if (p === StrokePosition.INSIDE && isClosed) {
           ctx.lineWidth = strokeWidth[j] * 2;
         }
-        else if (p === STROKE_POSITION.OUTSIDE && isClosed) {
+        else if (p === StrokePosition.OUTSIDE && isClosed) {
           os = inject.getOffscreenCanvas(item.w, item.h);
           ctx2 = os.ctx;
           ctx2.setLineDash(ctx.getLineDash());
@@ -973,13 +973,13 @@ class Node extends AbstractNode {
             ctx2.closePath();
           }
         }
-        if (p === STROKE_POSITION.INSIDE && isClosed) {
+        if (p === StrokePosition.INSIDE && isClosed) {
           ctx.save();
           ctx.clip();
           ctx.stroke();
           ctx.restore();
         }
-        else if (p === STROKE_POSITION.OUTSIDE && isClosed) {
+        else if (p === StrokePosition.OUTSIDE && isClosed) {
           ctx2!.stroke();
           ctx2!.save();
           ctx2!.clip();
@@ -1077,7 +1077,7 @@ class Node extends AbstractNode {
     this.textureMask?.release();
     this.resetTextureTarget();
     this.struct.next = 0;
-    this.refreshLevel |= RefreshLevel.MASK;
+    this.refreshLevel |= RefreshLevel.Mask;
     // mask切换影响父级组的bbox
     if (upwards) {
       let p = this.parent;
@@ -1175,7 +1175,7 @@ class Node extends AbstractNode {
     });
     res.display = ['none', 'block', 'inline', 'inlineBlock', 'flex'][style.display.v] || 'none';
     res.opacity = style.opacity.v;
-    res.visibility = style.visibility.v === VISIBILITY.VISIBLE ? 'visible' : 'hidden';
+    res.visibility = style.visibility.v === Visibility.VISIBLE ? 'visible' : 'hidden';
     res.color = color2rgbaStr(style.color.v);
     res.backgroundColor = color2rgbaStr(style.backgroundColor.v);
     res.fontFamily = style.fontFamily.v;

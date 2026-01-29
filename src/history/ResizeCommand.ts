@@ -30,7 +30,7 @@ import AbstractNode from '../node/AbstractNode';
 export type ResizeData = {
   dx: number;
   dy: number;
-  controlType: CONTROL_TYPE;
+  controlType: ControlType;
   aspectRatio: boolean;
   clientRect?: Rect;
   selectRect?: Rect;
@@ -41,7 +41,7 @@ export type ResizeData = {
   heightToAuto?: boolean;
 };
 
-export enum CONTROL_TYPE {
+export enum ControlType {
   T = 0,
   R = 1,
   B = 2,
@@ -99,7 +99,7 @@ class ResizeCommand extends AbstractCommand {
     });
   }
 
-  static operate(node: AbstractNode, computedStyle: ComputedStyle, cssStyle: JStyle, dx: number, dy: number, controlType: CONTROL_TYPE,
+  static operate(node: AbstractNode, computedStyle: ComputedStyle, cssStyle: JStyle, dx: number, dy: number, controlType: ControlType,
                      aspectRatio: boolean, fromCenter = false, widthAuto = false, heightAuto = false) {
     // 由于保持宽高比/中心点调整的存在，可能在调整过程中切换shift/alt键，所以初始化都是原始样式以便切换后恢复
     const next: ResizeStyle = {
@@ -114,43 +114,43 @@ class ResizeCommand extends AbstractCommand {
     };
     // 保持宽高比的拉伸，4个方向和4个角需要单独特殊处理
     if (aspectRatio) {
-      if (controlType === CONTROL_TYPE.T) {
+      if (controlType === ControlType.T) {
         Object.assign(next, resizeTopAspectRatioOperate(node, computedStyle, dy, fromCenter));
       }
-      else if (controlType === CONTROL_TYPE.R) {
+      else if (controlType === ControlType.R) {
         Object.assign(next, resizeRightAspectRatioOperate(node, computedStyle, dx, fromCenter));
       }
-      else if (controlType === CONTROL_TYPE.B) {
+      else if (controlType === ControlType.B) {
         Object.assign(next, resizeBottomAspectRatioOperate(node, computedStyle, dy, fromCenter));
       }
-      else if (controlType === CONTROL_TYPE.L) {
+      else if (controlType === ControlType.L) {
         Object.assign(next, resizeLeftAspectRatioOperate(node, computedStyle, dx, fromCenter));
       }
-      else if (controlType === CONTROL_TYPE.TL) {
+      else if (controlType === ControlType.TL) {
         Object.assign(next, resizeTopLeftAspectRatioOperate(node, computedStyle, dx, dy, fromCenter));
       }
-      else if (controlType === CONTROL_TYPE.TR) {
+      else if (controlType === ControlType.TR) {
         Object.assign(next, resizeTopRightAspectRatioOperate(node, computedStyle, dx, dy, fromCenter));
       }
-      else if (controlType === CONTROL_TYPE.BL) {
+      else if (controlType === ControlType.BL) {
         Object.assign(next, resizeBottomLeftAspectRatioOperate(node, computedStyle, dx, dy, fromCenter));
       }
-      else if (controlType === CONTROL_TYPE.BR) {
+      else if (controlType === ControlType.BR) {
         Object.assign(next, resizeBottomRightAspectRatioOperate(node, computedStyle, dx, dy, fromCenter));
       }
     }
     // 普通的分4个方向上看，4个角则是2个方向的合集，因为相邻方向不干扰，相对方向互斥
     else {
-      if (controlType === CONTROL_TYPE.T || controlType === CONTROL_TYPE.TL || controlType === CONTROL_TYPE.TR) {
+      if (controlType === ControlType.T || controlType === ControlType.TL || controlType === ControlType.TR) {
         Object.assign(next, resizeTopOperate(node, computedStyle, dy, fromCenter));
       }
-      else if (controlType === CONTROL_TYPE.B || controlType === CONTROL_TYPE.BL || controlType === CONTROL_TYPE.BR) {
+      else if (controlType === ControlType.B || controlType === ControlType.BL || controlType === ControlType.BR) {
         Object.assign(next, resizeBottomOperate(node, computedStyle, dy, fromCenter));
       }
-      if (controlType === CONTROL_TYPE.L || controlType === CONTROL_TYPE.TL || controlType === CONTROL_TYPE.BL) {
+      if (controlType === ControlType.L || controlType === ControlType.TL || controlType === ControlType.BL) {
         Object.assign(next, resizeLeftOperate(node, computedStyle, dx, fromCenter));
       }
-      else if (controlType === CONTROL_TYPE.R || controlType === CONTROL_TYPE.TR || controlType === CONTROL_TYPE.BR) {
+      else if (controlType === ControlType.R || controlType === ControlType.TR || controlType === ControlType.BR) {
         Object.assign(next, resizeRightOperate(node, computedStyle, dx, fromCenter));
       }
     }
@@ -163,7 +163,7 @@ class ResizeCommand extends AbstractCommand {
     node.updateStyle(next);
   }
 
-  static operateMultiAr(node: AbstractNode, computedStyle: ComputedStyle, cssStyle: JStyle, dx: number, dy: number, controlType: CONTROL_TYPE,
+  static operateMultiAr(node: AbstractNode, computedStyle: ComputedStyle, cssStyle: JStyle, dx: number, dy: number, controlType: ControlType,
                             clientRect: Rect, selectRect: Rect, aspectRatio: boolean, fromCenter = false, widthAuto = false, heightAuto = false) {
     // 一定是保持宽高比才会进这，每个节点都可能会改变位置，初始值同上单个的情况
     const next: ResizeStyle = {
@@ -177,16 +177,16 @@ class ResizeCommand extends AbstractCommand {
       scaleY: cssStyle.scaleY,
     };
     // 4个方向上复用普通的拉伸后进行偏移调整
-    if (controlType === CONTROL_TYPE.T) {
+    if (controlType === ControlType.T) {
       Object.assign(next, resizeTopMultiArOperate(node, computedStyle, dy, clientRect, selectRect, aspectRatio, fromCenter));
     }
-    else if (controlType === CONTROL_TYPE.R) {
+    else if (controlType === ControlType.R) {
       Object.assign(next, resizeRightMultiArOperate(node, computedStyle, dx, clientRect, selectRect, aspectRatio, fromCenter));
     }
-    else if (controlType === CONTROL_TYPE.B) {
+    else if (controlType === ControlType.B) {
       Object.assign(next, resizeBottomMultiArOperate(node, computedStyle, dy, clientRect, selectRect, aspectRatio, fromCenter));
     }
-    else if (controlType === CONTROL_TYPE.L) {
+    else if (controlType === ControlType.L) {
       Object.assign(next, resizeLeftMultiArOperate(node, computedStyle, dx, clientRect, selectRect, aspectRatio, fromCenter));
     }
     // 4个角在保持宽高比时需要计算对角线垂线交点，类似单个拖拽保持宽高比的计算
@@ -196,20 +196,20 @@ class ResizeCommand extends AbstractCommand {
         const {
           x,
           y
-        } = getDiagonalAspectRatioIsec(o, dx, dy, [CONTROL_TYPE.TL, CONTROL_TYPE.BR].includes(controlType));
+        } = getDiagonalAspectRatioIsec(o, dx, dy, [ControlType.TL, ControlType.BR].includes(controlType));
         dx = x - o.width;
         dy = y - o.height;
       }
-      if (controlType === CONTROL_TYPE.TL) {
+      if (controlType === ControlType.TL) {
         Object.assign(next, resizeTopLeftMultiArOperate(node, computedStyle, dx, dy, clientRect, selectRect, aspectRatio, fromCenter));
       }
-      else if (controlType === CONTROL_TYPE.TR) {
+      else if (controlType === ControlType.TR) {
         Object.assign(next, resizeTopRightMultiArOperate(node, computedStyle, dx, dy, clientRect, selectRect, aspectRatio, fromCenter));
       }
-      else if (controlType === CONTROL_TYPE.BL) {
+      else if (controlType === ControlType.BL) {
         Object.assign(next, resizeBottomLeftMultiArOperate(node, computedStyle, dx, dy, clientRect, selectRect, aspectRatio, fromCenter));
       }
-      else if (controlType === CONTROL_TYPE.BR) {
+      else if (controlType === ControlType.BR) {
         Object.assign(next, resizeBottomRightMultiArOperate(node, computedStyle, dx, dy, clientRect, selectRect, aspectRatio, fromCenter));
       }
     }
@@ -223,33 +223,33 @@ class ResizeCommand extends AbstractCommand {
   }
 }
 
-function flip(controlType: CONTROL_TYPE, flipX?: boolean, flipY?: boolean) {
+function flip(controlType: ControlType, flipX?: boolean, flipY?: boolean) {
   if (flipX) {
-    if (controlType === CONTROL_TYPE.L) {
-      controlType = CONTROL_TYPE.R;
+    if (controlType === ControlType.L) {
+      controlType = ControlType.R;
     }
-    else if (controlType === CONTROL_TYPE.R) {
-      controlType = CONTROL_TYPE.L;
+    else if (controlType === ControlType.R) {
+      controlType = ControlType.L;
     }
-    else if (controlType === CONTROL_TYPE.TL) {
-      controlType = CONTROL_TYPE.TR;
+    else if (controlType === ControlType.TL) {
+      controlType = ControlType.TR;
     }
-    else if (controlType === CONTROL_TYPE.TR) {
-      controlType = CONTROL_TYPE.TL;
+    else if (controlType === ControlType.TR) {
+      controlType = ControlType.TL;
     }
   }
   if (flipY) {
-    if (controlType === CONTROL_TYPE.T) {
-      controlType = CONTROL_TYPE.B;
+    if (controlType === ControlType.T) {
+      controlType = ControlType.B;
     }
-    else if (controlType === CONTROL_TYPE.B) {
-      controlType = CONTROL_TYPE.T;
+    else if (controlType === ControlType.B) {
+      controlType = ControlType.T;
     }
-    else if (controlType === CONTROL_TYPE.BL) {
-      controlType = CONTROL_TYPE.BR;
+    else if (controlType === ControlType.BL) {
+      controlType = ControlType.BR;
     }
-    else if (controlType === CONTROL_TYPE.BR) {
-      controlType = CONTROL_TYPE.BL;
+    else if (controlType === ControlType.BR) {
+      controlType = ControlType.BL;
     }
   }
   return controlType;

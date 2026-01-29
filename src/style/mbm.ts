@@ -1,36 +1,36 @@
-import { MIX_BLEND_MODE } from './define';
+import { MixBlendMode } from './define';
 
-export function getCanvasGCO(blend: MIX_BLEND_MODE) {
+export function getCanvasGCO(blend: MixBlendMode) {
   switch (blend) {
-    case MIX_BLEND_MODE.MULTIPLY:
+    case MixBlendMode.MULTIPLY:
       return 'multiply';
-    case MIX_BLEND_MODE.SCREEN:
+    case MixBlendMode.SCREEN:
       return 'screen';
-    case MIX_BLEND_MODE.OVERLAY:
+    case MixBlendMode.OVERLAY:
       return 'overlay';
-    case MIX_BLEND_MODE.DARKEN:
+    case MixBlendMode.DARKEN:
       return 'darken';
-    case MIX_BLEND_MODE.LIGHTEN:
+    case MixBlendMode.LIGHTEN:
       return 'lighten';
-    case MIX_BLEND_MODE.COLOR_DODGE:
+    case MixBlendMode.COLOR_DODGE:
       return 'color-dodge';
-    case MIX_BLEND_MODE.COLOR_BURN:
+    case MixBlendMode.COLOR_BURN:
       return 'color-burn';
-    case MIX_BLEND_MODE.HARD_LIGHT:
+    case MixBlendMode.HARD_LIGHT:
       return 'hard-light';
-    case MIX_BLEND_MODE.SOFT_LIGHT:
+    case MixBlendMode.SOFT_LIGHT:
       return 'soft-light';
-    case MIX_BLEND_MODE.DIFFERENCE:
+    case MixBlendMode.DIFFERENCE:
       return 'difference';
-    case MIX_BLEND_MODE.EXCLUSION:
+    case MixBlendMode.EXCLUSION:
       return 'exclusion';
-    case MIX_BLEND_MODE.HUE:
+    case MixBlendMode.HUE:
       return 'hue';
-    case MIX_BLEND_MODE.SATURATION:
+    case MixBlendMode.SATURATION:
       return 'saturation';
-    case MIX_BLEND_MODE.COLOR:
+    case MixBlendMode.COLOR:
       return 'color';
-    case MIX_BLEND_MODE.LUMINOSITY:
+    case MixBlendMode.LUMINOSITY:
       return 'luminosity';
     default:
       return 'source-over';

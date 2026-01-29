@@ -2,7 +2,7 @@ import AbstractAnimation, { Options } from './AbstractAnimation';
 import Video from '../node/Video';
 import Audio from '../node/Audio';
 import Lottie from '../node/Lottie';
-import { VISIBILITY } from '../style/define';
+import { Visibility } from '../style/define';
 import config from '../config';
 
 class TimeAnimation extends AbstractAnimation {
@@ -92,7 +92,7 @@ class TimeAnimation extends AbstractAnimation {
     }
     // 最后结束特殊处理，onFirstInEndDelay()根据endDelay/fill决定是否还原还是停留最后一帧，超过DUR需清空
     if (isLastCount && percent >= 1) {
-      if (node instanceof Video && time - duration >= config.releasePrevDuration && node.computedStyle.visibility === VISIBILITY.HIDDEN) {
+      if (node instanceof Video && time - duration >= config.releasePrevDuration && node.computedStyle.visibility === Visibility.HIDDEN) {
         node.decoder?.releaseGOPList();
         node.videoFrame = undefined;
       }

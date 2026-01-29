@@ -2,7 +2,7 @@ import AbstractNode, { NodeType } from '../node/AbstractNode';
 import Root from '../node/Root';
 import Container from '../node/Container';
 import { pointInRect } from '../math/geom';
-import { MASK, VISIBILITY } from '../style/define';
+import { Mask, Visibility } from '../style/define';
 import Component from '../node/Component';
 
 function getChildByPoint(parent: Container, x: number, y: number, recursionComponent = false): AbstractNode | undefined {
@@ -25,7 +25,7 @@ function getChildByPoint(parent: Container, x: number, y: number, recursionCompo
     }
     const { matrixWorld } = child;
     if (!child.hasContent && child.type !== NodeType.CONTAINER
-      || child.computedStyle.visibility === VISIBILITY.HIDDEN
+      || child.computedStyle.visibility === Visibility.HIDDEN
       || !child.computedStyle.pointerEvents) {
       continue;
     }
@@ -65,7 +65,7 @@ function getChildByPoint(parent: Container, x: number, y: number, recursionCompo
 
 function isInMask(node: AbstractNode, x: number, y: number) {
   const computedStyle = node.computedStyle;
-  if (computedStyle.maskMode !== MASK.NONE && computedStyle.pointerEvents) {
+  if (computedStyle.maskMode !== Mask.NONE && computedStyle.pointerEvents) {
     const rect = node.rect;
     const matrixWorld = node.matrixWorld;
     return pointInRect(x, y, rect[0], rect[1], rect[2], rect[3], matrixWorld, true);

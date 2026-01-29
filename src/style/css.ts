@@ -6,38 +6,38 @@ import {
   ComputedFilter,
   ComputedRich,
   ComputedStyle,
-  CURVE_MODE,
-  POSITION,
-  DISPLAY,
-  FILL_RULE,
-  FONT_STYLE,
+  CurveMode,
+  Position,
+  Display,
+  FillRule,
+  FontStyle,
   Gradient,
-  MASK,
-  MIX_BLEND_MODE,
-  OBJECT_FIT,
-  OVERFLOW,
-  PATTERN_FILL_TYPE,
+  Mask,
+  MixBlendMode,
+  ObjectFit,
+  Overflow,
+  PatternFillType,
   Rich,
   RICH_KEYS,
-  STROKE_LINE_CAP,
-  STROKE_LINE_JOIN,
-  STROKE_POSITION,
+  StrokeLineCap,
+  StrokeLineJoin,
+  StrokePosition,
   Style,
-  StyleBoolValue,
-  StyleColorValue,
+  StyleBool,
+  StyleColor,
   StyleFilter,
-  StyleGradientValue,
-  StyleMbmValue,
-  StyleNumValue,
-  StyleStrokePositionValue,
-  StyleTdValue,
-  StyleTextShadowValue,
+  StyleGradient,
+  StyleMixBlendMode,
+  StyleNum,
+  StyleStrokePosition,
+  StyleTextDecoration,
+  StyleShadow,
   StyleUnit,
-  TEXT_ALIGN,
-  TEXT_DECORATION,
-  TEXT_VERTICAL_ALIGN,
-  TextShadow,
-  VISIBILITY,
+  TextAlign,
+  TextDecoration,
+  TextVerticalAlign,
+  Shadow,
+  Visibility,
 } from './define';
 import reg from './reg';
 import { color2rgbaInt, color2rgbaStr } from './color';
@@ -45,7 +45,7 @@ import font from './font';
 import { convert2Css, isGradient, parseGradient } from './gradient';
 import config from '../config';
 
-function compatibleTransform(k: string, v: StyleNumValue) {
+function compatibleTransform(k: string, v: StyleNum) {
   if (k === 'scaleX' || k === 'scaleY') {
     v.u = StyleUnit.NUMBER;
   }
@@ -82,12 +82,12 @@ export function normalize(style: Partial<JStyle>) {
     res[k] = n;
   });
   if (style.position !== undefined) {
-    let v = POSITION.ABSOLUTE;
+    let v = Position.ABSOLUTE;
     if (style.position === 'static') {
-      v = POSITION.STATIC;
+      v = Position.STATIC;
     }
     else if (style.position === 'relative') {
-      v = POSITION.RELATIVE;
+      v = Position.RELATIVE;
     }
     res.position = {
       v,
@@ -95,18 +95,18 @@ export function normalize(style: Partial<JStyle>) {
     };
   }
   if (style.display !== undefined) {
-    let v = DISPLAY.BLOCK;
+    let v = Display.BLOCK;
     if (style.display === 'none') {
-      v = DISPLAY.NONE;
+      v = Display.NONE;
     }
     else if (style.display === 'inline') {
-      v = DISPLAY.INLINE;
+      v = Display.INLINE;
     }
     else if (style.display === 'inlineBlock') {
-      v = DISPLAY.INLINE_BLOCK;
+      v = Display.INLINE_BLOCK;
     }
     else if (style.display === 'flex') {
-      v = DISPLAY.FLEX;
+      v = Display.FLEX;
     }
     res.display = {
       v,
@@ -188,12 +188,12 @@ export function normalize(style: Partial<JStyle>) {
   }
   if (style.fontStyle !== undefined) {
     const fontStyle = style.fontStyle;
-    let v = FONT_STYLE.NORMAL;
+    let v = FontStyle.NORMAL;
     if (fontStyle && /italic/i.test(fontStyle)) {
-      v = FONT_STYLE.ITALIC;
+      v = FontStyle.ITALIC;
     }
     else if (fontStyle && /oblique/i.test(fontStyle)) {
-      v = FONT_STYLE.OBLIQUE;
+      v = FontStyle.OBLIQUE;
     }
     res.fontStyle = { v, u: StyleUnit.NUMBER };
   }
@@ -205,26 +205,26 @@ export function normalize(style: Partial<JStyle>) {
   }
   if (style.textAlign !== undefined) {
     const textAlign = style.textAlign;
-    let v = TEXT_ALIGN.LEFT;
+    let v = TextAlign.LEFT;
     if (textAlign === 'center') {
-      v = TEXT_ALIGN.CENTER;
+      v = TextAlign.CENTER;
     }
     else if (textAlign === 'right') {
-      v = TEXT_ALIGN.RIGHT;
+      v = TextAlign.RIGHT;
     }
     else if (textAlign === 'justify') {
-      v = TEXT_ALIGN.JUSTIFY;
+      v = TextAlign.JUSTIFY;
     }
     res.textAlign = { v, u: StyleUnit.NUMBER };
   }
   if (style.textVerticalAlign !== undefined) {
     const textVerticalAlign = style.textVerticalAlign;
-    let v = TEXT_VERTICAL_ALIGN.TOP;
+    let v = TextVerticalAlign.TOP;
     if (textVerticalAlign === 'middle') {
-      v = TEXT_VERTICAL_ALIGN.MIDDLE;
+      v = TextVerticalAlign.MIDDLE;
     }
     else if (textVerticalAlign === 'bottom') {
-      v = TEXT_VERTICAL_ALIGN.BOTTOM;
+      v = TextVerticalAlign.BOTTOM;
     }
     res.textVerticalAlign = { v, u: StyleUnit.NUMBER };
   }
@@ -232,12 +232,12 @@ export function normalize(style: Partial<JStyle>) {
     const textDecoration = style.textDecoration;
     if (Array.isArray(textDecoration)) {
       res.textDecoration = textDecoration.map(item => {
-        let v = TEXT_DECORATION.NONE;
+        let v = TextDecoration.NONE;
         if (item === 'underline') {
-          v = TEXT_DECORATION.UNDERLINE;
+          v = TextDecoration.UNDERLINE;
         }
         else if (item === 'line-through' || item === 'lineThrough') {
-          v = TEXT_DECORATION.LINE_THROUGH;
+          v = TextDecoration.LINE_THROUGH;
         }
         return { v, u: StyleUnit.NUMBER };
       });
@@ -272,7 +272,7 @@ export function normalize(style: Partial<JStyle>) {
   }
   if (style.visibility !== undefined) {
     res.visibility = {
-      v: /hidden/i.test(style.visibility) ? VISIBILITY.HIDDEN : VISIBILITY.VISIBLE,
+      v: /hidden/i.test(style.visibility) ? Visibility.HIDDEN : Visibility.VISIBLE,
       u: StyleUnit.NUMBER,
     };
   }
@@ -290,7 +290,7 @@ export function normalize(style: Partial<JStyle>) {
           if (isGradient(item as string)) {
             const v = parseGradient(item as string);
             if (v) {
-              return { v, u: StyleUnit.GRADIENT };
+              return { v, u: StyleUnit.GradientType };
             }
           }
         }
@@ -331,13 +331,13 @@ export function normalize(style: Partial<JStyle>) {
       });
     }
     else {
-      res.fillMode = res.fill.map(() => ({ v: MIX_BLEND_MODE.NORMAL, u : StyleUnit.NUMBER }));
+      res.fillMode = res.fill.map(() => ({ v: MixBlendMode.NORMAL, u : StyleUnit.NUMBER }));
     }
   }
   if (style.fillRule !== undefined) {
     const fillRule = style.fillRule;
     res.fillRule = {
-      v: fillRule === 'evenodd' ? FILL_RULE.EVEN_ODD : FILL_RULE.NON_ZERO,
+      v: fillRule === 'evenodd' ? FillRule.EVEN_ODD : FillRule.NON_ZERO,
       u: StyleUnit.NUMBER,
     };
   }
@@ -349,22 +349,22 @@ export function normalize(style: Partial<JStyle>) {
           if (isGradient(item as string)) {
             const v = parseGradient(item as string);
             if (v) {
-              return { v, u: StyleUnit.GRADIENT };
+              return { v, u: StyleUnit.GradientType };
             }
           }
           else if (reg.img.test(item as string)) {
             const v = reg.img.exec(item as string);
             if (v) {
-              let type = PATTERN_FILL_TYPE.TILE;
+              let type = PatternFillType.TILE;
               const s = (item as string).replace(v[0], '');
               if (s.indexOf('fill') > -1) {
-                type = PATTERN_FILL_TYPE.FILL;
+                type = PatternFillType.FILL;
               }
               else if (s.indexOf('stretch') > -1) {
-                type = PATTERN_FILL_TYPE.STRETCH;
+                type = PatternFillType.STRETCH;
               }
               else if (s.indexOf('fit') > -1) {
-                type = PATTERN_FILL_TYPE.FIT;
+                type = PatternFillType.FIT;
               }
               let scale;
               const v2 = /([\d.]+)%/.exec(s);
@@ -411,18 +411,18 @@ export function normalize(style: Partial<JStyle>) {
     const strokePosition = style.strokePosition;
     if (Array.isArray(strokePosition)) {
       res.strokePosition = strokePosition.map((item: string) => {
-        let v = STROKE_POSITION.CENTER;
+        let v = StrokePosition.CENTER;
         if (item === 'inside') {
-          v = STROKE_POSITION.INSIDE;
+          v = StrokePosition.INSIDE;
         }
         else if (item === 'outside') {
-          v = STROKE_POSITION.OUTSIDE;
+          v = StrokePosition.OUTSIDE;
         }
         return { v, u: StyleUnit.NUMBER };
       });
     }
     else {
-      res.strokePosition = res.stroke.map(() => ({ v: STROKE_POSITION.CENTER, u: StyleUnit.NUMBER }));
+      res.strokePosition = res.stroke.map(() => ({ v: StrokePosition.CENTER, u: StyleUnit.NUMBER }));
     }
   }
   if (style.strokeMode !== undefined) {
@@ -433,7 +433,7 @@ export function normalize(style: Partial<JStyle>) {
       });
     }
     else {
-      res.strokeMode = res.stroke.map(() => ({ v: MIX_BLEND_MODE.NORMAL, u: StyleUnit.NUMBER }));
+      res.strokeMode = res.stroke.map(() => ({ v: MixBlendMode.NORMAL, u: StyleUnit.NUMBER }));
     }
   }
   if (style.strokeDasharray !== undefined) {
@@ -449,23 +449,23 @@ export function normalize(style: Partial<JStyle>) {
   }
   if (style.strokeLinecap !== undefined) {
     const strokeLinecap = style.strokeLinecap;
-    let v = STROKE_LINE_CAP.BUTT;
+    let v = StrokeLineCap.BUTT;
     if (strokeLinecap === 'round') {
-      v = STROKE_LINE_CAP.ROUND;
+      v = StrokeLineCap.ROUND;
     }
     else if (strokeLinecap === 'square') {
-      v = STROKE_LINE_CAP.SQUARE;
+      v = StrokeLineCap.SQUARE;
     }
     res.strokeLinecap = { v, u: StyleUnit.NUMBER };
   }
   if (style.strokeLinejoin !== undefined) {
     const strokeLinejoin = style.strokeLinejoin;
-    let v = STROKE_LINE_JOIN.MITER;
+    let v = StrokeLineJoin.MITER;
     if (strokeLinejoin === 'round') {
-      v = STROKE_LINE_JOIN.ROUND;
+      v = StrokeLineJoin.ROUND;
     }
     else if (strokeLinejoin === 'bevel') {
-      v = STROKE_LINE_JOIN.BEVEL;
+      v = StrokeLineJoin.BEVEL;
     }
     res.strokeLinejoin = { v, u: StyleUnit.NUMBER };
   }
@@ -501,7 +501,7 @@ export function normalize(style: Partial<JStyle>) {
     else if (o.length === 1) {
       o[1] = o[0];
     }
-    const arr: Array<StyleNumValue> = [];
+    const arr: Array<StyleNum> = [];
     for (let i = 0; i < 2; i++) {
       let item = o[i];
       if (/^[-+]?[\d.]/.test(item as string)) {
@@ -535,18 +535,18 @@ export function normalize(style: Partial<JStyle>) {
   }
   if (style.hasOwnProperty('maskMode')) {
     const maskMode = style.maskMode;
-    let v = MASK.NONE;
+    let v = Mask.NONE;
     if (maskMode === 'alpha') {
-      v = MASK.ALPHA;
+      v = Mask.ALPHA;
     }
     else if (maskMode === 'gray') {
-      v = MASK.GRAY;
+      v = Mask.GRAY;
     }
     else if (maskMode === 'alpha-with') {
-      v = MASK.ALPHA_WITH;
+      v = Mask.ALPHA_WITH;
     }
     else if (maskMode === 'gray-with') {
-      v = MASK.GRAY_WITH;
+      v = Mask.GRAY_WITH;
     }
     res.maskMode = { v, u: StyleUnit.NUMBER };
   }
@@ -558,9 +558,9 @@ export function normalize(style: Partial<JStyle>) {
   }
   if (style.overflow !== undefined) {
     const overflow = style.overflow;
-    let v = OVERFLOW.VISIBLE;
+    let v = Overflow.VISIBLE;
     if (overflow === 'hidden') {
-      v = OVERFLOW.HIDDEN;
+      v = Overflow.HIDDEN;
     }
     res.overflow = {
       v,
@@ -587,7 +587,7 @@ export function normalize(style: Partial<JStyle>) {
         else if (k === 'radiaBlur') {
           const n = parseFloat(v) || 0;
           const mc = /,\s*(.+)\s*(?:,\s*(.+))?/.exec(v);
-          const center = [{ v: 50, u: StyleUnit.PERCENT }, { v: 50, u: StyleUnit.PERCENT }] as [StyleNumValue, StyleNumValue];
+          const center = [{ v: 50, u: StyleUnit.PERCENT }, { v: 50, u: StyleUnit.PERCENT }] as [StyleNum, StyleNum];
           if (mc) {
             const x = calUnit(mc[1] as string | number);
             if (x.u !== StyleUnit.PX && x.u !== StyleUnit.PERCENT) {
@@ -615,8 +615,8 @@ export function normalize(style: Partial<JStyle>) {
         }
         else if (k === 'motionBlur') {
           const n = parseFloat(v) || 0;
-          const angle = { v: 0, u: StyleUnit.DEG } as StyleNumValue;
-          const offset = { v: 0, u: StyleUnit.DEG } as StyleNumValue;
+          const angle = { v: 0, u: StyleUnit.DEG } as StyleNum;
+          const offset = { v: 0, u: StyleUnit.DEG } as StyleNum;
           const m = /,\s*(.+)\s*(?:,\s*(.+))?/.exec(v);
           if (m) {
             const a = parseFloat(m[1]);
@@ -638,7 +638,7 @@ export function normalize(style: Partial<JStyle>) {
         else if (k === 'bloom') {
           const n = parseFloat(v) || 0;
           const mk = /,\s*([^,]+)/.exec(v);
-          const knee = { v: 0.5, u: StyleUnit.NUMBER } as StyleNumValue;
+          const knee = { v: 0.5, u: StyleUnit.NUMBER } as StyleNum;
           if (mk) {
             const b = calUnit(mk[1] as string | number);
             knee.v = Math.max(0, b.v);
@@ -653,7 +653,7 @@ export function normalize(style: Partial<JStyle>) {
         }
         else if (k === 'lightDark') {
           const n = parseFloat(v) || 0;
-          const angle = { v: 0, u: StyleUnit.DEG } as StyleNumValue;
+          const angle = { v: 0, u: StyleUnit.DEG } as StyleNum;
           const m = /,\s*(.+)\s*(?:,\s*(.+))?/.exec(v);
           if (m) {
             const a = parseFloat(m[1]);
@@ -726,7 +726,7 @@ export function setFontStyle(style: ComputedStyle | ComputedRich) {
     fontFamily = '"' + fontFamily.replace(/"/g, '\\"') + '"';
   }
   let fontStyle = '';
-  if (style.fontStyle === FONT_STYLE.ITALIC) {
+  if (style.fontStyle === FontStyle.ITALIC) {
     fontStyle = 'italic ';
   }
   let fontWeight = '';
@@ -787,62 +787,62 @@ export function getContentArea(style: Pick<ComputedStyle, 'fontSize' | 'fontFami
 }
 
 export function getBlendMode(blend: string) {
-  let v = MIX_BLEND_MODE.NORMAL;
+  let v = MixBlendMode.NORMAL;
   if (/multiply/i.test(blend)) {
-    v = MIX_BLEND_MODE.MULTIPLY;
+    v = MixBlendMode.MULTIPLY;
   }
   else if (/screen/i.test(blend)) {
-    v = MIX_BLEND_MODE.SCREEN;
+    v = MixBlendMode.SCREEN;
   }
   else if (/overlay/i.test(blend)) {
-    v = MIX_BLEND_MODE.OVERLAY;
+    v = MixBlendMode.OVERLAY;
   }
   else if (/darken/i.test(blend)) {
-    v = MIX_BLEND_MODE.DARKEN;
+    v = MixBlendMode.DARKEN;
   }
   else if (/lighten/i.test(blend)) {
-    v = MIX_BLEND_MODE.LIGHTEN;
+    v = MixBlendMode.LIGHTEN;
   }
   else if (/color[-\s]dodge/i.test(blend) || /colorDodge/.test(blend)) {
-    v = MIX_BLEND_MODE.COLOR_DODGE;
+    v = MixBlendMode.COLOR_DODGE;
   }
   else if (/color[-\s]burn/i.test(blend) || /colorBurn/.test(blend)) {
-    v = MIX_BLEND_MODE.COLOR_BURN;
+    v = MixBlendMode.COLOR_BURN;
   }
   else if (/hard[\-\s]light/i.test(blend) || /hardLight/.test(blend)) {
-    v = MIX_BLEND_MODE.HARD_LIGHT;
+    v = MixBlendMode.HARD_LIGHT;
   }
   else if (/soft[-\s]light/i.test(blend) || /softLight/.test(blend)) {
-    v = MIX_BLEND_MODE.SOFT_LIGHT;
+    v = MixBlendMode.SOFT_LIGHT;
   }
   else if (/difference/i.test(blend)) {
-    v = MIX_BLEND_MODE.DIFFERENCE;
+    v = MixBlendMode.DIFFERENCE;
   }
   else if (/exclusion/i.test(blend)) {
-    v = MIX_BLEND_MODE.EXCLUSION;
+    v = MixBlendMode.EXCLUSION;
   }
   else if (/hue/i.test(blend)) {
-    v = MIX_BLEND_MODE.HUE;
+    v = MixBlendMode.HUE;
   }
   else if (/saturation/i.test(blend)) {
-    v = MIX_BLEND_MODE.SATURATION;
+    v = MixBlendMode.SATURATION;
   }
   else if (/color/i.test(blend)) {
-    v = MIX_BLEND_MODE.COLOR;
+    v = MixBlendMode.COLOR;
   }
   else if (/luminosity/i.test(blend)) {
-    v = MIX_BLEND_MODE.LUMINOSITY;
+    v = MixBlendMode.LUMINOSITY;
   }
   return v;
 }
 
 export function getObjectFit(s: string) {
-  let v = OBJECT_FIT.FILL;
+  let v = ObjectFit.FILL;
   if (s === 'contain') {
-    v = OBJECT_FIT.CONTAIN;
+    v = ObjectFit.CONTAIN;
   }
   else if (s === 'cover') {
-    v = OBJECT_FIT.COVER;
+    v = ObjectFit.COVER;
   }
   return v;
 }
@@ -895,7 +895,7 @@ export function equalStyle(a: Partial<Style>, b: Partial<Style>, k: keyof Style)
           return false;
         }
       }
-      else if (ai.u === StyleUnit.GRADIENT) {
+      else if (ai.u === StyleUnit.GradientType) {
         if (ai.v.t !== bi.v.t) {
           return false;
         }
@@ -1033,34 +1033,34 @@ export function cloneStyle(style: Partial<Style>, keys?: string | string[]) {
 
 export function cloneStyleItem(k: keyof Style, v: Style[keyof Style]) {
   if (k === 'transformOrigin' || k === 'perspectiveOrigin') {
-    return [Object.assign({}, (v as StyleNumValue[])[0]), Object.assign({}, (v as StyleNumValue[])[1])];
+    return [Object.assign({}, (v as StyleNum[])[0]), Object.assign({}, (v as StyleNum[])[1])];
   }
   else if (k === 'color' || k === 'backgroundColor') {
     return {
-      v: (v as StyleColorValue).v.slice(0),
-      u: (v as StyleColorValue).u,
+      v: (v as StyleColor).v.slice(0),
+      u: (v as StyleColor).u,
     };
   }
   else if (k === 'textShadow') {
     return {
       v: {
-        x: (v as StyleTextShadowValue).v.x,
-        y: (v as StyleTextShadowValue).v.y,
-        blur: (v as StyleTextShadowValue).v.blur,
-        color: (v as StyleTextShadowValue).v.color.slice(0),
+        x: (v as StyleShadow).v.x,
+        y: (v as StyleShadow).v.y,
+        blur: (v as StyleShadow).v.blur,
+        color: (v as StyleShadow).v.color.slice(0),
       },
       u: (v as any).u,
     };
   }
   else if (k === 'fill' || k === 'stroke') {
-    return (v as (StyleColorValue | StyleGradientValue)[]).map(item => {
+    return (v as (StyleColor | StyleGradient)[]).map(item => {
       if (item.u === StyleUnit.RGBA) {
         return {
           v: item.v.slice(0),
           u: item.u,
         };
       }
-      else if (item.u === StyleUnit.GRADIENT) {
+      else if (item.u === StyleUnit.GradientType) {
         return {
           v: {
             t: item.v.t,
@@ -1084,7 +1084,7 @@ export function cloneStyleItem(k: keyof Style, v: Style[keyof Style]) {
     });
   }
   else if (k === 'fillMode' || k === 'strokeMode' || k === 'textDecoration') {
-    return (v as (StyleMbmValue | StyleTdValue)[]).map(item => Object.assign({}, item));
+    return (v as (StyleMixBlendMode | StyleTextDecoration)[]).map(item => Object.assign({}, item));
   }
   else if (
     k === 'fillEnable' ||
@@ -1094,7 +1094,7 @@ export function cloneStyleItem(k: keyof Style, v: Style[keyof Style]) {
     k === 'strokePosition' ||
     k === 'strokeDasharray'
   ) {
-    return (v as (StyleBoolValue | StyleNumValue | StyleStrokePositionValue)[]).map(item => Object.assign({}, item));
+    return (v as (StyleBool | StyleNum | StyleStrokePosition)[]).map(item => Object.assign({}, item));
   }
   else if (k === 'filter') {
     return (v as StyleFilter[]).map(item => {
@@ -1137,7 +1137,7 @@ export function cloneStyleItem(k: keyof Style, v: Style[keyof Style]) {
   }
 }
 
-export function calSize(v: StyleNumValue, p: number): number {
+export function calSize(v: StyleNum, p: number): number {
   if (v.u === StyleUnit.PX) {
     return v.v;
   }
@@ -1162,7 +1162,7 @@ export function normalizeRich(rich: Partial<JRich>, style: Style, complete = tru
         }
         else if (k === 'visibility') {
           res[k] = {
-            v: VISIBILITY.VISIBLE,
+            v: Visibility.VISIBLE,
             u: StyleUnit.NUMBER,
           };
         }
@@ -1180,7 +1180,7 @@ export function normalizeRich(rich: Partial<JRich>, style: Style, complete = tru
   } as Rich;
 }
 
-export function getCssMbm(v: MIX_BLEND_MODE) {
+export function getCssMbm(v: MixBlendMode) {
   return [
     'normal',
     'multiply',
@@ -1201,7 +1201,7 @@ export function getCssMbm(v: MIX_BLEND_MODE) {
   ][v];
 }
 
-export function getCssObjectFit(v: OBJECT_FIT) {
+export function getCssObjectFit(v: ObjectFit) {
   return ['fill', 'contain', 'cover'][v];
 }
 
@@ -1230,7 +1230,7 @@ export function getCssFillStroke(item: number[] | Gradient, width?: number, heig
   return convert2Css(item as Gradient, width, height, standard);
 }
 
-export function getCssStrokePosition(o: STROKE_POSITION) {
+export function getCssStrokePosition(o: StrokePosition) {
   return (['center', 'inside', 'outside'][o] || 'inside') as 'center' | 'inside' | 'outside';
 }
 
@@ -1246,12 +1246,12 @@ export function normalizePoints(item: JPoint) {
     hasCurveFrom: item.hasCurveFrom || false,
     hasCurveTo: item.hasCurveTo || false,
     curveMode: ({
-      'none': CURVE_MODE.NONE,
-      'straight': CURVE_MODE.STRAIGHT,
-      'mirrored': CURVE_MODE.MIRRORED,
-      'asymmetric': CURVE_MODE.ASYMMETRIC,
-      'disconnected': CURVE_MODE.DISCONNECTED,
-    }[item.curveMode || 'none'] || CURVE_MODE.NONE) as Point['curveMode'],
+      'none': CurveMode.NONE,
+      'straight': CurveMode.STRAIGHT,
+      'mirrored': CurveMode.MIRRORED,
+      'asymmetric': CurveMode.ASYMMETRIC,
+      'disconnected': CurveMode.DISCONNECTED,
+    }[item.curveMode || 'none'] || CurveMode.NONE) as Point['curveMode'],
     absX: 0,
     absY: 0,
     absFx: 0,
@@ -1267,7 +1267,7 @@ export function normalizePoints(item: JPoint) {
   };
 }
 
-export function getCssTextShadow(item?: TextShadow) {
+export function getCssTextShadow(item?: Shadow) {
   if (!item) {
     return 'none';
   }

@@ -19,8 +19,8 @@ export enum RefreshLevel {
   PERSPECTIVE_SELF =        0b00000000001000000000000,
   OPACITY =                 0b00000000010000000000000,
   FILTER =                  0b00000000100000000000000,
-  MIX_BLEND_MODE =          0b00000001000000000000000,
-  MASK =                    0b00000010000000000000000,
+  MixBlendMode =          0b00000001000000000000000,
+  Mask =                    0b00000010000000000000000,
   BREAK_MASK =              0b00000100000000000000000,
   MASK_OPACITY =            0b00000100010000000000000,
   HOOK =                    0b00001000000000000000000,
@@ -120,10 +120,10 @@ export function getLevel(k: string) {
     return RefreshLevel.FILTER;
   }
   if (k === 'mixBlendMode') {
-    return RefreshLevel.MIX_BLEND_MODE;
+    return RefreshLevel.MixBlendMode;
   }
   if (k === 'maskMode') {
-    return RefreshLevel.MASK;
+    return RefreshLevel.Mask;
   }
   if (k === 'breakMask') {
     return RefreshLevel.BREAK_MASK;

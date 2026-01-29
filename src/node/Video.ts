@@ -2,7 +2,7 @@ import { NodeType } from './AbstractNode';
 import Node from './Node'
 import { VideoProps } from '../format';
 import TextureCache from '../refresh/TextureCache';
-import { OBJECT_FIT, StyleUnit } from '../style/define';
+import { ObjectFit, StyleUnit } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
 import CanvasCache from '../refresh/CanvasCache';
 import { Options } from '../animation/AbstractAnimation';
@@ -218,11 +218,11 @@ class Video extends Node {
         borderBottomLeftRadius,
         borderBottomRightRadius,
       } = computedStyle;
-      if ((objectFit === OBJECT_FIT.COVER || objectFit === OBJECT_FIT.FILL)
+      if ((objectFit === ObjectFit.COVER || objectFit === ObjectFit.FILL)
         && (borderTopLeftRadius || borderTopRightRadius || borderBottomLeftRadius || borderBottomRightRadius)) {
         this.isPure = false;
       }
-      else if (objectFit === OBJECT_FIT.CONTAIN
+      else if (objectFit === ObjectFit.CONTAIN
         && (borderTopLeftRadius || borderTopRightRadius || borderBottomLeftRadius || borderBottomRightRadius)) {
         const ratio = videoFrame.displayWidth / videoFrame.displayHeight;
         const ratio2 = computedStyle.width / computedStyle.height;
@@ -270,7 +270,7 @@ class Video extends Node {
           let dx = 0, dy = 0;
           const ratio = videoFrame.displayWidth / videoFrame.displayHeight;
           const ratio2 = width / height;
-          if (objectFit === OBJECT_FIT.CONTAIN) {
+          if (objectFit === ObjectFit.CONTAIN) {
             if (ratio2 > ratio) {
               const w = height * ratio;
               dx = (width - w) * 0.5;
@@ -282,7 +282,7 @@ class Video extends Node {
               height = h;
             }
           }
-          else if (objectFit === OBJECT_FIT.COVER) {
+          else if (objectFit === ObjectFit.COVER) {
             if (ratio2 > ratio) {
               const h = width / ratio;
               dy = (height - h) * 0.5;
@@ -315,7 +315,7 @@ class Video extends Node {
       if (videoFrame) {
         const ratio = videoFrame.displayWidth / videoFrame.displayHeight;
         const ratio2 = width / height;
-        if (objectFit === OBJECT_FIT.CONTAIN) {
+        if (objectFit === ObjectFit.CONTAIN) {
           if (ratio2 > ratio) {
             const w = height * ratio;
             const d = (width - w) * 0.5;
@@ -329,7 +329,7 @@ class Video extends Node {
             height = h;
           }
         }
-        else if (objectFit === OBJECT_FIT.COVER) {
+        else if (objectFit === ObjectFit.COVER) {
           if (ratio2 > ratio) {
             const h = width / ratio;
             dy = (height - h) * 0.5;
@@ -378,7 +378,7 @@ class Video extends Node {
           let tc: { x1: number, y1: number, x3: number, y3: number } | undefined;
           const ratio = videoFrame.displayWidth / videoFrame.displayHeight;
           const ratio2 = width / height;
-          if (objectFit === OBJECT_FIT.CONTAIN) {
+          if (objectFit === ObjectFit.CONTAIN) {
             if (ratio2 > ratio) {
               const w = height * ratio;
               const d = (width - w) * 0.5;
@@ -394,7 +394,7 @@ class Video extends Node {
               r[3] -= d;
             }
           }
-          else if (objectFit === OBJECT_FIT.COVER) {
+          else if (objectFit === ObjectFit.COVER) {
             if (ratio2 > ratio) {
               const h = width / ratio;
               const d = Math.abs(height - h) * 0.5;

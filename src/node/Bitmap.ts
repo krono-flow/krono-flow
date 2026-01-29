@@ -4,7 +4,7 @@ import { BitmapProps } from '../format';
 import CanvasCache from '../refresh/CanvasCache';
 import { getCacheImg, loadImg, LoadImgRes } from '../util/loadImg';
 import TextureCache from '../refresh/TextureCache';
-import { OBJECT_FIT, StyleUnit } from '../style/define';
+import { ObjectFit, StyleUnit } from '../style/define';
 import { RefreshLevel } from '../refresh/level';
 import { Options } from '../animation/AbstractAnimation';
 import GifAnimation from '../animation/GifAnimation';
@@ -130,11 +130,11 @@ class Bitmap extends Node {
         borderBottomLeftRadius,
         borderBottomRightRadius,
       } = computedStyle;
-      if ((objectFit === OBJECT_FIT.COVER || objectFit === OBJECT_FIT.FILL)
+      if ((objectFit === ObjectFit.COVER || objectFit === ObjectFit.FILL)
         && (borderTopLeftRadius || borderTopRightRadius || borderBottomLeftRadius || borderBottomRightRadius)) {
         this.isPure = false;
       }
-      else if (objectFit === OBJECT_FIT.CONTAIN
+      else if (objectFit === ObjectFit.CONTAIN
         && (borderTopLeftRadius || borderTopRightRadius || borderBottomLeftRadius || borderBottomRightRadius)) {
         const ratio = loader.width / loader.height;
         const ratio2 = computedStyle.width / computedStyle.height;
@@ -200,7 +200,7 @@ class Bitmap extends Node {
               let dx = 0, dy = 0;
               const ratio = loader.width / loader.height;
               const ratio2 = width / height;
-              if (objectFit === OBJECT_FIT.CONTAIN) {
+              if (objectFit === ObjectFit.CONTAIN) {
                 if (ratio2 > ratio) {
                   const w = height * ratio;
                   dx = (width - w) * 0.5;
@@ -212,7 +212,7 @@ class Bitmap extends Node {
                   height = h;
                 }
               }
-              else if (objectFit === OBJECT_FIT.COVER) {
+              else if (objectFit === ObjectFit.COVER) {
                 if (ratio2 > ratio) {
                   const h = width / ratio;
                   dy = (height - h) * 0.5;
@@ -242,7 +242,7 @@ class Bitmap extends Node {
             let dx = 0, dy = 0;
             const ratio = loader.width / loader.height;
             const ratio2 = width / height;
-            if (objectFit === OBJECT_FIT.CONTAIN) {
+            if (objectFit === ObjectFit.CONTAIN) {
               if (ratio2 > ratio) {
                 const w = height * ratio;
                 dx = (width - w) * 0.5;
@@ -254,7 +254,7 @@ class Bitmap extends Node {
                 height = h;
               }
             }
-            else if (objectFit === OBJECT_FIT.COVER) {
+            else if (objectFit === ObjectFit.COVER) {
               if (ratio2 > ratio) {
                 const h = width / ratio;
                 dy = (height - h) * 0.5;
@@ -289,7 +289,7 @@ class Bitmap extends Node {
       if (loader?.success) {
         const ratio = loader.width / loader.height;
         const ratio2 = width / height;
-        if (objectFit === OBJECT_FIT.CONTAIN) {
+        if (objectFit === ObjectFit.CONTAIN) {
           if (ratio2 > ratio) {
             const w = height * ratio;
             dx = (width - w) * 0.5;
@@ -301,7 +301,7 @@ class Bitmap extends Node {
             height = h;
           }
         }
-        else if (objectFit === OBJECT_FIT.COVER) {
+        else if (objectFit === ObjectFit.COVER) {
           if (ratio2 > ratio) {
             const h = width / ratio;
             dy = (height - h) * 0.5;
@@ -372,7 +372,7 @@ class Bitmap extends Node {
           let tc: { x1: number, y1: number, x3: number, y3: number } | undefined;
           const ratio = loader.width / loader.height;
           const ratio2 = width / height;
-          if (objectFit === OBJECT_FIT.CONTAIN) {
+          if (objectFit === ObjectFit.CONTAIN) {
             if (ratio2 > ratio) {
               const w = height * ratio;
               const d = (width - w) * 0.5;
@@ -388,7 +388,7 @@ class Bitmap extends Node {
               r[3] -= d;
             }
           }
-          else if (objectFit === OBJECT_FIT.COVER) {
+          else if (objectFit === ObjectFit.COVER) {
             if (ratio2 > ratio) {
               const h = width / ratio;
               const d = Math.abs(height - h) * 0.5;

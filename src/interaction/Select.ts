@@ -1,6 +1,6 @@
 import AbstractNode from '../node/AbstractNode';
 import Root from '../node/Root';
-import { VISIBILITY } from '../style/define';
+import { Visibility } from '../style/define';
 import { calRectPoints, identity, multiply, multiplyScaleX, multiplyScaleY } from '../math/matrix';
 import { r2d } from '../math/geom';
 
@@ -65,7 +65,7 @@ export default class Select {
     if (selected.length === 1) {
       sub.innerHTML = '';
       this.select.classList.remove('multi');
-      if (selected[0].computedStyle.visibility === VISIBILITY.VISIBLE) {
+      if (selected[0].computedStyle.visibility === Visibility.VISIBLE) {
         this.select.classList.remove('hide');
       }
       else {

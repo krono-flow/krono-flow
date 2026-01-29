@@ -1,6 +1,6 @@
 import { Point } from '../../format';
 import { sliceBezier } from '../../math/bezier';
-import { CURVE_MODE } from '../../style/define';
+import { CurveMode } from '../../style/define';
 import { getCurve, getStraight, isCornerPoint, XY } from './corner';
 
 export function buildPoints(points: Point[], isClosed: boolean, width = 1, height = 1) {
@@ -48,12 +48,12 @@ export function buildPoints(points: Point[], isClosed: boolean, width = 1, heigh
       const isPrevCorner = isCornerPoint(prevPoint);
       const isPrevStraight =
         isPrevCorner ||
-        prevPoint.curveMode === CURVE_MODE.STRAIGHT ||
+        prevPoint.curveMode === CurveMode.STRAIGHT ||
         !prevPoint.hasCurveFrom;
       const isNextCorner = isCornerPoint(nextPoint);
       const isNextStraight =
         isNextCorner ||
-        nextPoint.curveMode === CURVE_MODE.STRAIGHT ||
+        nextPoint.curveMode === CurveMode.STRAIGHT ||
         !nextPoint.hasCurveTo;
       // 先看最普通的直线，可以用角平分线+半径最小值约束求解
       if (isPrevStraight && isNextStraight) {
@@ -75,7 +75,7 @@ export function buildPoints(points: Point[], isClosed: boolean, width = 1, heigh
         x: 0,
         y: 0,
         cornerRadius: 0,
-        curveMode: CURVE_MODE.NONE,
+        curveMode: CurveMode.NONE,
         hasCurveFrom: true,
         fx: 0,
         fy: 0,
@@ -99,7 +99,7 @@ export function buildPoints(points: Point[], isClosed: boolean, width = 1, heigh
         x: 0,
         y: 0,
         cornerRadius: 0,
-        curveMode: CURVE_MODE.NONE,
+        curveMode: CurveMode.NONE,
         hasCurveFrom: false,
         fx: 0,
         fy: 0,

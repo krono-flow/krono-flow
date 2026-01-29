@@ -1,4 +1,4 @@
-import { ComputedGradient, ComputedTextShadow, TEXT_DECORATION, VISIBILITY } from '../style/define';
+import { ComputedGradient, ComputedShadow, TextDecoration, Visibility } from '../style/define';
 
 class TextBox {
   x: number;
@@ -14,13 +14,13 @@ class TextBox {
   fontSize: number;
   color: string;
   letterSpacing: number;
-  textDecoration: TEXT_DECORATION[];
-  textShadow?: ComputedTextShadow;
+  textDecoration: TextDecoration[];
+  textShadow?: ComputedShadow;
   stroke: (number[] | ComputedGradient)[];
   strokeWidth: number[];
   strokeEnable: boolean[];
   opacity: number;
-  visibility: VISIBILITY;
+  visibility: Visibility;
 
   constructor(
     x: number,
@@ -36,13 +36,13 @@ class TextBox {
     fontSize: number,
     color: string,
     letterSpacing: number,
-    textDecoration: TEXT_DECORATION[],
-    textShadow: ComputedTextShadow | undefined,
+    textDecoration: TextDecoration[],
+    textShadow: ComputedShadow | undefined,
     stroke: (number[] | ComputedGradient)[],
     strokeWidth: number[],
     strokeEnable: boolean[],
     opacity: number,
-    visibility: VISIBILITY,
+    visibility: Visibility,
   ) {
     this.x = x;
     this.y = y;

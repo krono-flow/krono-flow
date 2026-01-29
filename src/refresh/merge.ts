@@ -1,4 +1,4 @@
-import { ComputedStyle, MASK, MIX_BLEND_MODE, OVERFLOW, StyleUnit, VISIBILITY } from '../style/define';
+import { ComputedStyle, Mask, MixBlendMode, Overflow, StyleUnit, Visibility } from '../style/define';
 import Node from '../node/Node';
 import Root from '../node/Root';
 import { RefreshLevel } from './level';
@@ -69,8 +69,8 @@ export function genMerge(
     const needTotal =
       (
         (opacity > 0 && opacity < 1)
-        || mixBlendMode !== MIX_BLEND_MODE.NORMAL
-        || overflow === OVERFLOW.HIDDEN
+        || mixBlendMode !== MixBlendMode.NORMAL
+        || overflow === Overflow.HIDDEN
       )
       && total > 0
       && !textureTotal?.available;
@@ -86,7 +86,7 @@ export function genMerge(
     let needMask = maskMode > 0 && !textureMask?.available;
     // 单个的alpha蒙版不渲染（没有next），target指向空的mask纹理汇总，循环时判空跳过
     if (needMask) {
-      if (!node.next || node.next.computedStyle.breakMask || node.next.computedStyle.maskMode !== MASK.NONE) {
+      if (!node.next || node.next.computedStyle.breakMask || node.next.computedStyle.maskMode !== Mask.NONE) {
         needMask = false;
         node.textureMask?.release();
         node.textureMask = null;
@@ -224,7 +224,7 @@ export function genMerge(
 }
 
 export function shouldIgnore(computedStyle: ComputedStyle) {
-  return (computedStyle.visibility === VISIBILITY.HIDDEN || computedStyle.opacity <= 0) && !computedStyle.maskMode;
+  return (computedStyle.visibility === Visibility.HIDDEN || computedStyle.opacity <= 0) && !computedStyle.maskMode;
 }
 
 // 统计mask节点后续关联跳过的数量
@@ -265,7 +265,7 @@ function genBboxTotal(
   const res = (node.tempBbox || node._bbox).slice(0);
   toE(node.tempMatrix);
   // overflow加速
-  if (node.computedStyle.overflow === OVERFLOW.HIDDEN || node.computedStyle.overflow === OVERFLOW.CLIP) {
+  if (node.computedStyle.overflow === Overflow.HIDDEN || node.computedStyle.overflow === Overflow.CLIP) {
     return res;
   }
   for (let i = index + 1, len = index + total + 1; i < len; i++) {
@@ -483,7 +483,7 @@ function genTotal(
             }
             let tex: WebGLTexture | undefined;
             // 有mbm先将本节点内容绘制到同尺寸纹理上
-            if (mixBlendMode !== MIX_BLEND_MODE.NORMAL && i > index) {
+            if (mixBlendMode !== MixBlendMode.NORMAL && i > index) {
               tex = createTexture(gl, 0, undefined, w, h);
               gl.framebufferTexture2D(
                 gl.FRAMEBUFFER,
@@ -511,7 +511,7 @@ function genTotal(
             );
             // texture2Blob(gl, w, h);
             // 这里才是真正生成mbm
-            if (mixBlendMode !== MIX_BLEND_MODE.NORMAL && tex) {
+            if (mixBlendMode !== MixBlendMode.NORMAL && tex) {
               t = rect.t = genMbm(
                 gl,
                 t,
@@ -674,7 +674,7 @@ export function genMask(
   gl: WebGL2RenderingContext | WebGLRenderingContext,
   root: Root,
   node: Node,
-  maskMode: MASK,
+  maskMode: Mask,
   structs: Struct[],
   index: number,
   lv: number,
@@ -758,7 +758,7 @@ export function genMask(
       const cx = width * 0.5,
         cy = height * 0.5;
       // outline/alpha-with如果可见先将自身绘制在底层后再收集后续节点，因为其参与bgBlur效果
-      if ([MASK.ALPHA_WITH, MASK.GRAY_WITH].includes(maskMode) && computedStyle.visibility === VISIBILITY.VISIBLE && computedStyle.opacity > 0 && textureTarget.available) {
+      if ([Mask.ALPHA_WITH, Mask.GRAY_WITH].includes(maskMode) && computedStyle.visibility === Visibility.VISIBLE && computedStyle.opacity > 0 && textureTarget.available) {
         const index = i * len2 + j; // 和绘制对象完全对应，求出第几个区块即可，但img可能不是因为使用原始位图尺寸
         const t = listM[index]?.t;
         t && drawTextureCache(
@@ -836,10 +836,10 @@ export function genMask(
                * sketch即便是outline也不收集为底层，因此第0个summary不生效，第1个才生效，
                * psd的alpha-with作为底层，因此第0个summary生效
                */
-              if (mixBlendMode !== MIX_BLEND_MODE.NORMAL
+              if (mixBlendMode !== MixBlendMode.NORMAL
                 && (
-                  i > index + total + 1 && [MASK.OUTLINE, MASK.ALPHA, MASK.GRAY].includes(maskMode)
-                  || i > index + total && [MASK.ALPHA_WITH, MASK.GRAY_WITH].includes(maskMode)
+                  i > index + total + 1 && [Mask.OUTLINE, Mask.ALPHA, Mask.GRAY].includes(maskMode)
+                  || i > index + total && [Mask.ALPHA_WITH, Mask.GRAY_WITH].includes(maskMode)
                 )
               ) {
                 tex = createTexture(gl, 0, undefined, width, height);
@@ -873,7 +873,7 @@ export function genMask(
                 },
               );
               // 这里才是真正生成mbm
-              if (mixBlendMode !== MIX_BLEND_MODE.NORMAL && tex) {
+              if (mixBlendMode !== MixBlendMode.NORMAL && tex) {
                 area.t = genMbm(
                   gl,
                   area.t,
@@ -893,7 +893,7 @@ export function genMask(
           || computedStyle.maskMode
         ) {
           // 有种特殊情况，group没内容且没next，但children有内容，outline蒙版需要渲染出来
-          if ([MASK.OUTLINE, MASK.ALPHA_WITH, MASK.GRAY_WITH].includes(computedStyle.maskMode)
+          if ([Mask.OUTLINE, Mask.ALPHA_WITH, Mask.GRAY_WITH].includes(computedStyle.maskMode)
             && (!node2.next || node2.next.computedStyle.breakMask)) {
           }
           else {
@@ -908,7 +908,7 @@ export function genMask(
   res.available = true;
   const listR = res.list;
   // sketch没有灰度，但psd或其它有
-  if (maskMode === MASK.GRAY || maskMode === MASK.GRAY_WITH) {
+  if (maskMode === Mask.GRAY || maskMode === Mask.GRAY_WITH) {
     CacheProgram.useProgram(gl, programs.maskGray);
     for (let i = 0, len = listS.length; i < len; i++) {
       const { bbox, w, h, t } = listS[i];
@@ -989,56 +989,56 @@ function genMbm(
   gl: WebGL2RenderingContext | WebGLRenderingContext,
   tex1: WebGLTexture,
   tex2: WebGLTexture,
-  mixBlendMode: MIX_BLEND_MODE,
+  mixBlendMode: MixBlendMode,
   programs: Record<string, CacheProgram>,
   w: number,
   h: number,
 ) {
   // 获取对应的mbm程序
   let program: CacheProgram;
-  if (mixBlendMode === MIX_BLEND_MODE.MULTIPLY) {
+  if (mixBlendMode === MixBlendMode.MULTIPLY) {
     program = programs.multiplyProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.SCREEN) {
+  else if (mixBlendMode === MixBlendMode.SCREEN) {
     program = programs.screenProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.OVERLAY) {
+  else if (mixBlendMode === MixBlendMode.OVERLAY) {
     program = programs.overlayProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.DARKEN) {
+  else if (mixBlendMode === MixBlendMode.DARKEN) {
     program = programs.darkenProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.LIGHTEN) {
+  else if (mixBlendMode === MixBlendMode.LIGHTEN) {
     program = programs.lightenProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.COLOR_DODGE) {
+  else if (mixBlendMode === MixBlendMode.COLOR_DODGE) {
     program = programs.colorDodgeProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.COLOR_BURN) {
+  else if (mixBlendMode === MixBlendMode.COLOR_BURN) {
     program = programs.colorBurnProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.HARD_LIGHT) {
+  else if (mixBlendMode === MixBlendMode.HARD_LIGHT) {
     program = programs.hardLightProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.SOFT_LIGHT) {
+  else if (mixBlendMode === MixBlendMode.SOFT_LIGHT) {
     program = programs.softLightProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.DIFFERENCE) {
+  else if (mixBlendMode === MixBlendMode.DIFFERENCE) {
     program = programs.differenceProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.EXCLUSION) {
+  else if (mixBlendMode === MixBlendMode.EXCLUSION) {
     program = programs.exclusionProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.HUE) {
+  else if (mixBlendMode === MixBlendMode.HUE) {
     program = programs.hueProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.SATURATION) {
+  else if (mixBlendMode === MixBlendMode.SATURATION) {
     program = programs.saturationProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.COLOR) {
+  else if (mixBlendMode === MixBlendMode.COLOR) {
     program = programs.colorProgram;
   }
-  else if (mixBlendMode === MIX_BLEND_MODE.LUMINOSITY) {
+  else if (mixBlendMode === MixBlendMode.LUMINOSITY) {
     program = programs.luminosityProgram;
   }
   else {

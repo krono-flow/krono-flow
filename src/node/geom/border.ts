@@ -1,12 +1,12 @@
-import { STROKE_LINE_CAP, STROKE_LINE_JOIN } from '../../style/define';
+import { StrokeLineCap, StrokeLineJoin } from '../../style/define';
 import { crossProduct } from '../../math/vector';
 import { intersectLineLine } from '../../math/isec';
 import { bezierSlope } from '../../math/bezier';
 
-export function lineCap(bbox: Float32Array, width: number, points: number[][], cap: STROKE_LINE_CAP) {
+export function lineCap(bbox: Float32Array, width: number, points: number[][], cap: StrokeLineCap) {
   const res = bbox.slice(0);
   // 圆角最简单，已知圆心和半径，直接取范围
-  if (cap === STROKE_LINE_CAP.ROUND) {
+  if (cap === StrokeLineCap.ROUND) {
     res[0] -= width;
     res[1] -= width;
     res[2] += width;
@@ -45,13 +45,13 @@ export function lineCap(bbox: Float32Array, width: number, points: number[][], c
   const dy1 = (cos1 === Infinity) ? width : Math.abs(cos1 * width);
   const dx2 = (sin2 === Infinity) ? width : Math.abs(sin2 * width);
   const dy2 = (cos2 === Infinity) ? width : Math.abs(cos2 * width);
-  if (cap === STROKE_LINE_CAP.BUTT) {
+  if (cap === StrokeLineCap.BUTT) {
     res[0] = Math.min(res[0], first[0] - dx1, last[ll - 2] - dx2);
     res[1] = Math.min(res[1], first[1] - dy1, last[ll - 1] - dy2);
     res[2] = Math.max(res[2], first[0] + dx1, last[ll - 2] + dx2);
     res[3] = Math.max(res[3], first[1] + dy1, last[ll - 1] + dy2);
   }
-  else if (cap === STROKE_LINE_CAP.SQUARE) {
+  else if (cap === StrokeLineCap.SQUARE) {
     res[0] = Math.min(res[0], first[0] - dx1 - dy1, last[ll - 2] - dx2 - dy2);
     res[1] = Math.min(res[1], first[1] - dx1 - dy1, last[ll - 1] - dx2 - dy2);
     res[2] = Math.max(res[2], first[0] + dx1 + dy1, last[ll - 2] + dx2 + dy2);
@@ -60,10 +60,10 @@ export function lineCap(bbox: Float32Array, width: number, points: number[][], c
   return res;
 }
 
-export function lineJoin(bbox: Float32Array, width: number, points: number[][], join: STROKE_LINE_JOIN, miterLimit: number) {
+export function lineJoin(bbox: Float32Array, width: number, points: number[][], join: StrokeLineJoin, miterLimit: number) {
   const res = bbox.slice(0);
   // 圆角最简单，已知圆心和半径，直接取范围
-  if (join === STROKE_LINE_JOIN.ROUND) {
+  if (join === StrokeLineJoin.ROUND) {
     res[0] -= width;
     res[1] -= width;
     res[2] += width;
@@ -177,7 +177,7 @@ export function lineJoin(bbox: Float32Array, width: number, points: number[][], 
       continue;
     }
     // 不同类型的限制，bevel在交点处延2条边同时等量回退，并回退顶点形成width*2的新边
-    if (join === STROKE_LINE_JOIN.BEVEL) {
+    if (join === StrokeLineJoin.BEVEL) {
       const distance = Math.sqrt(Math.pow(nx1 - px2, 2) + Math.pow(ny1 - py2, 2));
       const ratio = width * 2 / distance;
       // 链接距离不超过边框无需裁剪
@@ -200,7 +200,7 @@ export function lineJoin(bbox: Float32Array, width: number, points: number[][], 
       }
     }
     // 一般就是扩展到延长线交点pt，除非被miterLimit限制
-    else if (join === STROKE_LINE_JOIN.MITER) {
+    else if (join === StrokeLineJoin.MITER) {
       const distance = Math.sqrt(Math.pow(pt.x - curr[cl - 2], 2) + Math.pow(pt.y - curr[cl - 1], 2));
       const ratio = distance / width;
       // 比例超过后，则为bevel

@@ -2,7 +2,7 @@ import { angleBySides, d2r, r2d } from '../math/geom';
 import { identity, multiplyRotateZ, multiplyScaleY } from '../math/matrix';
 import { clone } from '../util/type';
 import { color2rgbaInt, color2rgbaStr } from './color';
-import { calUnit, ColorStop, ComputedColorStop, Gradient, GRADIENT, StyleNumValue, StyleUnit } from './define';
+import { calUnit, ColorStop, ComputedColorStop, Gradient, GradientType, StyleNum, StyleUnit } from './define';
 import reg from './reg';
 import { calMatrixByOrigin } from './transform';
 import { toPrecision } from '../math';
@@ -190,12 +190,12 @@ export function parseGradient(s: string) {
   const gradient = reg.gradient.exec(s);
   if (gradient) {
     const t = {
-      linear: GRADIENT.LINEAR,
-      radial: GRADIENT.RADIAL,
-      conic: GRADIENT.CONIC,
+      linear: GradientType.LINEAR,
+      radial: GradientType.RADIAL,
+      conic: GradientType.CONIC,
     }[gradient[1].toLowerCase()]!;
     let d: number[];
-    if (t === GRADIENT.LINEAR) {
+    if (t === GradientType.LINEAR) {
       // sketch的2点式
       const points =
         /([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[-+]?\d+)?)\s+([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[-+]?\d+)?)\s+([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[-+]?\d+)?)\s+([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[-+]?\d+)?)/.exec(
@@ -220,7 +220,7 @@ export function parseGradient(s: string) {
         }
       }
     }
-    else if (t === GRADIENT.RADIAL) {
+    else if (t === GradientType.RADIAL) {
       const points =
         /([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[-+]?\d+)?)\s+([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[-+]?\d+)?)\s+([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[-+]?\d+)?)\s+([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[-+]?\d+)?)(\s+([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[-+]?\d+)?))?/.exec(
           gradient[2],
@@ -241,21 +241,21 @@ export function parseGradient(s: string) {
         ];
       }
     }
-    else if (t === GRADIENT.CONIC) {
+    else if (t === GradientType.CONIC) {
       d = [];
     }
     const v =
       gradient[2].match(
         /(([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[-+]?\d+)?[pxremvwhina%]*)?\s*((#[0-9a-f]{3,8})|(rgba?\s*\(.+?\)))\s*([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[-+]?\d+)?[pxremvwhina%]*)?)|(transparent)/gi,
       ) || [];
-    const stops: (Pick<ColorStop, 'color'> & { offset?: StyleNumValue })[] = v.map((item, i) => {
+    const stops: (Pick<ColorStop, 'color'> & { offset?: StyleNum })[] = v.map((item, i) => {
       const color =
         /(?:#[0-9a-f]{3,8})|(?:rgba?\s*\(.+?\))|(?:transparent)/i.exec(item);
       const percent =
         /[-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[-+]?\d+)?(?:(?:px)|%)?/.exec(
           item.replace(color![0], ''),
         );
-      let offset: StyleNumValue | undefined;
+      let offset: StyleNum | undefined;
       if (percent) {
         const v = calUnit(percent[0]);
         if (v.u !== StyleUnit.PERCENT) {
@@ -576,7 +576,7 @@ export function convert2Css(g: Gradient, width = 100, height = 100, standard = f
   const newStops = stops.slice(0);
   // panel新增可能出现顺序不对
   newStops.sort((a, b) => a.offset.v - b.offset.v);
-  if (t === GRADIENT.LINEAR) {
+  if (t === GradientType.LINEAR) {
     let start: { x: number, y: number },
       end: { x: number, y: number };
     if (deg <= 90) {
@@ -700,7 +700,7 @@ export function convert2Css(g: Gradient, width = 100, height = 100, standard = f
     });
     return s + ')';
   }
-  else if (t === GRADIENT.RADIAL) {
+  else if (t === GradientType.RADIAL) {
     // 非标准不用变
     let ratio = 1;
     // 半径，和圆心到4个角的距离取最大值即farthest-corner
@@ -737,7 +737,7 @@ export function convert2Css(g: Gradient, width = 100, height = 100, standard = f
     });
     return s + ')';
   }
-  else if (t === GRADIENT.CONIC) {
+  else if (t === GradientType.CONIC) {
     let s = 'conic-gradient(';
     // css的角度和sketch不一样差90°
     if (standard) {

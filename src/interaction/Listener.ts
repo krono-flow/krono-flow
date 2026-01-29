@@ -10,7 +10,7 @@ import History from '../history/History';
 import MoveCommand, { MoveData } from '../history/MoveCommand';
 import RemoveCommand, { RemoveData } from '../history/RemoveCommand';
 import AbstractCommand from '../history/AbstractCommand';
-import ResizeCommand, { CONTROL_TYPE, ResizeData } from '../history/ResizeCommand';
+import ResizeCommand, { ControlType, ResizeData } from '../history/ResizeCommand';
 import RotateCommand from '../history/RotateCommand';
 import { intersectLineLine } from '../math/isec';
 import { JStyle } from '../format';
@@ -57,7 +57,7 @@ class Listener extends Event {
   dy: number;
   isControl: boolean; // 调整尺寸
   isRotate: boolean; // 是否在旋转中
-  controlType: CONTROL_TYPE; // 拖动尺寸dom时节点的class，区分比如左拉还是右拉
+  controlType: ControlType; // 拖动尺寸dom时节点的class，区分比如左拉还是右拉
   selectRect?: Rect; // 多个节点拉伸时最初的选框信息
   clientRect?: Rect[]; // 和select一样记录每个节点最初的选框信息
 
@@ -106,7 +106,7 @@ class Listener extends Event {
     this.dy = 0;
     this.isControl = false;
     this.isRotate = false;
-    this.controlType = CONTROL_TYPE.T;
+    this.controlType = ControlType.T;
   }
 
   // 更新dom的位置做原点坐标，鼠标按下或touch按下时
@@ -147,20 +147,20 @@ class Listener extends Event {
         this.cancelEditText();
       }
       const controlType = this.controlType = {
-        't': CONTROL_TYPE.T,
-        'r': CONTROL_TYPE.R,
-        'b': CONTROL_TYPE.B,
-        'l': CONTROL_TYPE.L,
-        'tl': CONTROL_TYPE.TL,
-        'tr': CONTROL_TYPE.TR,
-        'bl': CONTROL_TYPE.BL,
-        'br': CONTROL_TYPE.BR,
+        't': ControlType.T,
+        'r': ControlType.R,
+        'b': ControlType.B,
+        'l': ControlType.L,
+        'tl': ControlType.TL,
+        'tr': ControlType.TR,
+        'bl': ControlType.BL,
+        'br': ControlType.BR,
       }[target.className]!;
       this.prepare();
       const metaKey = this.metaKey || isWin && this.ctrlKey;
       // 旋转时记住中心坐标
       if (!this.options?.disabled?.rotate && selected.length === 1 && metaKey && [
-        CONTROL_TYPE.TL, CONTROL_TYPE.TR, CONTROL_TYPE.BL, CONTROL_TYPE.BR,
+        ControlType.TL, ControlType.TR, ControlType.BL, ControlType.BR,
       ].indexOf(controlType) > -1) {
         const { points } = selected[0].getBoundingClientRect();
         const i = intersectLineLine(

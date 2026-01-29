@@ -9,7 +9,7 @@ export enum StyleUnit {
   RGBA = 5,
   BOOLEAN = 6,
   STRING = 7,
-  GRADIENT = 8,
+  GradientType = 8,
   MATRIX = 9,
   SHADOW = 10,
   PATTERN = 11,
@@ -25,12 +25,12 @@ export enum StyleUnit {
   SEPIA = 21,
 }
 
-export type StyleStrValue = {
+export type StyleStr = {
   v: string;
   u: StyleUnit.STRING;
 };
 
-export type StyleNumValue = {
+export type StyleNum = {
   v: number;
   u:
     | StyleUnit.AUTO
@@ -40,59 +40,54 @@ export type StyleNumValue = {
     | StyleUnit.DEG;
 };
 
-export type StyleBoolValue = {
+export type StyleBool = {
   v: boolean;
   u: StyleUnit.BOOLEAN;
 };
 
-export type StyleVisibilityValue = {
-  v: VISIBILITY;
+export type StyleVisibility = {
+  v: Visibility;
   u: StyleUnit.NUMBER;
 };
 
-export type StyleColorValue = {
+export type StyleColor = {
   v: number[];
   u: StyleUnit.RGBA;
 };
 
-export type StyleFontStyleValue = {
-  v: FONT_STYLE;
+export type StyleFontStyle = {
+  v: FontStyle;
   u: StyleUnit.STRING;
 };
 
-export type StyleBooleanOperationValue = {
-  v: BOOLEAN_OPERATION;
+export type StyleMixBlendMode = {
+  v: MixBlendMode;
   u: StyleUnit.NUMBER;
 };
 
-export type StyleMbmValue = {
-  v: MIX_BLEND_MODE;
+export type StyleObjectFit = {
+  v: ObjectFit;
   u: StyleUnit.NUMBER;
 };
 
-export type StyleObjectFitValue = {
-  v: OBJECT_FIT;
+export type StyleTextAlign = {
+  v: TextAlign;
   u: StyleUnit.NUMBER;
 };
 
-export type StyleTaValue = {
-  v: TEXT_ALIGN;
+export type StyleTextVerticalAlign = {
+  v: TextVerticalAlign;
   u: StyleUnit.NUMBER;
 };
 
-export type StyleTvaValue = {
-  v: TEXT_VERTICAL_ALIGN;
-  u: StyleUnit.NUMBER;
-};
-
-export type StyleTdValue = {
-  v: TEXT_DECORATION;
+export type StyleTextDecoration = {
+  v: TextDecoration;
   u: StyleUnit.NUMBER;
 };
 
 export type ColorStop = {
-  color: StyleColorValue;
-  offset: StyleNumValue;
+  color: StyleColor;
+  offset: StyleNum;
 };
 
 export type ComputedColorStop = {
@@ -101,62 +96,62 @@ export type ComputedColorStop = {
 };
 
 export type Gradient = {
-  t: GRADIENT;
+  t: GradientType;
   d: number[];
   stops: ColorStop[];
 };
 
 export type ComputedGradient = {
-  t: GRADIENT;
+  t: GradientType;
   d: number[];
   stops: ComputedColorStop[];
 };
 
-export type StyleGradientValue = {
+export type StyleGradient = {
   v: Gradient;
-  u: StyleUnit.GRADIENT;
+  u: StyleUnit.GradientType;
 };
 
-export type StyleFillRuleValue = {
-  v: FILL_RULE;
+export type StyleFillRule = {
+  v: FillRule;
   u: StyleUnit.NUMBER;
 };
 
-export type StyleMaskValue = {
-  v: MASK;
+export type StyleMask = {
+  v: Mask;
   u: StyleUnit.NUMBER;
 };
 
-export type StyleStrokeLinecapValue = {
-  v: STROKE_LINE_CAP;
+export type StyleStrokeLinecap = {
+  v: StrokeLineCap;
   u: StyleUnit.NUMBER;
 };
 
-export type StyleStrokeLinejoinValue = {
-  v: STROKE_LINE_JOIN;
+export type StyleStrokeLinejoin = {
+  v: StrokeLineJoin;
   u: StyleUnit.NUMBER;
 };
 
-export type StyleStrokePositionValue = {
-  v: STROKE_POSITION;
+export type StyleStrokePosition = {
+  v: StrokePosition;
   u: StyleUnit.NUMBER;
 };
 
-export type StyleTextShadowValue = {
-  v: TextShadow;
+export type StyleShadow = {
+  v: Shadow;
   u: StyleUnit.SHADOW;
 };
 
-export type TextShadow = {
+export type Shadow = {
   x: number;
   y: number;
   blur: number;
   color: number[];
 };
 
-export type ComputedTextShadow = TextShadow;
+export type ComputedShadow = Shadow;
 
-export enum DISPLAY {
+export enum Display {
   NONE = 0,
   BLOCK = 1,
   INLINE = 2,
@@ -165,90 +160,90 @@ export enum DISPLAY {
   GRID = 5,
 }
 
-export type StyleDisplayValue = {
-  v: DISPLAY;
+export type StyleDisplay = {
+  v: Display;
   u: StyleUnit.NUMBER;
 };
 
-export enum POSITION {
+export enum Position {
   STATIC = 0,
   RELATIVE = 1,
   ABSOLUTE = 2,
 }
 
-export type StylePositionValue = {
-  v: POSITION,
+export type StylePosition = {
+  v: Position,
   u: StyleUnit.NUMBER;
 };
 
 export type Style = {
-  position: StylePositionValue;
-  display: StyleDisplayValue;
-  top: StyleNumValue;
-  right: StyleNumValue;
-  bottom: StyleNumValue;
-  left: StyleNumValue;
-  width: StyleNumValue;
-  height: StyleNumValue;
-  lineHeight: StyleNumValue;
-  fontFamily: StyleStrValue;
-  fontSize: StyleNumValue;
-  fontWeight: StyleNumValue;
-  fontStyle: StyleFontStyleValue;
-  letterSpacing: StyleNumValue;
-  paragraphSpacing: StyleNumValue;
-  textAlign: StyleTaValue;
-  textVerticalAlign: StyleTvaValue;
-  textDecoration: StyleTdValue[];
-  textShadow: StyleTextShadowValue;
-  color: StyleColorValue;
-  visibility: StyleVisibilityValue;
-  opacity: StyleNumValue;
-  backgroundColor: StyleColorValue;
-  fill: Array<StyleColorValue | StyleGradientValue>;
-  fillEnable: StyleBoolValue[];
-  fillOpacity: StyleNumValue[];
-  fillMode: StyleMbmValue[];
-  fillRule: StyleFillRuleValue;
-  stroke: Array<StyleColorValue | StyleGradientValue>;
-  strokeEnable: StyleBoolValue[];
-  strokeWidth: StyleNumValue[];
-  strokePosition: StyleStrokePositionValue[];
-  strokeMode: StyleMbmValue[];
-  strokeDasharray: StyleNumValue[];
-  strokeLinecap: StyleStrokeLinecapValue;
-  strokeLinejoin: StyleStrokeLinejoinValue;
-  strokeMiterlimit: StyleNumValue;
-  translateX: StyleNumValue;
-  translateY: StyleNumValue;
-  translateZ: StyleNumValue;
-  skewX: StyleNumValue;
-  skewY: StyleNumValue;
-  scaleX: StyleNumValue;
-  scaleY: StyleNumValue;
-  rotateX: StyleNumValue;
-  rotateY: StyleNumValue;
-  rotateZ: StyleNumValue;
-  transformOrigin: [StyleNumValue, StyleNumValue];
-  perspective: StyleNumValue;
-  perspectiveOrigin: [StyleNumValue, StyleNumValue];
-  perspectiveSelf: StyleNumValue;
-  pointerEvents: StyleBoolValue;
-  maskMode: StyleMaskValue;
-  breakMask: StyleBoolValue;
-  mixBlendMode: StyleMbmValue;
-  objectFit: StyleObjectFitValue;
-  borderTopLeftRadius: StyleNumValue;
-  borderTopRightRadius: StyleNumValue;
-  borderBottomLeftRadius: StyleNumValue;
-  borderBottomRightRadius: StyleNumValue;
-  overflow: StyleOverflowValue;
+  position: StylePosition;
+  display: StyleDisplay;
+  top: StyleNum;
+  right: StyleNum;
+  bottom: StyleNum;
+  left: StyleNum;
+  width: StyleNum;
+  height: StyleNum;
+  lineHeight: StyleNum;
+  fontFamily: StyleStr;
+  fontSize: StyleNum;
+  fontWeight: StyleNum;
+  fontStyle: StyleFontStyle;
+  letterSpacing: StyleNum;
+  paragraphSpacing: StyleNum;
+  textAlign: StyleTextAlign;
+  textVerticalAlign: StyleTextVerticalAlign;
+  textDecoration: StyleTextDecoration[];
+  textShadow: StyleShadow;
+  color: StyleColor;
+  visibility: StyleVisibility;
+  opacity: StyleNum;
+  backgroundColor: StyleColor;
+  fill: Array<StyleColor | StyleGradient>;
+  fillEnable: StyleBool[];
+  fillOpacity: StyleNum[];
+  fillMode: StyleMixBlendMode[];
+  fillRule: StyleFillRule;
+  stroke: Array<StyleColor | StyleGradient>;
+  strokeEnable: StyleBool[];
+  strokeWidth: StyleNum[];
+  strokePosition: StyleStrokePosition[];
+  strokeMode: StyleMixBlendMode[];
+  strokeDasharray: StyleNum[];
+  strokeLinecap: StyleStrokeLinecap;
+  strokeLinejoin: StyleStrokeLinejoin;
+  strokeMiterlimit: StyleNum;
+  translateX: StyleNum;
+  translateY: StyleNum;
+  translateZ: StyleNum;
+  skewX: StyleNum;
+  skewY: StyleNum;
+  scaleX: StyleNum;
+  scaleY: StyleNum;
+  rotateX: StyleNum;
+  rotateY: StyleNum;
+  rotateZ: StyleNum;
+  transformOrigin: [StyleNum, StyleNum];
+  perspective: StyleNum;
+  perspectiveOrigin: [StyleNum, StyleNum];
+  perspectiveSelf: StyleNum;
+  pointerEvents: StyleBool;
+  maskMode: StyleMask;
+  breakMask: StyleBool;
+  mixBlendMode: StyleMixBlendMode;
+  objectFit: StyleObjectFit;
+  borderTopLeftRadius: StyleNum;
+  borderTopRightRadius: StyleNum;
+  borderBottomLeftRadius: StyleNum;
+  borderBottomRightRadius: StyleNum;
+  overflow: StyleOverflow;
   filter: (StyleFilter)[];
 };
 
 export type ComputedStyle = {
-  position: POSITION;
-  display: DISPLAY;
+  position: Position;
+  display: Display;
   top: number;
   right: number;
   bottom: number;
@@ -259,30 +254,30 @@ export type ComputedStyle = {
   fontFamily: string;
   fontSize: number;
   fontWeight: number;
-  fontStyle: FONT_STYLE;
+  fontStyle: FontStyle;
   letterSpacing: number;
   paragraphSpacing: number;
-  textAlign: TEXT_ALIGN;
-  textVerticalAlign: TEXT_VERTICAL_ALIGN;
-  textDecoration: TEXT_DECORATION[];
-  textShadow: ComputedTextShadow;
+  textAlign: TextAlign;
+  textVerticalAlign: TextVerticalAlign;
+  textDecoration: TextDecoration[];
+  textShadow: ComputedShadow;
   color: number[];
-  visibility: VISIBILITY;
+  visibility: Visibility;
   opacity: number;
   backgroundColor: number[];
   fill: Array<number[] | ComputedGradient>;
   fillEnable: boolean[];
   fillOpacity: number[];
-  fillMode: MIX_BLEND_MODE[];
-  fillRule: FILL_RULE;
+  fillMode: MixBlendMode[];
+  fillRule: FillRule;
   stroke: Array<number[] | ComputedGradient>;
   strokeEnable: boolean[];
   strokeWidth: number[];
-  strokePosition: STROKE_POSITION[];
-  strokeMode: MIX_BLEND_MODE[];
+  strokePosition: StrokePosition[];
+  strokeMode: MixBlendMode[];
   strokeDasharray: number[];
-  strokeLinecap: STROKE_LINE_CAP;
-  strokeLinejoin: STROKE_LINE_JOIN;
+  strokeLinecap: StrokeLineCap;
+  strokeLinejoin: StrokeLineJoin;
   strokeMiterlimit: number;
   translateX: number;
   translateY: number;
@@ -298,33 +293,33 @@ export type ComputedStyle = {
   perspective: number;
   perspectiveOrigin: [number, number];
   perspectiveSelf: number;
-  mixBlendMode: MIX_BLEND_MODE;
+  mixBlendMode: MixBlendMode;
   pointerEvents: boolean;
-  maskMode: MASK;
+  maskMode: Mask;
   breakMask: boolean;
-  objectFit: OBJECT_FIT;
+  objectFit: ObjectFit;
   borderTopLeftRadius: number;
   borderTopRightRadius: number;
   borderBottomLeftRadius: number;
   borderBottomRightRadius: number;
-  overflow: OVERFLOW;
+  overflow: Overflow;
   filter: (ComputedFilter)[];
 };
 
-export enum TEXT_ALIGN {
+export enum TextAlign {
   LEFT = 0,
   RIGHT = 1,
   CENTER = 2,
   JUSTIFY = 3,
 }
 
-export enum TEXT_VERTICAL_ALIGN {
+export enum TextVerticalAlign {
   TOP = 0,
   MIDDLE = 1,
   BOTTOM = 2,
 }
 
-export enum MIX_BLEND_MODE {
+export enum MixBlendMode {
   NORMAL = 0,
   MULTIPLY = 1,
   SCREEN = 2,
@@ -343,32 +338,24 @@ export enum MIX_BLEND_MODE {
   LUMINOSITY = 15,
 }
 
-export enum FONT_STYLE {
+export enum FontStyle {
   NORMAL = 0,
   ITALIC = 1,
   OBLIQUE = 2,
 }
 
-export enum GRADIENT {
+export enum GradientType {
   LINEAR = 0,
   RADIAL = 1,
   CONIC = 2,
 }
 
-export enum BOOLEAN_OPERATION {
-  NONE = 0,
-  UNION = 1,
-  SUBTRACT = 2,
-  INTERSECT = 3,
-  XOR = 4,
-}
-
-export enum FILL_RULE {
+export enum FillRule {
   NON_ZERO = 0,
   EVEN_ODD = 1,
 }
 
-export enum MASK {
+export enum Mask {
   NONE = 0,
   OUTLINE = 1,
   ALPHA = 2,
@@ -377,62 +364,62 @@ export enum MASK {
   GRAY_WITH = 5,
 }
 
-export enum STROKE_LINE_CAP {
+export enum StrokeLineCap {
   BUTT = 0,
   ROUND = 1,
   SQUARE = 2,
 }
 
-export enum STROKE_LINE_JOIN {
+export enum StrokeLineJoin {
   MITER = 0,
   ROUND = 1,
   BEVEL = 2,
 }
 
-export enum STROKE_POSITION {
+export enum StrokePosition {
   CENTER = 0,
   INSIDE = 1,
   OUTSIDE = 2,
 }
 
-export enum PATTERN_FILL_TYPE {
+export enum PatternFillType {
   TILE = 0,
   FILL = 1,
   STRETCH = 2,
   FIT = 3,
 }
 
-export enum VISIBILITY {
+export enum Visibility {
   VISIBLE = 0,
   HIDDEN = 1,
 }
 
-export enum TEXT_DECORATION {
+export enum TextDecoration {
   NONE = 0,
   UNDERLINE = 1,
   LINE_THROUGH = 2,
 }
 
-export enum OVERFLOW {
+export enum Overflow {
   VISIBLE = 0,
   HIDDEN = 1,
   CLIP = 2,
 }
 
-export enum OBJECT_FIT {
+export enum ObjectFit {
   FILL = 0,
   CONTAIN = 1,
   COVER = 2,
 }
 
-export type StyleOverflowValue = {
-  v: OVERFLOW;
+export type StyleOverflow = {
+  v: Overflow;
   u: number;
 }
 
 export type GaussBlur = {
   v: {
-    radius: StyleNumValue;
+    radius: StyleNum;
   },
   u: StyleUnit.GAUSS_BLUR;
 };
@@ -441,8 +428,8 @@ export type ComputedGaussBlur = { radius: number, u: StyleUnit.GAUSS_BLUR };
 
 export type RadialBlur = {
   v: {
-    radius: StyleNumValue;
-    center: [StyleNumValue, StyleNumValue];
+    radius: StyleNum;
+    center: [StyleNum, StyleNum];
   },
   u: StyleUnit.RADIAL_BLUR;
 };
@@ -451,9 +438,9 @@ export type ComputedRadialBlur = { radius: number, center: [number, number], u: 
 
 export type MotionBlur = {
   v: {
-    radius: StyleNumValue;
-    angle: StyleNumValue;
-    offset: StyleNumValue;
+    radius: StyleNum;
+    angle: StyleNum;
+    offset: StyleNum;
   },
   u: StyleUnit.MOTION_BLUR;
 };
@@ -462,8 +449,8 @@ export type ComputedMotionBlur = { radius: number, angle: number, offset: number
 
 export type Bloom = {
   v: {
-    threshold: StyleNumValue;
-    knee: StyleNumValue;
+    threshold: StyleNum;
+    knee: StyleNum;
   },
   u: StyleUnit.BLOOM;
 };
@@ -472,8 +459,8 @@ export type ComputedBloom = { threshold: number, knee: number, u: StyleUnit.BLOO
 
 export type LightDark = {
   v: {
-    radius: StyleNumValue;
-    angle: StyleNumValue;
+    radius: StyleNum;
+    angle: StyleNum;
   },
   u: StyleUnit.LIGHT_DARK;
 };
@@ -486,7 +473,7 @@ export type ComputedLightDark = {
 
 export type HueRotate = {
   v: {
-    radius: StyleNumValue;
+    radius: StyleNum;
   },
   u: StyleUnit.HUE_ROTATE;
 };
@@ -498,7 +485,7 @@ export type ComputedHueRotate = {
 
 export type Saturate = {
   v: {
-    radius: StyleNumValue;
+    radius: StyleNum;
   },
   u: StyleUnit.SATURATE;
 };
@@ -510,7 +497,7 @@ export type ComputedSaturate = {
 
 export type Brightness = {
   v: {
-    radius: StyleNumValue;
+    radius: StyleNum;
   },
   u: StyleUnit.BRIGHTNESS;
 };
@@ -522,7 +509,7 @@ export type ComputedBrightness = {
 
 export type Contrast = {
   v: {
-    radius: StyleNumValue;
+    radius: StyleNum;
   },
   u: StyleUnit.CONTRAST;
 };
@@ -534,7 +521,7 @@ export type ComputedContrast = {
 
 export type Sepia = {
   v: {
-    radius: StyleNumValue;
+    radius: StyleNum;
   },
   u: StyleUnit.SEPIA;
 };
@@ -585,13 +572,13 @@ export type ComputedRich = Pick<ComputedStyle,
 export type ModifyRichStyle = Partial<Omit<Rich, 'location' | 'length'>>;
 
 export type StyleFilter = GaussBlur | RadialBlur | MotionBlur | Bloom | LightDark
-  | HueRotate | Saturate | Brightness | Contrast | Sepia;
+  | HueRotate | Saturate | Brightness | Contrast | Sepia | StyleShadow;
 
 export type ComputedFilter = ComputedGaussBlur | ComputedRadialBlur | ComputedMotionBlur | ComputedBloom
   | ComputedLightDark | ComputedHueRotate | ComputedSaturate | ComputedBrightness | ComputedContrast
   | ComputedSepia;
 
-export function calUnit(v: string | number, degOrNumber2Px = false): StyleNumValue {
+export function calUnit(v: string | number, degOrNumber2Px = false): StyleNum {
   if (v === 'auto') {
     return {
       v: 0,
@@ -642,7 +629,7 @@ export const RICH_KEYS = [
   'visibility',
 ];
 
-export enum CURVE_MODE {
+export enum CurveMode {
   NONE = 0,
   STRAIGHT = 1,
   MIRRORED = 2,
@@ -652,20 +639,20 @@ export enum CURVE_MODE {
 
 export default {
   StyleUnit,
-  TEXT_ALIGN,
-  TEXT_VERTICAL_ALIGN,
-  MIX_BLEND_MODE,
-  FONT_STYLE,
-  GRADIENT,
-  FILL_RULE,
-  MASK,
-  STROKE_LINE_CAP,
-  STROKE_LINE_JOIN,
-  STROKE_POSITION,
-  PATTERN_FILL_TYPE,
-  VISIBILITY,
-  TEXT_DECORATION,
-  OVERFLOW,
+  TextAlign,
+  TextVerticalAlign,
+  MixBlendMode,
+  FontStyle,
+  GradientType,
+  FillRule,
+  Mask,
+  StrokeLineCap,
+  StrokeLineJoin,
+  StrokePosition,
+  PatternFillType,
+  Visibility,
+  TextDecoration,
+  Overflow,
   calUnit,
   RICH_KEYS,
 };
