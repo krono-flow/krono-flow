@@ -9,6 +9,7 @@ import Audio from './Audio';
 import Text from './Text';
 import Lottie from './Lottie';
 import Polyline from './geom/Polyline';
+import textEvent from './textEvent';
 
 export default {
   AbstractNode,
@@ -24,4 +25,5 @@ export default {
   Polyline,
   PLACEHOLDER_NODE,
   NodeType,
+  textEvent,
 };
