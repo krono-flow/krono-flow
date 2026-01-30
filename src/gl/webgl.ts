@@ -892,7 +892,7 @@ export function drawDropShadow(
   // 纹理单元
   const u_color = cacheProgram.uniform.u_color;
   const a = color[3];
-  gl.uniform4f(u_color, color[0] * a, color[1] * a, color[2] * a, a);
+  gl.uniform4f(u_color, color[0] / 255 * a, color[1] / 255 * a, color[2] / 255 * a, a);
   bindTexture(gl, texture, 0);
   const u_texture = cacheProgram.uniform.u_texture;
   gl.uniform1i(u_texture, 0);
