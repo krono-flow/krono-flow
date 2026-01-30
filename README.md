@@ -6,6 +6,7 @@ _Derived from Kronos (Titan of Time) + Belisama (Goddess of Fire & Craft)._
 that unifies hardware-accelerated rich text layout, multi-track video decoding, and high-speed encoding.
 
 [![NPM version](https://img.shields.io/npm/v/krolis.svg)](https://npmjs.org/package/krolis)
+![CI](https://github.com/krolisjs/krolis/workflows/CI/badge.svg)
 
 ## Install
 
