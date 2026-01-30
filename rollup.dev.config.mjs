@@ -20,7 +20,7 @@ export default [
         file: 'dist/index.iife.js',
         format: 'iife',
         sourcemap: true,
-        name: 'kronoFlow',
+        name: 'krolis',
       },
     ],
     plugins: [

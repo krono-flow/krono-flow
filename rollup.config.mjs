@@ -33,13 +33,13 @@ export default [
         file: 'dist/index.iife.js',
         format: 'iife',
         sourcemap: true,
-        name: 'kronoFlow',
+        name: 'krolis',
       },
       {
         file: 'dist/index.min.js',
         format: 'iife',
         sourcemap: true,
-        name: 'kronoFlow',
+        name: 'krolis',
         plugins: [
           terser(),
         ],

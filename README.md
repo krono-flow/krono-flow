@@ -1,17 +1,24 @@
-# krono-flow
-> A high-performance, GPU-accelerated rich text and video rendering engine for the modern web.
+# krolis([ˈkroʊlɪs])
 
-[![NPM version](https://img.shields.io/npm/v/krono-flow.svg)](https://npmjs.org/package/krono-flow)
+_Derived from Kronos (Titan of Time) + Belisama (Goddess of Fire & Craft)._
+
+>A high-performance WebGL/WebGPU engine, \
+that unifies hardware-accelerated rich text layout, multi-track video decoding, and high-speed encoding.
+
+[![NPM version](https://img.shields.io/npm/v/krolis.svg)](https://npmjs.org/package/krolis)
 
 ## Install
+
 ```shell
-npm install sketch-editor
+npm install krolis
 ```
 
 ## Dev
+
 ```shell
 npm run dev
 ```
 
 # License
+
 [MIT License]

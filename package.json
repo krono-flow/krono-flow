@@ -1,6 +1,6 @@
 {
-  "name": "krono-flow",
-  "version": "0.1.4",
+  "name": "krolis",
+  "version": "0.1.0",
   "maintainers": [
     {
       "name": "army8735",
@@ -65,5 +65,5 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "author": "army8735 <army8735@qq.com>",
-  "repository": "git@github.com:krono-flow/krono-flow.git"
+  "repository": "git@github.com:krolisjs/krolis.git"
 }
