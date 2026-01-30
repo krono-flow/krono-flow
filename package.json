@@ -7,6 +7,9 @@
       "email": "army8735@qq.com"
     }
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "rimraf ./types && rimraf ./dist && tsc && rollup -c rollup.config.mjs",
     "dev": "rollup -c rollup.dev.config.mjs --watch",
