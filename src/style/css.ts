@@ -7,7 +7,6 @@ import {
   ComputedRich,
   ComputedStyle,
   CurveMode,
-  Position,
   Display,
   FillRule,
   FontStyle,
@@ -17,8 +16,10 @@ import {
   ObjectFit,
   Overflow,
   PatternFillType,
+  Position,
   Rich,
   RICH_KEYS,
+  Shadow,
   StrokeLineCap,
   StrokeLineJoin,
   StrokePosition,
@@ -29,18 +30,17 @@ import {
   StyleGradient,
   StyleMixBlendMode,
   StyleNum,
+  StyleShadow,
   StyleStrokePosition,
   StyleTextDecoration,
-  StyleShadow,
   StyleUnit,
   TextAlign,
   TextDecoration,
   TextVerticalAlign,
-  Shadow,
   Visibility,
 } from './define';
 import reg from './reg';
-import { color2rgbaInt, color2rgbaStr } from './color';
+import { color2hexStr, color2rgbaInt, color2rgbaStr } from './color';
 import font from './font';
 import { convert2Css, isGradient, parseGradient } from './gradient';
 import config from '../config';
@@ -571,7 +571,10 @@ export function normalize(style: Partial<JStyle>) {
     const list = Array.isArray(style.filter) ? style.filter : [style.filter];
     const filter: StyleFilter[] = [];
     list.forEach(item => {
-      const match = /([\w-]+)\s*\((\s*.+\s*)\)/i.exec(item as string);
+      const noRgba = item.replace(/rgba?\s*\(.*?\)/g, ($0) => {
+        return color2hexStr($0);
+      });
+      const match = /([\w-]+)\s*\((\s*.+\s*)\)/i.exec(noRgba);
       if (match) {
         const k = match[1];
         const v = match[2];
@@ -710,6 +713,18 @@ export function normalize(style: Partial<JStyle>) {
               radius: { v: n * 0.01, u: StyleUnit.PERCENT },
             },
             u: StyleUnit.SEPIA,
+          });
+        }
+        else if (k === 'shadow') {
+          const list = v.split(/\s*,\s*/);
+          filter.push({
+            v: {
+              x: parseFloat(list[0]) || 0,
+              y: parseFloat(list[1]) || 0,
+              blur: parseInt(list[2]) || 0,
+              color: color2rgbaInt(list[3]),
+            },
+            u: StyleUnit.SHADOW,
           });
         }
       }
@@ -983,6 +998,17 @@ export function equalStyle(a: Partial<Style>, b: Partial<Style>, k: keyof Style)
           return false;
         }
       }
+      else if (ai.u === StyleUnit.SHADOW) {
+        if (ai.v.x.v !== bi.v.x.v
+          || ai.v.y.v !== bi.v.y.v
+          || ai.v.blur.v !== bi.v.blur.v
+          || ai.v.color.v[0] !== bi.v.color.v[0]
+          || ai.v.color.v[1] !== bi.v.color.v[1]
+          || ai.v.color.v[2] !== bi.v.color.v[2]
+          || ai.v.color.v[3] !== bi.v.color.v[3]) {
+          return false;
+        }
+      }
     }
     return true;
   }
@@ -1126,6 +1152,13 @@ export function cloneStyleItem(k: keyof Style, v: Style[keyof Style]) {
         || item.u === StyleUnit.SEPIA) {
         o.radius = Object.assign({}, item.v.radius);
       }
+      else if (item.u === StyleUnit.SHADOW) {
+        o.x = Object.assign({}, item.v.x);
+        o.y = Object.assign({}, item.v.y);
+        o.blur = Object.assign({}, item.v.blur);
+        o.color = Object.assign({}, item.v.color);
+        o.color.v = o.color.v.slice(0);
+      }
       return {
         v: o,
         u: item.u,
@@ -1220,6 +1253,9 @@ export function getCssFilter(filter: ComputedFilter) {
   }
   else if (filter.u === StyleUnit.LIGHT_DARK) {
     return 'lightDark(' + filter.radius + ',' + filter.angle + ')';
+  }
+  else if (filter.u === StyleUnit.SHADOW) {
+    return 'dropShadow(' + filter.x + ',' + filter.y + ',' + filter.blur + ',' + color2rgbaStr(filter.color) + ')';
   }
 }
 

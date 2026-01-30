@@ -576,7 +576,7 @@ export type StyleFilter = GaussBlur | RadialBlur | MotionBlur | Bloom | LightDar
 
 export type ComputedFilter = ComputedGaussBlur | ComputedRadialBlur | ComputedMotionBlur | ComputedBloom
   | ComputedLightDark | ComputedHueRotate | ComputedSaturate | ComputedBrightness | ComputedContrast
-  | ComputedSepia;
+  | ComputedSepia | (ComputedShadow & { u: StyleUnit.SHADOW });
 
 export function calUnit(v: string | number, degOrNumber2Px = false): StyleNum {
   if (v === 'auto') {

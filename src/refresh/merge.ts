@@ -24,6 +24,7 @@ import { genBloom } from './bloom';
 import { needReGen } from './spread';
 import { genLightDark } from './lightDark';
 import { genColorMatrix } from './cm';
+import { genShadow } from './shadow';
 
 export type Merge = {
   i: number;
@@ -80,6 +81,9 @@ export function genMerge(
       }
       if (item.u === StyleUnit.SEPIA) {
         return item.radius > 0 && item.radius < 1;
+      }
+      if (item.u === StyleUnit.SHADOW) {
+        return item.color[3] > 0;
       }
       return item.radius >= 1;
     }).filter(item => item).length > 0 && !textureFilter?.available;
@@ -652,6 +656,7 @@ function genFilter(
       const t = genColorMatrix(
         gl,
         root,
+        node,
         res || source,
         item.u === StyleUnit.HUE_ROTATE ? item.radius : 0,
         item.u === StyleUnit.SATURATE ? item.radius : 1,
@@ -665,6 +670,26 @@ function genFilter(
         res.release();
       }
       res = t;
+    }
+    else if (item.u === StyleUnit.SHADOW) {
+      if (item.color[3] > 0) {
+        const t = genShadow(
+          gl,
+          root,
+          node,
+          res || source,
+          item.x,
+          item.y,
+          item.blur,
+          item.color,
+          W,
+          H,
+        );
+        if (res) {
+          res.release();
+        }
+        res = t;
+      }
     }
   });
   return res;

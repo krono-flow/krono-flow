@@ -188,13 +188,11 @@ export function drawInSpreadBbox(
       const t = createTexture(gl, 0, undefined, width, height);
       const x0 = x + j * UNIT,
         y0 = y + i * UNIT;
-      const w0 = width,
-        h0 = height;
       const bbox = new Float32Array([
         x0,
         y0,
-        x0 + w0,
-        y0 + h0,
+        x0 + width,
+        y0 + height,
       ]);
       const area = {
         bbox,
@@ -220,7 +218,7 @@ export function drawInSpreadBbox(
         cy = height * 0.5;
       for (let i = 0, len = listS.length; i < len; i++) {
         const { bbox: bbox2, t: t2 } = listS[i];
-        if (t2 && checkInRect(bbox2, undefined, x0, y0, w0, h0)) {
+        if (t2 && checkInRect(bbox2, undefined, x0, y0, width, height)) {
           drawTextureCache(
             gl,
             cx,

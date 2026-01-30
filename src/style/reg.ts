@@ -3,7 +3,7 @@ export default {
   gradient: /\b(\w+)-?gradient\s*\((.+)\)/i,
   img: /(?:\burl\((['"]?)(.*?)\1\))|(?:\b((data:)))/i,
   blur: /(gauss|motion|radial|background)\s*\((.+)\)/i,
-  color: /(?:#[a-f\d]{3,8})|(?:rgba?\s*\(.+?\))|(?:transparent)/i,
+  color: /(?:#[a-f\d]{3,8})|(?:rgba?\s*\(.*?\))|(?:transparent)/i,
   number: /([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[-+]?\d+)?)[pxremvwhina%]*/ig,
   shadow: /([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:px)?)\s+([-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:px)?)\s+((?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:px)?)\s+((?:#[a-f\d]{3,8})|(?:rgba?\s*\(.+?\))|(?:transparent))/i,
 };

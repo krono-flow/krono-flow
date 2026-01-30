@@ -27,6 +27,7 @@ import bloomBlurFrag from '../gl/bloomBlur.frag';
 import dualDown13Frag from '../gl/dualDown13.frag';
 import dualUp13Frag from '../gl/dualUp13.frag';
 import lightDarkFrag from '../gl/lightDark.frag';
+import dropShadowFrag from '../gl/dropShadow.frag';
 import AbstractAnimation from '../animation/AbstractAnimation';
 import AniController from '../animation/AniController';
 import { CAN_PLAY, REFRESH, REFRESH_COMPLETE, WAITING } from '../refresh/refreshEvent';
@@ -489,6 +490,10 @@ class Root extends Container {
     });
     this.programs.lightDark = new CacheProgram(gl, initShaders(gl, simpleVert, lightDarkFrag), {
       uniform: ['u_texture', 'u_velocity', 'u_radius'],
+      attrib: ['a_position', 'a_texCoords'],
+    });
+    this.programs.dropShadow = new CacheProgram(gl, initShaders(gl, simpleVert, dropShadowFrag), {
+      uniform: ['u_texture', 'u_color'],
       attrib: ['a_position', 'a_texCoords'],
     });
     CacheProgram.useProgram(gl, this.programs.main);

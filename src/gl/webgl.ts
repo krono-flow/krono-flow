@@ -882,6 +882,28 @@ export function drawLightDark(
   gl.disableVertexAttribArray(a_texCoords);
 }
 
+export function drawDropShadow(
+  gl: WebGL2RenderingContext | WebGLRenderingContext,
+  cacheProgram: CacheProgram,
+  texture: WebGLTexture,
+  color: number[],
+) {
+  const { pointBuffer, a_position, texBuffer, a_texCoords } = preSingle(gl, cacheProgram);
+  // 纹理单元
+  const u_color = cacheProgram.uniform.u_color;
+  const a = color[3];
+  gl.uniform4f(u_color, color[0] * a, color[1] * a, color[2] * a, a);
+  bindTexture(gl, texture, 0);
+  const u_texture = cacheProgram.uniform.u_texture;
+  gl.uniform1i(u_texture, 0);
+  // 渲染并销毁
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  gl.deleteBuffer(pointBuffer);
+  gl.deleteBuffer(texBuffer);
+  gl.disableVertexAttribArray(a_position);
+  gl.disableVertexAttribArray(a_texCoords);
+}
+
 function pointNDC(
   x: number,
   y: number,
