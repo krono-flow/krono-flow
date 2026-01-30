@@ -238,8 +238,8 @@ export function genRadialBlur(
   // 写到一个扩展好尺寸的tex中方便后续处理
   const x = bboxR[0],
     y = bboxR[1];
-  const w = bboxR[2] - bboxR[0],
-    h = bboxR[3] - bboxR[1];
+  const w = bboxR[2] - x,
+    h = bboxR[3] - y;
   const programs = root.programs;
   const main = programs.main;
   let temp: TextureCache | undefined;

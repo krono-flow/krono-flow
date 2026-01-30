@@ -1827,7 +1827,8 @@ class Node extends AbstractNode {
            * 记录的顶层父节点比较特殊，会发生上述情况，中间父节点不会有变更后读取的情况
            * 因此只有没有变化且和父级id不一致时，其id自增标识，有变化已经主动更新过了
            */
-          if (node.hasCacheMw && node.parentMwId !== node.parent?.localMwId) {
+          const parent = node.parent || node.host?.parent;
+          if (node.hasCacheMw && node.parentMwId !== parent?.localMwId) {
             node.localMwId++;
           }
           node.hasCacheMw = true;
@@ -1835,7 +1836,8 @@ class Node extends AbstractNode {
             assignMatrix(node._matrixWorld, node.matrix);
           }
           else {
-            const ppm = node.parent!.perspectiveMatrix;
+            const parent = node.parent || node.host?.parent;
+            const ppm = parent!.perspectiveMatrix;
             const pm = node.perspectiveMatrixSelf;
             let mt = node.matrix;
             if (pm) {
@@ -1844,9 +1846,9 @@ class Node extends AbstractNode {
             if (ppm) {
               mt = multiply(ppm, mt);
             }
-            const t = multiply(node.parent!._matrixWorld, mt);
+            const t = multiply(parent!._matrixWorld, mt);
             assignMatrix(node._matrixWorld, t);
-            node.parentMwId = node.parent!.localMwId;
+            node.parentMwId = parent!.localMwId;
           }
         }
       }
@@ -1856,7 +1858,7 @@ class Node extends AbstractNode {
       }
       this.hasCacheMw = true;
       // 仅自身变化，或者有父级变化但父级前面已经算好了，防止自己是Root
-      parent = this.parent;
+      parent = this.parent || this.host?.parent;
       if (parent) {
         const ppm = parent.perspectiveMatrix;
         const pm = this.perspectiveMatrixSelf;

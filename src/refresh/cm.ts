@@ -2,14 +2,17 @@ import { createTexture, drawColorMatrix } from '../gl/webgl';
 import { genFrameBufferWithTexture, releaseFrameBuffer } from './fb';
 import TextureCache from './TextureCache';
 import { assignMatrix, identity, multiply } from '../math/matrix';
+import Node from '../node/Node';
 import Root from '../node/Root';
 import { d2r } from '../math/geom';
 import CacheProgram from '../gl/CacheProgram';
+import { drawInSpreadBbox, needReGen } from './spread';
 
 // https://docs.rainmeter.net/tips/colormatrix-guide/
 export function genColorMatrix(
   gl: WebGL2RenderingContext | WebGLRenderingContext,
   root: Root,
+  node: Node,
   textureTarget: TextureCache,
   hueRotate: number,
   saturate: number,
@@ -20,12 +23,25 @@ export function genColorMatrix(
   H: number,
 ) {
   const programs = root.programs;
+  const main = programs.main;
   const cm = programs.cm;
-  CacheProgram.useProgram(gl, cm);
   let res: TextureCache = textureTarget;
   let frameBuffer: WebGLFramebuffer | undefined;
   // console.log(hueRotate, saturate, brightness, contrast, sepia);
   if (hueRotate || saturate !== 1 || brightness !== 1 || contrast !== 1 || sepia !== 1) {
+    let old = res;
+    const bbox = textureTarget.bbox;
+    const x = bbox[0],
+      y = bbox[1];
+    const w = bbox[2] - bbox[0],
+      h = bbox[3] - bbox[1];
+    // 可能需将共享源（共享位图）写入新的
+    if (needReGen(node, w, h)) {
+      old = TextureCache.getEmptyInstance(gl, bbox);
+      old.available = true;
+      drawInSpreadBbox(gl, main, textureTarget, res, x, y, w, h);
+    }
+    CacheProgram.useProgram(gl, cm);
     const rotation = d2r(hueRotate % 360);
     const cosR = Math.cos(rotation);
     const sinR = Math.sin(rotation);
@@ -73,7 +89,6 @@ export function genColorMatrix(
       const m2 = multiply(m, m1);
       assignMatrix(m, m2);
     }
-    const old = res;
     const t = genColorByMatrix(gl, cm, old, [
       m[0], m[1], m[2], m[3], b + d,
       m[4], m[5], m[6], m[7], b + d,
