@@ -36,7 +36,7 @@ export default [
         name: 'krolis',
       },
       {
-        file: 'dist/index.min.js',
+        file: 'dist/index.iife.min.js',
         format: 'iife',
         sourcemap: true,
         name: 'krolis',
